@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.composeform"
+    namespace = "com.touhid.composeform"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.example.composeform"
+        applicationId = "com.touhid.composeform"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

@@ -6,13 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - Build everything: `./gradlew build`
 - Build/check a single module: `./gradlew :app:assembleDebug`, `./gradlew :designsystem:build`
-- Run unit tests: `./gradlew test` (single test: `./gradlew :app:testDebugUnitTest --tests "com.example.composeform.ExampleUnitTest"`)
+- Run unit tests: `./gradlew test` (single test: `./gradlew :app:testDebugUnitTest --tests "com.touhid.composeform.ExampleUnitTest"`)
 - Run instrumented tests (needs a device/emulator): `./gradlew :app:connectedDebugAndroidTest`
 - Lint: `./gradlew lint` (per-module: `./gradlew :app:lintDebug`)
 - Install and launch on a running emulator/device:
   ```
   adb install -r app/build/outputs/apk/debug/app-debug.apk
-  adb shell am start -n com.example.composeform/.MainActivity
+  adb shell am start -n com.touhid.composeform/.MainActivity
   ```
 
 ## Architecture
@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 Two-module Gradle project, no `build-logic`/convention-plugin infrastructure — each module's `build.gradle.kts` is configured directly (this is intentional; see below).
 
 - **`:app`** — the application shell. Contains only `MainActivity.kt`. It hosts Compose content and is **not permitted to depend on Material3 or Foundation directly** — see "Design system boundary" below.
-- **`:designsystem`** — an Android library module (namespace `com.example.composeform.designsystem`) owning all Material3-based UI. `:app` depends on it via `implementation(project(":designsystem"))`.
+- **`:designsystem`** — an Android library module (namespace `com.touhid.composeform.designsystem`) owning all Material3-based UI. `:app` depends on it via `implementation(project(":designsystem"))`.
 
 ### Design system boundary (important, easy to violate accidentally)
 
@@ -31,7 +31,7 @@ When `:app` needs a new Material3 primitive it doesn't have a wrapper for yet, a
 ### `:designsystem` internal structure
 
 ```
-designsystem/src/main/java/com/example/composeform/designsystem/
+designsystem/src/main/java/com/touhid/composeform/designsystem/
 ├── theme/                  # Color.kt, Theme.kt (ComposeFormTheme), Type.kt, Spacing.kt (AppSpacing)
 └── components/
     ├── text/               # AppText + AppTextStyle enum

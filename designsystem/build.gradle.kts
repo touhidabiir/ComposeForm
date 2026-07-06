@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.composeform.designsystem"
+    namespace = "com.touhid.composeform.designsystem"
     compileSdk {
         version = release(36) {
             minorApiLevel = 1
