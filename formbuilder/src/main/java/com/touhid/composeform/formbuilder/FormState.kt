@@ -70,6 +70,6 @@ private fun FormField.initialValue(): FormValue? = when (this) {
     is FormField.Dropdown -> options.firstOrNull { it.default }?.let { FormValue.Option(it.id, it.value) }
     is FormField.CheckboxGroup -> {
         val defaults = options.filter { it.default }
-        if (defaults.isEmpty()) null else FormValue.Options(defaults)
+        if (defaults.isEmpty()) null else FormValue.Options(defaults.map { FormValue.Option(it.id, it.value) })
     }
 }

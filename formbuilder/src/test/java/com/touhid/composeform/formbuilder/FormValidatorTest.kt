@@ -126,7 +126,10 @@ class FormValidatorTest {
             validate(schema, mapOf("interests" to FormValue.Options(emptyList())))["interests"],
         )
         assertNull(
-            validate(schema, mapOf("interests" to FormValue.Options(listOf(options[0]))))["interests"],
+            validate(
+                schema,
+                mapOf("interests" to FormValue.Options(listOf(FormValue.Option(options[0].id, options[0].value)))),
+            )["interests"],
         )
     }
 

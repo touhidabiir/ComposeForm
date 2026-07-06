@@ -11,5 +11,5 @@ sealed interface FormValue {
     data class Option(val id: String, val value: String) : FormValue
 
     @Serializable
-    data class Options(val selected: List<FormOption>) : FormValue
+    data class Options(val selected: List<Option>) : FormValue
 }

@@ -142,7 +142,7 @@ private fun RenderField(
                                 checked = isChecked,
                                 onCheckedChange = { checked ->
                                     val newSelected = if (checked) {
-                                        selected + option
+                                        selected + FormValue.Option(option.id, option.value)
                                     } else {
                                         selected.filterNot { it.id == option.id }
                                     }
