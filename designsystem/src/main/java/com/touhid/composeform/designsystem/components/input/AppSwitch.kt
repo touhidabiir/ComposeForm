@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.theme.AppSpacing
 
 @Composable
@@ -16,6 +17,7 @@ fun AppSwitch(
     modifier: Modifier = Modifier,
     label: String? = null,
     enabled: Boolean = true,
+    labelOverride: AppTextOverride = AppTextOverride(),
 ) {
     if (label == null) {
         Switch(checked = checked, onCheckedChange = onCheckedChange, modifier = modifier, enabled = enabled)
@@ -26,7 +28,7 @@ fun AppSwitch(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
     ) {
-        AppText(text = label)
+        AppText(text = label, override = labelOverride)
         Switch(checked = checked, onCheckedChange = onCheckedChange, enabled = enabled)
     }
 }

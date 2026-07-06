@@ -5,8 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 - Build everything: `./gradlew build`
-- Build/check a single module: `./gradlew :app:assembleDebug`, `./gradlew :designsystem:build`
-- Run unit tests: `./gradlew test` (single test: `./gradlew :app:testDebugUnitTest --tests "com.touhid.composeform.ExampleUnitTest"`)
+- Build/check a single module: `./gradlew :app:assembleDebug`, `./gradlew :designsystem:build`, `./gradlew :formbuilder:build`
+- Run unit tests: `./gradlew test` (single module: `./gradlew :formbuilder:testDebugUnitTest`, single test: `./gradlew :formbuilder:testDebugUnitTest --tests "com.touhid.composeform.formbuilder.FormValidatorTest"`)
 - Run instrumented tests (needs a device/emulator): `./gradlew :app:connectedDebugAndroidTest`
 - Lint: `./gradlew lint` (per-module: `./gradlew :app:lintDebug`)
 - Install and launch on a running emulator/device:
@@ -17,16 +17,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-Two-module Gradle project, no `build-logic`/convention-plugin infrastructure — each module's `build.gradle.kts` is configured directly (this is intentional; see below).
+Three-module Gradle project, no `build-logic`/convention-plugin infrastructure — each module's `build.gradle.kts` is configured directly (this is intentional; see below).
 
 - **`:app`** — the application shell. Contains only `MainActivity.kt`. It hosts Compose content and is **not permitted to depend on Material3 or Foundation directly** — see "Design system boundary" below.
 - **`:designsystem`** — an Android library module (namespace `com.touhid.composeform.designsystem`) owning all Material3-based UI. `:app` depends on it via `implementation(project(":designsystem"))`.
+- **`:formbuilder`** — an Android library module (namespace `com.touhid.composeform.formbuilder`) that parses a JSON form schema (`kotlinx.serialization`) and renders it using `:designsystem`'s components. Also subject to the Material3-free boundary — it depends on `:designsystem` only, never Material3 directly.
 
 ### Design system boundary (important, easy to violate accidentally)
 
-`:designsystem` depends on `androidx.compose.material3` and `androidx.compose.foundation` as `implementation` (not `api`). `:app` does **not** declare either dependency itself. This means Material3/Foundation classes are not on `:app`'s compile classpath at all — any `import androidx.compose.material3.*` or `androidx.compose.foundation.*` added to `app/src` will fail to compile. This is deliberate, compiler-enforced encapsulation: all UI in `:app` must go through `:designsystem`'s wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.), never the raw Material3/Foundation APIs.
+`:designsystem` depends on `androidx.compose.material3` and `androidx.compose.foundation` as `implementation` (not `api`). Neither `:app` nor `:formbuilder` declare either dependency themselves. This means Material3/Foundation classes are not on their compile classpaths at all — any `import androidx.compose.material3.*` added there will fail to compile. This is deliberate, compiler-enforced encapsulation: all UI must go through `:designsystem`'s wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.), never the raw Material3 APIs. (Foundation layout primitives — `Column`/`Row`/`Box`/`Modifier.padding` — are fine for any module to use directly; only Material3 is restricted.)
 
-When `:app` needs a new Material3 primitive it doesn't have a wrapper for yet, add the wrapper to `:designsystem` rather than adding a direct dependency to `:app`.
+When a module needs a new Material3 primitive it doesn't have a wrapper for yet, add the wrapper to `:designsystem` rather than adding a direct dependency elsewhere.
 
 ### `:designsystem` internal structure
 
@@ -34,17 +35,41 @@ When `:app` needs a new Material3 primitive it doesn't have a wrapper for yet, a
 designsystem/src/main/java/com/touhid/composeform/designsystem/
 ├── theme/                  # Color.kt, Theme.kt (ComposeFormTheme), Type.kt, Spacing.kt (AppSpacing)
 └── components/
-    ├── text/               # AppText + AppTextStyle enum
+    ├── text/               # AppText + AppTextStyle enum + AppTextOverride (size/weight/color override)
     ├── button/             # AppButton, AppOutlinedButton
-    ├── layout/              # AppScaffold
-    └── input/              # AppTextField, AppCheckbox, AppRadioButton, AppSwitch, AppDropdown
+    ├── layout/             # AppScaffold
+    └── input/              # AppTextField (+ AppTextFieldType: Text/Number/Email/Password), AppCheckbox,
+                             # AppRadioButton, AppSwitch, AppDropdown (+ AppDropdownOption)
 ```
 
 Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit `text`/`button`/`layout`/`input`.
 
 Conventions established by existing components:
-- Each component wraps a Material3 equivalent with a narrowed, opinionated API (e.g. `AppTextStyle` enum instead of raw `TextStyle` passthrough) — don't leak Material3/Foundation types (like `PaddingValues`) through a component's public signature if avoidable (see `AppScaffold` for the pattern: it absorbs `innerPadding` internally via a `Box` rather than exposing it).
+- Each component wraps a Material3 equivalent with a narrowed, opinionated API (e.g. `AppTextStyle` enum instead of raw `TextStyle` passthrough) — don't leak Material3/Foundation types (like `PaddingValues`) through a component's public signature if avoidable (see `AppScaffold`: it absorbs `innerPadding` internally via a `Box` rather than exposing it).
+- Every component that renders text accepts an optional `AppTextOverride` (`fontSize`/`fontWeight`/`color`, all no-op by default) — `AppText`'s `override`, `AppButton`/`AppOutlinedButton`'s `textOverride`, `AppCheckbox`/`AppRadioButton`/`AppSwitch`/`AppDropdown`'s `labelOverride`. This is how callers (like `:formbuilder`) apply per-instance styling without the design system losing its opinionated defaults.
 - Spacing between elements inside a component uses `AppSpacing` (`theme/Spacing.kt`) tokens, not hardcoded `dp` values.
 - Each category subpackage has its own `*Previews.kt` file (not one global previews file) with a private composable carrying stacked `@Preview(name = "Light", ...)` / `@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, ...)` annotations, wrapped in `ComposeFormTheme`.
 
 **Not yet built** (planned next phase): `components/surface/` — `AppCard`, `AppDialog`, `AppChip`, `AppDivider`, `AppTopBar`. Follow the same wrapping conventions above when implementing these.
+
+### `:formbuilder` — JSON-driven dynamic forms
+
+```
+formbuilder/src/main/java/com/touhid/composeform/formbuilder/
+├── schema/                  # FormSchema, FormField (sealed interface + 8 types), FormOption, FormInsets,
+│                            # FormTextStyle, FormOrientation, FormValue — the JSON-facing data model
+├── FormSchemaParser.kt      # parseFormSchema(jsonString): FormSchema
+├── FormValidator.kt         # internal validate(schema, values): Map<String, String> (field key -> error)
+├── FormFieldMappers.kt      # FormTextStyle -> AppTextOverride, inputType string -> AppTextFieldType
+├── FormState.kt             # internal FormState (values + touched), rememberSaveable via a kotlinx.serialization Saver
+├── FormRenderer.kt          # public FormRenderer(schema, modifier, onSubmit) entry point
+└── FormRendererPreviews.kt
+```
+
+Schema model: `FormSchema` is just `{ fields: [...] }` — **everything is a field**, including the form's title (`type: "text"`, non-interactive display) and the submit button (`type: "submit"`), positioned wherever they appear in the list. There's no separate top-level "title"/"submit" property. The 8 `type` discriminator values are `text`, `inputBox`, `checkbox`, `checkboxGroup`, `radio`, `switch`, `dropdown`, `submit`, dispatched by a `JsonContentPolymorphicSerializer` in `FormField.kt` (decode-only; `FormValue`, the submitted-data type, is separately `@Serializable` for `FormState`'s Saver round-trip, not for parsing).
+
+Key conventions if extending the schema:
+- Every field has both `margin` (space outside its bounds, separating it from neighbors) and `padding` (space inside its bounds, around its content) — distinct concepts, both `FormInsets` (`top`/`bottom`/`left`/`right` dp), both present on every field type for uniformity.
+- Every field (and every `FormOption`) has the same `style: FormTextStyle?` (`size`/`color`/`weight`) — one property name/shape everywhere text appears, never a context-specific key like `labelStyle`/`titleStyle`.
+- `radio`/`checkboxGroup`/`dropdown` share one `FormOption` model (`id`, `value`, `default`, `style`) — selection is tracked/returned by `id`, displayed by `value`.
+- The submit button is gated: `FormRenderer` computes `validate(schema, values)` live on every recomposition and disables the button until it's empty. Per-field error text only renders once that field has been touched (tracked in `FormState`), so the button being disabled from the first frame doesn't create a dead end.

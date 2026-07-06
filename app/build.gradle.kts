@@ -37,6 +37,7 @@ android {
 
 dependencies {
     implementation(project(":designsystem"))
+    implementation(project(":formbuilder"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.ui)

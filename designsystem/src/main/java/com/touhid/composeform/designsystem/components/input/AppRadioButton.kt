@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.theme.AppSpacing
 
 @Composable
@@ -17,6 +18,7 @@ fun AppRadioButton(
     label: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    labelOverride: AppTextOverride = AppTextOverride(),
 ) {
     Row(
         modifier = modifier.selectable(
@@ -28,6 +30,6 @@ fun AppRadioButton(
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
     ) {
         RadioButton(selected = selected, onClick = null, enabled = enabled)
-        AppText(text = label)
+        AppText(text = label, override = labelOverride)
     }
 }

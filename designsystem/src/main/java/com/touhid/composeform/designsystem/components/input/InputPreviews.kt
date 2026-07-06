@@ -38,8 +38,12 @@ private fun InputPreview() {
                 AppRadioButton(selected = false, onClick = {}, label = "Option B")
                 AppSwitch(checked = true, onCheckedChange = {}, label = "Enable notifications")
                 AppDropdown(
-                    options = listOf("One", "Two", "Three"),
-                    selectedOption = "One",
+                    options = listOf(
+                        AppDropdownOption("One"),
+                        AppDropdownOption("Two"),
+                        AppDropdownOption("Three"),
+                    ),
+                    selectedOption = AppDropdownOption("One"),
                     onOptionSelected = {},
                     label = "Choose an option",
                 )

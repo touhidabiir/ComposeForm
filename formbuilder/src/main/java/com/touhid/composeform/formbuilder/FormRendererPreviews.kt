@@ -1,17 +1,15 @@
-package com.touhid.composeform
+package com.touhid.composeform.formbuilder
 
-import android.os.Bundle
-import android.util.Log
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.remember
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
-import com.touhid.composeform.formbuilder.FormRenderer
-import com.touhid.composeform.formbuilder.parseFormSchema
 
-private val SAMPLE_FORM_JSON = """
+private val sampleFormJson = """
 {
   "fields": [
     {
@@ -26,13 +24,13 @@ private val SAMPLE_FORM_JSON = """
     },
     {
       "type": "inputBox", "key": "email", "label": "Email", "required": true, "inputType": "email",
-      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+${'$'}",
       "errorMessage": "Enter a valid email address",
       "margin": { "top": 8, "bottom": 8, "left": 0, "right": 0 }
     },
     {
       "type": "inputBox", "key": "phone", "label": "Phone Number", "required": true, "inputType": "number",
-      "pattern": "^[0-9]{10,15}$",
+      "pattern": "^[0-9]{10,15}${'$'}",
       "errorMessage": "Enter a valid phone number",
       "margin": { "top": 8, "bottom": 8, "left": 0, "right": 0 }
     },
@@ -85,20 +83,18 @@ private val SAMPLE_FORM_JSON = """
 }
 """.trimIndent()
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            ComposeFormTheme {
-                val schema = remember { parseFormSchema(SAMPLE_FORM_JSON) }
-                AppScaffold {
-                    FormRenderer(
-                        schema = schema,
-                        onSubmit = { values -> Log.d("FormDemo", values.toString()) },
-                    )
-                }
-            }
+@Preview(name = "Light", showBackground = true, heightDp = 1400)
+@Preview(name = "Dark", showBackground = true, heightDp = 1400, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun FormRendererPreview() {
+    val schema = parseFormSchema(sampleFormJson)
+    ComposeFormTheme {
+        AppScaffold {
+            FormRenderer(
+                schema = schema,
+                modifier = Modifier.padding(AppSpacing.Medium),
+                onSubmit = {},
+            )
         }
     }
 }
