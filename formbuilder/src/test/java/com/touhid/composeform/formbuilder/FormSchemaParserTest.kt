@@ -33,7 +33,10 @@ class FormSchemaParserTest {
                 { "id": "female", "value": "Female", "style": { "color": "#D81B60" } }
               ]
             },
-            { "type": "switch", "key": "notifications", "label": "Enable notifications" },
+            {
+              "type": "switch", "key": "notifications", "label": "Enable notifications",
+              "size": { "width": "wrap_content", "height": "48" }
+            },
             {
               "type": "dropdown", "key": "country", "label": "Country", "required": true,
               "options": [ { "id": "bd", "value": "Bangladesh" }, { "id": "in", "value": "India" } ]
@@ -106,5 +109,19 @@ class FormSchemaParserTest {
     fun `unspecified style is null`() {
         val name = parseFormSchema(sampleJson).fields[1] as FormField.InputBox
         assertNull(name.style)
+    }
+
+    @Test
+    fun `unspecified size defaults to match_parent width and wrap_content height`() {
+        val name = parseFormSchema(sampleJson).fields[1] as FormField.InputBox
+        assertEquals("match_parent", name.size.width)
+        assertEquals("wrap_content", name.size.height)
+    }
+
+    @Test
+    fun `size can be overridden per field`() {
+        val notifications = parseFormSchema(sampleJson).fields[6] as FormField.Switch
+        assertEquals("wrap_content", notifications.size.width)
+        assertEquals("48", notifications.size.height)
     }
 }

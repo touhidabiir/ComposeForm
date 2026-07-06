@@ -1,11 +1,18 @@
 package com.touhid.composeform.formbuilder
 
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.touhid.composeform.designsystem.components.input.AppTextFieldType
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
+import com.touhid.composeform.formbuilder.schema.FormSize
 import com.touhid.composeform.formbuilder.schema.FormTextStyle
 
 internal fun FormTextStyle?.toOverride(): AppTextOverride {
@@ -41,4 +48,19 @@ internal fun String.toAppTextFieldType(): AppTextFieldType = when (lowercase()) 
     "email" -> AppTextFieldType.Email
     "password" -> AppTextFieldType.Password
     else -> AppTextFieldType.Text
+}
+
+internal fun FormSize.toModifier(): Modifier {
+    var modifier: Modifier = Modifier
+    modifier = when (width.lowercase()) {
+        "match_parent" -> modifier.fillMaxWidth()
+        "wrap_content" -> modifier
+        else -> width.toIntOrNull()?.let { modifier.width(it.dp) } ?: modifier
+    }
+    modifier = when (height.lowercase()) {
+        "match_parent" -> modifier.fillMaxHeight()
+        "wrap_content" -> modifier
+        else -> height.toIntOrNull()?.let { modifier.height(it.dp) } ?: modifier
+    }
+    return modifier
 }

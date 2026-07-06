@@ -17,6 +17,7 @@ sealed interface FormField {
     val margin: FormInsets
     val padding: FormInsets
     val style: FormTextStyle?
+    val size: FormSize
 
     @Serializable
     data class Text(
@@ -25,6 +26,7 @@ sealed interface FormField {
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
     ) : FormField
 
     @Serializable
@@ -34,6 +36,7 @@ sealed interface FormField {
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
         val required: Boolean = false,
         val inputType: String = "text",
         val defaultValue: String = "",
@@ -50,6 +53,7 @@ sealed interface FormField {
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
         val required: Boolean = false,
         val defaultValue: Boolean = false,
     ) : FormField
@@ -61,6 +65,7 @@ sealed interface FormField {
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
         val required: Boolean = false,
         val options: List<FormOption>,
         val orientation: FormOrientation = FormOrientation.Vertical,
@@ -73,6 +78,7 @@ sealed interface FormField {
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
         val required: Boolean = false,
         val options: List<FormOption>,
         val orientation: FormOrientation = FormOrientation.Vertical,
@@ -85,6 +91,7 @@ sealed interface FormField {
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
         val required: Boolean = false,
         val defaultValue: Boolean = false,
     ) : FormField
@@ -96,6 +103,7 @@ sealed interface FormField {
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
         val required: Boolean = false,
         val options: List<FormOption>,
     ) : FormField
@@ -107,6 +115,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val margin: FormInsets = SUBMIT_MARGIN,
         override val padding: FormInsets = FormInsets(),
+        override val size: FormSize = FormSize(),
     ) : FormField
 }
 

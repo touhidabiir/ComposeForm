@@ -57,10 +57,11 @@ Conventions established by existing components:
 ```
 formbuilder/src/main/java/com/touhid/composeform/formbuilder/
 ├── schema/                  # FormSchema, FormField (sealed interface + 8 types), FormOption, FormInsets,
-│                            # FormTextStyle, FormOrientation, FormValue — the JSON-facing data model
+│                            # FormTextStyle, FormSize, FormOrientation, FormValue — the JSON-facing data model
 ├── FormSchemaParser.kt      # parseFormSchema(jsonString): FormSchema
 ├── FormValidator.kt         # internal validate(schema, values): Map<String, String> (field key -> error)
-├── FormFieldMappers.kt      # FormTextStyle -> AppTextOverride, inputType string -> AppTextFieldType
+├── FormFieldMappers.kt      # FormTextStyle -> AppTextOverride, inputType string -> AppTextFieldType,
+│                            # FormSize -> Modifier (fillMaxWidth/Height, fixed dp, or no-op for wrap_content)
 ├── FormState.kt             # internal FormState (values + touched), rememberSaveable via a kotlinx.serialization Saver
 ├── FormRenderer.kt          # public FormRenderer(schema, modifier, onSubmit) entry point
 └── FormRendererPreviews.kt
@@ -70,6 +71,7 @@ Schema model: `FormSchema` is just `{ fields: [...] }` — **everything is a fie
 
 Key conventions if extending the schema:
 - Every field has both `margin` (space outside its bounds, separating it from neighbors) and `padding` (space inside its bounds, around its content) — distinct concepts, both `FormInsets` (`top`/`bottom`/`left`/`right` dp), both present on every field type for uniformity.
+- Every field has a `size: FormSize` (`width`/`height`, each `"match_parent"` | `"wrap_content"` | a numeric dp string), defaulting to `match_parent` width / `wrap_content` height. Applied directly to the field's own rendered component (not the margin/padding wrapper `Box`s) via `FormSize.toModifier()`, since components like `AppButton`/`AppCheckbox` don't stretch on their own the way `AppTextField` does.
 - Every field (and every `FormOption`) has the same `style: FormTextStyle?` (`size`/`color`/`weight`) — one property name/shape everywhere text appears, never a context-specific key like `labelStyle`/`titleStyle`.
 - `radio`/`checkboxGroup`/`dropdown` share one `FormOption` model (`id`, `value`, `default`, `style`) — selection is tracked/returned by `id`, displayed by `value`.
 - The submit button is gated: `FormRenderer` computes `validate(schema, values)` live on every recomposition and disables the button until it's empty. Per-field error text only renders once that field has been touched (tracked in `FormState`), so the button being disabled from the first frame doesn't create a dead end.

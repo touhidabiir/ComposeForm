@@ -52,9 +52,10 @@ private fun RenderField(
     errors: Map<String, String>,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
+    val sizeModifier = field.size.toModifier()
     when (field) {
         is FormField.Text -> {
-            AppText(text = field.label, override = field.style.toOverride())
+            AppText(text = field.label, override = field.style.toOverride(), modifier = sizeModifier)
         }
 
         is FormField.InputBox -> {
@@ -67,6 +68,7 @@ private fun RenderField(
                 isError = showError,
                 supportingText = if (showError) errors[field.key] else null,
                 type = field.inputType.toAppTextFieldType(),
+                modifier = sizeModifier,
             )
         }
 
@@ -77,6 +79,7 @@ private fun RenderField(
                 onCheckedChange = { state.update(field.key, FormValue.Text(it.toString())) },
                 label = field.label,
                 labelOverride = field.style.toOverride(),
+                modifier = sizeModifier,
             )
         }
 
@@ -87,12 +90,13 @@ private fun RenderField(
                 onCheckedChange = { state.update(field.key, FormValue.Text(it.toString())) },
                 label = field.label,
                 labelOverride = field.style.toOverride(),
+                modifier = sizeModifier,
             )
         }
 
         is FormField.Radio -> {
             val selectedId = (state.values[field.key] as? FormValue.Option)?.id
-            Column {
+            Column(modifier = sizeModifier) {
                 AppText(text = field.label, override = field.style.toOverride())
                 OptionsContainer(field.orientation) {
                     field.options.forEach { option ->
@@ -121,12 +125,13 @@ private fun RenderField(
                 },
                 label = field.label,
                 labelOverride = field.style.toOverride(),
+                modifier = sizeModifier,
             )
         }
 
         is FormField.CheckboxGroup -> {
             val selected = (state.values[field.key] as? FormValue.Options)?.selected.orEmpty()
-            Column {
+            Column(modifier = sizeModifier) {
                 AppText(text = field.label, override = field.style.toOverride())
                 OptionsContainer(field.orientation) {
                     field.options.forEach { option ->
@@ -155,6 +160,7 @@ private fun RenderField(
                 onClick = { onSubmit(state.values) },
                 enabled = errors.isEmpty(),
                 textOverride = field.style.toOverride(),
+                modifier = sizeModifier,
             )
         }
     }
