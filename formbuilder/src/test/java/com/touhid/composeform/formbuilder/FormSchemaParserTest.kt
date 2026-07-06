@@ -23,11 +23,15 @@ class FormSchemaParserTest {
               "type": "checkboxGroup", "key": "interests", "label": "What do you like?",
               "options": [
                 { "id": "music", "value": "Music", "default": true },
-                { "id": "coding", "value": "Coding", "style": { "weight": "bold" } }
+                {
+                  "id": "coding", "value": "Coding", "style": { "weight": "bold" },
+                  "margin": { "top": 12, "bottom": 12, "left": 0, "right": 0 },
+                  "padding": { "top": 2, "bottom": 2, "left": 2, "right": 2 }
+                }
               ]
             },
             {
-              "type": "radio", "key": "gender", "label": "Gender", "required": true, "orientation": "horizontal",
+              "type": "radio", "key": "gender", "required": true, "orientation": "horizontal",
               "options": [
                 { "id": "male", "value": "Male" },
                 { "id": "female", "value": "Female", "style": { "color": "#D81B60" } }
@@ -123,5 +127,31 @@ class FormSchemaParserTest {
         val notifications = parseFormSchema(sampleJson).fields[6] as FormField.Switch
         assertEquals("wrap_content", notifications.size.width)
         assertEquals("48", notifications.size.height)
+    }
+
+    @Test
+    fun `label is optional and defaults to empty string`() {
+        val gender = parseFormSchema(sampleJson).fields[5] as FormField.Radio
+        assertEquals("", gender.label)
+    }
+
+    @Test
+    fun `option margin defaults to a small symmetric gap, padding defaults to zero`() {
+        val interests = parseFormSchema(sampleJson).fields[4] as FormField.CheckboxGroup
+        val music = interests.options[0]
+        assertEquals(4, music.margin.top)
+        assertEquals(4, music.margin.bottom)
+        assertEquals(4, music.margin.left)
+        assertEquals(4, music.margin.right)
+        assertEquals(0, music.padding.top)
+    }
+
+    @Test
+    fun `option margin and padding can be overridden`() {
+        val interests = parseFormSchema(sampleJson).fields[4] as FormField.CheckboxGroup
+        val coding = interests.options[1]
+        assertEquals(12, coding.margin.top)
+        assertEquals(2, coding.padding.top)
+        assertEquals(2, coding.padding.left)
     }
 }

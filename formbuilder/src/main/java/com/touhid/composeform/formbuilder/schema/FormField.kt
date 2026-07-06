@@ -22,7 +22,7 @@ sealed interface FormField {
     @Serializable
     data class Text(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
@@ -32,7 +32,7 @@ sealed interface FormField {
     @Serializable
     data class InputBox(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
@@ -49,7 +49,7 @@ sealed interface FormField {
     @Serializable
     data class Checkbox(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
@@ -61,7 +61,7 @@ sealed interface FormField {
     @Serializable
     data class CheckboxGroup(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
@@ -74,7 +74,7 @@ sealed interface FormField {
     @Serializable
     data class Radio(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
@@ -87,7 +87,7 @@ sealed interface FormField {
     @Serializable
     data class Switch(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
@@ -99,7 +99,7 @@ sealed interface FormField {
     @Serializable
     data class Dropdown(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val margin: FormInsets = DEFAULT_MARGIN,
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
@@ -111,7 +111,7 @@ sealed interface FormField {
     @Serializable
     data class Submit(
         override val key: String,
-        override val label: String,
+        override val label: String = "",
         override val style: FormTextStyle? = null,
         override val margin: FormInsets = SUBMIT_MARGIN,
         override val padding: FormInsets = FormInsets(),

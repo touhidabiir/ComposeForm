@@ -8,4 +8,6 @@ data class FormOption(
     val value: String,
     val default: Boolean = false,
     val style: FormTextStyle? = null,
+    val margin: FormInsets = FormInsets(top = 4, bottom = 4, left = 4, right = 4),
+    val padding: FormInsets = FormInsets(),
 )

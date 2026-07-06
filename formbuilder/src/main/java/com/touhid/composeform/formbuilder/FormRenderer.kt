@@ -1,6 +1,5 @@
 package com.touhid.composeform.formbuilder
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,9 +17,9 @@ import com.touhid.composeform.designsystem.components.input.AppRadioButton
 import com.touhid.composeform.designsystem.components.input.AppSwitch
 import com.touhid.composeform.designsystem.components.input.AppTextField
 import com.touhid.composeform.designsystem.components.text.AppText
-import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormInsets
+import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormOrientation
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.schema.FormValue
@@ -100,12 +99,14 @@ private fun RenderField(
                 AppText(text = field.label, override = field.style.toOverride())
                 OptionsContainer(field.orientation) {
                     field.options.forEach { option ->
-                        AppRadioButton(
-                            selected = option.id == selectedId,
-                            onClick = { state.update(field.key, FormValue.Option(option.id, option.value)) },
-                            label = option.value,
-                            labelOverride = option.style.toOverride(),
-                        )
+                        RenderOption(option) {
+                            AppRadioButton(
+                                selected = option.id == selectedId,
+                                onClick = { state.update(field.key, FormValue.Option(option.id, option.value)) },
+                                label = option.value,
+                                labelOverride = option.style.toOverride(),
+                            )
+                        }
                     }
                 }
             }
@@ -136,19 +137,21 @@ private fun RenderField(
                 OptionsContainer(field.orientation) {
                     field.options.forEach { option ->
                         val isChecked = selected.any { it.id == option.id }
-                        AppCheckbox(
-                            checked = isChecked,
-                            onCheckedChange = { checked ->
-                                val newSelected = if (checked) {
-                                    selected + option
-                                } else {
-                                    selected.filterNot { it.id == option.id }
-                                }
-                                state.update(field.key, FormValue.Options(newSelected))
-                            },
-                            label = option.value,
-                            labelOverride = option.style.toOverride(),
-                        )
+                        RenderOption(option) {
+                            AppCheckbox(
+                                checked = isChecked,
+                                onCheckedChange = { checked ->
+                                    val newSelected = if (checked) {
+                                        selected + option
+                                    } else {
+                                        selected.filterNot { it.id == option.id }
+                                    }
+                                    state.update(field.key, FormValue.Options(newSelected))
+                                },
+                                label = option.value,
+                                labelOverride = option.style.toOverride(),
+                            )
+                        }
                     }
                 }
             }
@@ -169,9 +172,18 @@ private fun RenderField(
 @Composable
 private fun OptionsContainer(orientation: FormOrientation, content: @Composable () -> Unit) {
     if (orientation == FormOrientation.Horizontal) {
-        Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) { content() }
+        Row { content() }
     } else {
-        Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) { content() }
+        Column { content() }
+    }
+}
+
+@Composable
+private fun RenderOption(option: FormOption, content: @Composable () -> Unit) {
+    Box(modifier = option.margin.toInsetModifier()) {
+        Box(modifier = option.padding.toInsetModifier()) {
+            content()
+        }
     }
 }
 

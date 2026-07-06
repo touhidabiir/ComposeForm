@@ -43,13 +43,18 @@ private val SAMPLE_FORM_JSON = """
       "margin": { "top": 8, "bottom": 8, "left": 0, "right": 0 }
     },
     {
-      "type": "radio", "key": "gender", "label": "Gender", "required": true, "orientation": "horizontal",
+      "type": "text", "key": "heading", "label": "Gender",
+      "style": { "size": 16, "weight": "normal" },
+      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
+    },
+    {
+      "type": "radio", "key": "gender", "label": "", "required": true, "orientation": "horizontal",
       "options": [
         { "id": "male", "value": "Male" },
         { "id": "female", "value": "Female", "style": { "color": "#D81B60" } },
         { "id": "others", "value": "Others" }
       ],
-      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
+      "margin": { "top": 0, "bottom": 8, "left": 0, "right": 0 }
     },
     {
       "type": "dropdown", "key": "country", "label": "Country", "required": true,
