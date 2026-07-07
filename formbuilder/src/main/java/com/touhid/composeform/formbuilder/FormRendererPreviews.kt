@@ -53,8 +53,8 @@ private val sampleFormJson = """
       "type": "radio", "key": "newsletter", "label": "Subscribe to newsletter?", "required": true,
       "orientation": "horizontal", "appearance": "toggle",
       "options": [
-        { "id": "yes", "value": "Yes", "default": true, "border": { "color": "#D81B60", "width": 2, "radius" : 24 } },
-        { "id": "no", "value": "No", "border": { "color": "#D81B60", "width": 2 } }
+        { "id": "yes", "value": "Yes", "default": true, "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "no", "value": "No", "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } }
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
     },
