@@ -97,9 +97,9 @@ private fun RenderField(
             val selectedId = (state.values[field.key] as? FormValue.Option)?.id
             Column(modifier = sizeModifier) {
                 AppText(text = field.label, override = field.style.toOverride())
-                OptionsContainer(field.orientation) {
+                OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
-                        RenderOption(option) {
+                        RenderOption(option, optionModifier) {
                             AppRadioButton(
                                 selected = option.id == selectedId,
                                 onClick = { state.update(field.key, FormValue.Option(option.id, option.value)) },
@@ -134,10 +134,10 @@ private fun RenderField(
             val selected = (state.values[field.key] as? FormValue.Options)?.selected.orEmpty()
             Column(modifier = sizeModifier) {
                 AppText(text = field.label, override = field.style.toOverride())
-                OptionsContainer(field.orientation) {
+                OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
                         val isChecked = selected.any { it.id == option.id }
-                        RenderOption(option) {
+                        RenderOption(option, optionModifier) {
                             AppCheckbox(
                                 checked = isChecked,
                                 onCheckedChange = { checked ->
@@ -170,17 +170,17 @@ private fun RenderField(
 }
 
 @Composable
-private fun OptionsContainer(orientation: FormOrientation, content: @Composable () -> Unit) {
+private fun OptionsContainer(orientation: FormOrientation, content: @Composable (Modifier) -> Unit) {
     if (orientation == FormOrientation.Horizontal) {
-        Row { content() }
+        Row { content(Modifier.weight(1f)) }
     } else {
-        Column { content() }
+        Column { content(Modifier) }
     }
 }
 
 @Composable
-private fun RenderOption(option: FormOption, content: @Composable () -> Unit) {
-    Box(modifier = option.margin.toInsetModifier()) {
+private fun RenderOption(option: FormOption, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
+    Box(modifier = modifier.then(option.margin.toInsetModifier())) {
         Box(modifier = option.padding.toInsetModifier()) {
             content()
         }
