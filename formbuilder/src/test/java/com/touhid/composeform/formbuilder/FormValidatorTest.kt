@@ -129,7 +129,7 @@ class FormValidatorTest {
 
     @Test
     fun `border does not affect validation`() {
-        val border = FormBorder(enabled = true, color = "#D81B60", width = 2, radius = 8)
+        val border = FormBorder(color = "#D81B60", width = 2, radius = 8)
         val options = listOf(FormOption("m", "Male", border = border), FormOption("f", "Female"))
         val field = FormField.Radio(key = "gender", label = "Gender", required = true, options = options, border = border)
         val schema = schemaOf(field)

@@ -53,8 +53,8 @@ internal fun String.toAppTextFieldType(): AppTextFieldType = when (lowercase()) 
     else -> AppTextFieldType.Text
 }
 
-internal fun FormBorder.toModifier(): Modifier {
-    if (!enabled) return Modifier
+internal fun FormBorder?.toModifier(): Modifier {
+    if (this == null) return Modifier
     return Modifier.border(
         width = width.dp,
         color = parseHexColor(color) ?: Color.Black,

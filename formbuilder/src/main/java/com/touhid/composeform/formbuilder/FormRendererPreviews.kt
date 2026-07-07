@@ -53,8 +53,8 @@ private val sampleFormJson = """
       "type": "radio", "key": "newsletter", "label": "Subscribe to newsletter?", "required": true,
       "orientation": "horizontal", "appearance": "toggle",
       "options": [
-        { "id": "yes", "value": "Yes", "default": true, "border": { "enabled": true, "color": "#D81B60", "width": 2 } },
-        { "id": "no", "value": "No", "border": { "enabled": true, "color": "#D81B60", "width": 2 } }
+        { "id": "yes", "value": "Yes", "default": true, "border": { "color": "#D81B60", "width": 2 } },
+        { "id": "no", "value": "No", "border": { "color": "#D81B60", "width": 2 } }
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
     },
@@ -69,7 +69,7 @@ private val sampleFormJson = """
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 },
       "padding": { "top": 8, "bottom": 8, "left": 8, "right": 8 },
-      "border": { "enabled": true, "color": "#9E9E9E", "width": 1, "radius": 12 }
+      "border": { "color": "#9E9E9E", "width": 1, "radius": 12 }
     },
     {
       "type": "dropdown", "key": "country", "label": "Country", "required": true,
