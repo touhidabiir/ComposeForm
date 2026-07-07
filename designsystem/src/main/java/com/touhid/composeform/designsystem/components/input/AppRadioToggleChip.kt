@@ -15,6 +15,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.text.AppText
@@ -41,7 +42,7 @@ fun AppRadioToggleChip(
             onClick = onClick,
         ),
         shape = ChipShape,
-        color = MaterialTheme.colorScheme.surfaceVariant,
+        color = Color.Transparent,
     ) {
         Row(
             modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
