@@ -69,7 +69,7 @@ private val sampleFormJson = """
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 },
       "padding": { "top": 8, "bottom": 8, "left": 8, "right": 8 },
-      "border": { "enabled": true, "color": "#9E9E9E", "width": 1 }
+      "border": { "enabled": true, "color": "#9E9E9E", "width": 1, "radius": 12 }
     },
     {
       "type": "dropdown", "key": "country", "label": "Country", "required": true,
