@@ -3,6 +3,7 @@ package com.touhid.composeform.designsystem.components.input
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -36,6 +37,22 @@ private fun InputPreview() {
                 AppCheckbox(checked = true, onCheckedChange = {}, label = "Subscribe to updates")
                 AppRadioButton(selected = true, onClick = {}, label = "Option A")
                 AppRadioButton(selected = false, onClick = {}, label = "Option B")
+                AppRadioCheckCircle(selected = true, onClick = {}, label = "Option A")
+                AppRadioCheckCircle(selected = false, onClick = {}, label = "Option B")
+                Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                    AppRadioToggleChip(
+                        selected = true,
+                        onClick = {},
+                        label = "Yes",
+                        modifier = Modifier.weight(1f),
+                    )
+                    AppRadioToggleChip(
+                        selected = false,
+                        onClick = {},
+                        label = "No",
+                        modifier = Modifier.weight(1f),
+                    )
+                }
                 AppSwitch(checked = true, onCheckedChange = {}, label = "Enable notifications")
                 AppDropdown(
                     options = listOf(

@@ -50,6 +50,28 @@ private val sampleFormJson = """
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
     },
     {
+      "type": "radio", "key": "newsletter", "label": "Subscribe to newsletter?", "required": true,
+      "orientation": "horizontal", "appearance": "toggle",
+      "options": [
+        { "id": "yes", "value": "Yes", "default": true, "border": { "enabled": true, "color": "#D81B60", "width": 2 } },
+        { "id": "no", "value": "No", "border": { "enabled": true, "color": "#D81B60", "width": 2 } }
+      ],
+      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
+    },
+    {
+      "type": "radio", "key": "doorType", "label": "Door type", "required": true,
+      "orientation": "vertical", "appearance": "check",
+      "options": [
+        { "id": "glass", "value": "Glass", "default": true },
+        { "id": "wood", "value": "Wood" },
+        { "id": "thaiGlass", "value": "Thai Glass" },
+        { "id": "none", "value": "No door" }
+      ],
+      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 },
+      "padding": { "top": 8, "bottom": 8, "left": 8, "right": 8 },
+      "border": { "enabled": true, "color": "#9E9E9E", "width": 1 }
+    },
+    {
       "type": "dropdown", "key": "country", "label": "Country", "required": true,
       "options": [
         { "id": "bangladesh", "value": "Bangladesh" },
@@ -83,8 +105,8 @@ private val sampleFormJson = """
 }
 """.trimIndent()
 
-@Preview(name = "Light", showBackground = true, heightDp = 1400)
-@Preview(name = "Dark", showBackground = true, heightDp = 1400, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Light", showBackground = true, heightDp = 1800)
+@Preview(name = "Dark", showBackground = true, heightDp = 1800, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun FormRendererPreview() {
     val schema = parseFormSchema(sampleFormJson)

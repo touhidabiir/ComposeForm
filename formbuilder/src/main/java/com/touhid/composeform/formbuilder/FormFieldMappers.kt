@@ -1,5 +1,6 @@
 package com.touhid.composeform.formbuilder
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.touhid.composeform.designsystem.components.input.AppTextFieldType
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
+import com.touhid.composeform.formbuilder.schema.FormBorder
 import com.touhid.composeform.formbuilder.schema.FormSize
 import com.touhid.composeform.formbuilder.schema.FormTextStyle
 
@@ -48,6 +50,11 @@ internal fun String.toAppTextFieldType(): AppTextFieldType = when (lowercase()) 
     "email" -> AppTextFieldType.Email
     "password" -> AppTextFieldType.Password
     else -> AppTextFieldType.Text
+}
+
+internal fun FormBorder.toModifier(): Modifier {
+    if (!enabled) return Modifier
+    return Modifier.border(width = width.dp, color = parseHexColor(color) ?: Color.Black)
 }
 
 internal fun FormSize.toModifier(): Modifier {
