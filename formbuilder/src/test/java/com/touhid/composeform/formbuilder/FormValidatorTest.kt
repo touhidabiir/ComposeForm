@@ -1,7 +1,9 @@
 package com.touhid.composeform.formbuilder
 
+import com.touhid.composeform.formbuilder.schema.FormBorder
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormOption
+import com.touhid.composeform.formbuilder.schema.FormRadioAppearance
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.schema.FormValue
 import org.junit.Assert.assertEquals
@@ -103,6 +105,33 @@ class FormValidatorTest {
     fun `required radio with no selection fails, with selection passes`() {
         val options = listOf(FormOption("m", "Male"), FormOption("f", "Female"))
         val field = FormField.Radio(key = "gender", label = "Gender", required = true, options = options)
+        val schema = schemaOf(field)
+        assertEquals("Please select an option", validate(schema, emptyMap())["gender"])
+        assertNull(validate(schema, mapOf("gender" to FormValue.Option("m", "Male")))["gender"])
+    }
+
+    @Test
+    fun `radio appearance does not affect validation`() {
+        val options = listOf(FormOption("m", "Male"), FormOption("f", "Female"))
+        for (appearance in FormRadioAppearance.entries) {
+            val field = FormField.Radio(
+                key = "gender",
+                label = "Gender",
+                required = true,
+                options = options,
+                appearance = appearance,
+            )
+            val schema = schemaOf(field)
+            assertEquals("Please select an option", validate(schema, emptyMap())["gender"])
+            assertNull(validate(schema, mapOf("gender" to FormValue.Option("m", "Male")))["gender"])
+        }
+    }
+
+    @Test
+    fun `border does not affect validation`() {
+        val border = FormBorder(color = "#D81B60", width = 2, radius = 8)
+        val options = listOf(FormOption("m", "Male", border = border), FormOption("f", "Female"))
+        val field = FormField.Radio(key = "gender", label = "Gender", required = true, options = options, border = border)
         val schema = schemaOf(field)
         assertEquals("Please select an option", validate(schema, emptyMap())["gender"])
         assertNull(validate(schema, mapOf("gender" to FormValue.Option("m", "Male")))["gender"])

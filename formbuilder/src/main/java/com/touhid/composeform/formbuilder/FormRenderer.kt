@@ -3,6 +3,7 @@ package com.touhid.composeform.formbuilder
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -14,6 +15,8 @@ import com.touhid.composeform.designsystem.components.input.AppCheckbox
 import com.touhid.composeform.designsystem.components.input.AppDropdown
 import com.touhid.composeform.designsystem.components.input.AppDropdownOption
 import com.touhid.composeform.designsystem.components.input.AppRadioButton
+import com.touhid.composeform.designsystem.components.input.AppRadioCheckCircle
+import com.touhid.composeform.designsystem.components.input.AppRadioToggleChip
 import com.touhid.composeform.designsystem.components.input.AppSwitch
 import com.touhid.composeform.designsystem.components.input.AppTextField
 import com.touhid.composeform.designsystem.components.text.AppText
@@ -21,6 +24,7 @@ import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormInsets
 import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormOrientation
+import com.touhid.composeform.formbuilder.schema.FormRadioAppearance
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.schema.FormValue
 
@@ -36,8 +40,10 @@ fun FormRenderer(
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         schema.fields.forEach { field ->
             Box(modifier = field.margin.toInsetModifier()) {
-                Box(modifier = field.padding.toInsetModifier()) {
-                    RenderField(field = field, state = state, errors = errors, onSubmit = onSubmit)
+                Box(modifier = field.border.toModifier()) {
+                    Box(modifier = field.padding.toInsetModifier()) {
+                        RenderField(field = field, state = state, errors = errors, onSubmit = onSubmit)
+                    }
                 }
             }
         }
@@ -100,12 +106,32 @@ private fun RenderField(
                 OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
                         RenderOption(option, optionModifier) {
-                            AppRadioButton(
-                                selected = option.id == selectedId,
-                                onClick = { state.update(field.key, FormValue.Option(option.id, option.value)) },
-                                label = option.value,
-                                labelOverride = option.style.toOverride(),
-                            )
+                            val selected = option.id == selectedId
+                            val onClick = { state.update(field.key, FormValue.Option(option.id, option.value)) }
+                            val labelOverride = option.style.toOverride()
+                            when (field.appearance) {
+                                FormRadioAppearance.Dot -> AppRadioButton(
+                                    selected = selected,
+                                    onClick = onClick,
+                                    label = option.value,
+                                    labelOverride = labelOverride,
+                                )
+
+                                FormRadioAppearance.Check -> AppRadioCheckCircle(
+                                    selected = selected,
+                                    onClick = onClick,
+                                    label = option.value,
+                                    labelOverride = labelOverride,
+                                )
+
+                                FormRadioAppearance.Toggle -> AppRadioToggleChip(
+                                    selected = selected,
+                                    onClick = onClick,
+                                    label = option.value,
+                                    labelOverride = labelOverride,
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                            }
                         }
                     }
                 }
@@ -181,8 +207,10 @@ private fun OptionsContainer(orientation: FormOrientation, content: @Composable 
 @Composable
 private fun RenderOption(option: FormOption, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(modifier = modifier.then(option.margin.toInsetModifier())) {
-        Box(modifier = option.padding.toInsetModifier()) {
-            content()
+        Box(modifier = option.border.toModifier()) {
+            Box(modifier = option.padding.toInsetModifier()) {
+                content()
+            }
         }
     }
 }

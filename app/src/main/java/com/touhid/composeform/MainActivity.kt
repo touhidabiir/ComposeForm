@@ -26,13 +26,13 @@ private val SAMPLE_FORM_JSON = """
     },
     {
       "type": "inputBox", "key": "email", "label": "Email", "required": true, "inputType": "email",
-      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$",
+      "pattern": "^[^@\\s]+@[^@\\s]+\\.[^@\\s]+${'$'}",
       "errorMessage": "Enter a valid email address",
       "margin": { "top": 8, "bottom": 8, "left": 0, "right": 0 }
     },
     {
       "type": "inputBox", "key": "phone", "label": "Phone Number", "required": true, "inputType": "number",
-      "pattern": "^[0-9]{10,15}$",
+      "pattern": "^[0-9]{10,15}${'$'}",
       "errorMessage": "Enter a valid phone number",
       "margin": { "top": 8, "bottom": 8, "left": 0, "right": 0 }
     },
@@ -43,18 +43,35 @@ private val SAMPLE_FORM_JSON = """
       "margin": { "top": 8, "bottom": 8, "left": 0, "right": 0 }
     },
     {
-      "type": "text", "key": "heading", "label": "Gender",
-      "style": { "size": 16, "weight": "normal" },
-      "margin": { "top": 24, "bottom": 0, "left": 0, "right": 0 }
-    },
-    {
-      "type": "radio", "key": "gender", "required": true, "orientation": "horizontal",
+      "type": "radio", "key": "gender", "label": "Gender", "required": true, "orientation": "horizontal",
       "options": [
         { "id": "male", "value": "Male" },
         { "id": "female", "value": "Female", "style": { "color": "#D81B60" } },
         { "id": "others", "value": "Others" }
       ],
-      "margin": { "top": 0, "bottom": 8, "left": 0, "right": 0 }
+      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
+    },
+    {
+      "type": "radio", "key": "newsletter", "label": "Subscribe to newsletter?", "required": true,
+      "orientation": "horizontal", "appearance": "toggle",
+      "options": [
+        { "id": "yes", "value": "Yes", "default": true, "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "no", "value": "No", "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } }
+      ],
+      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
+    },
+    {
+      "type": "radio", "key": "doorType", "label": "Door type", "required": true,
+      "orientation": "vertical", "appearance": "check",
+      "options": [
+        { "id": "glass", "value": "Glass", "default": true },
+        { "id": "wood", "value": "Wood" },
+        { "id": "thaiGlass", "value": "Thai Glass" },
+        { "id": "none", "value": "No door" }
+      ],
+      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 },
+      "padding": { "top": 8, "bottom": 8, "left": 8, "right": 8 },
+      "border": { "color": "#9E9E9E", "width": 1, "radius": 12 }
     },
     {
       "type": "dropdown", "key": "country", "label": "Country", "required": true,
@@ -67,35 +84,19 @@ private val SAMPLE_FORM_JSON = """
       "margin": { "top": 8, "bottom": 8, "left": 0, "right": 0 }
     },
     {
-      "type": "text", "key": "heading", "label": "What do you like?",
-      "style": { "size": 16, "weight": "normal" },
-      "margin": { "top": 24, "bottom": 0, "left": 0, "right": 0 }
-    },
-    {
-      "type": "checkboxGroup", "key": "interests", "required": false, "orientation": "vertical",
+      "type": "checkboxGroup", "key": "interests", "label": "What do you like?", "required": false, "orientation": "vertical",
       "options": [
-        { "id": "music", "value": "Music", "default": true , 
-          "padding": { "top": 0, "bottom": 2 }
-        },
-        { "id": "books", "value": "Books" , 
-          "padding": { "top": 8, "bottom": 2}
-        },
-        { "id": "games", "value": "Games" , 
-          "padding": { "top": 8, "bottom": 2}
-        },
-        { "id": "gossiping", "value": "Gossiping" , 
-          "padding": { "top": 8, "bottom": 2}
-        },
-        { "id": "coding", "value": "Coding", 
-          "padding": { "top": 8, "bottom": 2}
-        }
+        { "id": "music", "value": "Music", "default": true },
+        { "id": "books", "value": "Books" },
+        { "id": "games", "value": "Games" },
+        { "id": "gossiping", "value": "Gossiping" },
+        { "id": "coding", "value": "Coding", "style": { "weight": "bold" } }
       ],
-      "margin": { "top": 0, "bottom": 8, "left": 0, "right": 0 }
+      "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
     },
     {
       "type": "checkbox", "key": "acceptTerms", "label": "I agree to the terms and conditions", "required": true,
-      "margin": { "top": 24, "bottom": 16, "left": 0, "right": 0 },
-      "padding": { "top": 8, "bottom": 2}
+      "margin": { "top": 24, "bottom": 16, "left": 0, "right": 0 }
     },
     {
       "type": "submit", "key": "submit", "label": "Submit",
