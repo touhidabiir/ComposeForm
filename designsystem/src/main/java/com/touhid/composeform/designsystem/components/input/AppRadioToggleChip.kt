@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
@@ -20,7 +19,6 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
-import com.touhid.composeform.designsystem.theme.AppSpacing
 
 private val ChipShape = RoundedCornerShape(percent = 50)
 private val SelectionCircleSize = 20.dp
@@ -45,7 +43,6 @@ fun AppRadioToggleChip(
         color = Color.Transparent,
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {

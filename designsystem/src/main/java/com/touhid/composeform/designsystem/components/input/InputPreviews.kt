@@ -44,13 +44,17 @@ private fun InputPreview() {
                         selected = true,
                         onClick = {},
                         label = "Yes",
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
                     )
                     AppRadioToggleChip(
                         selected = false,
                         onClick = {},
                         label = "No",
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
                     )
                 }
                 AppSwitch(checked = true, onCheckedChange = {}, label = "Enable notifications")

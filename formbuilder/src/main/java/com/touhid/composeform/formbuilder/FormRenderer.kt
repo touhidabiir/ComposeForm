@@ -122,6 +122,7 @@ private fun RenderField(
                                     onClick = onClick,
                                     label = option.value,
                                     labelOverride = labelOverride,
+                                    modifier = Modifier.fillMaxWidth(),
                                 )
 
                                 FormRadioAppearance.Toggle -> AppRadioToggleChip(
