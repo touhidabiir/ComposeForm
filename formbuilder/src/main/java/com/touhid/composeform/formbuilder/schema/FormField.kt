@@ -7,9 +7,6 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-private val DEFAULT_MARGIN = FormInsets(top = 8, bottom = 8)
-private val SUBMIT_MARGIN = FormInsets(top = 16, bottom = 16, left = 16, right = 16)
-
 @Serializable(with = FormFieldSerializer::class)
 sealed interface FormField {
     val key: String
@@ -24,7 +21,7 @@ sealed interface FormField {
     data class Text(
         override val key: String,
         override val label: String = "",
-        override val margin: FormInsets = DEFAULT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
@@ -35,7 +32,7 @@ sealed interface FormField {
     data class InputBox(
         override val key: String,
         override val label: String = "",
-        override val margin: FormInsets = DEFAULT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
@@ -53,7 +50,7 @@ sealed interface FormField {
     data class Checkbox(
         override val key: String,
         override val label: String = "",
-        override val margin: FormInsets = DEFAULT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
@@ -66,7 +63,7 @@ sealed interface FormField {
     data class CheckboxGroup(
         override val key: String,
         override val label: String = "",
-        override val margin: FormInsets = DEFAULT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
@@ -80,7 +77,7 @@ sealed interface FormField {
     data class Radio(
         override val key: String,
         override val label: String = "",
-        override val margin: FormInsets = DEFAULT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
@@ -95,7 +92,7 @@ sealed interface FormField {
     data class Switch(
         override val key: String,
         override val label: String = "",
-        override val margin: FormInsets = DEFAULT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
@@ -108,7 +105,7 @@ sealed interface FormField {
     data class Dropdown(
         override val key: String,
         override val label: String = "",
-        override val margin: FormInsets = DEFAULT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
@@ -122,7 +119,7 @@ sealed interface FormField {
         override val key: String,
         override val label: String = "",
         override val style: FormTextStyle? = null,
-        override val margin: FormInsets = SUBMIT_MARGIN,
+        override val margin: FormInsets = FormInsets(),
         override val padding: FormInsets = FormInsets(),
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,

@@ -45,9 +45,9 @@ private val SAMPLE_FORM_JSON = """
     {
       "type": "radio", "key": "gender", "label": "Gender", "required": true, "orientation": "horizontal",
       "options": [
-        { "id": "male", "value": "Male" },
-        { "id": "female", "value": "Female", "style": { "color": "#D81B60" } },
-        { "id": "others", "value": "Others" }
+        { "id": "male", "value": "Male", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "female", "value": "Female", "style": { "color": "#D81B60" }, "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "others", "value": "Others", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } }
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
     },
@@ -55,8 +55,8 @@ private val SAMPLE_FORM_JSON = """
       "type": "radio", "key": "newsletter", "label": "Subscribe to newsletter?", "required": true,
       "orientation": "horizontal", "appearance": "toggle",
       "options": [
-        { "id": "yes", "value": "Yes", "default": true, "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
-        { "id": "no", "value": "No", "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } }
+        { "id": "yes", "value": "Yes", "default": true, "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "no", "value": "No", "border": { "color": "#D81B60", "width": 2, "radius" : 24 }, "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 }, "padding": { "top": 4, "bottom": 4, "left": 4, "right": 4 } }
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
     },
@@ -64,10 +64,10 @@ private val SAMPLE_FORM_JSON = """
       "type": "radio", "key": "doorType", "label": "Door type", "required": true,
       "orientation": "vertical", "appearance": "check",
       "options": [
-        { "id": "glass", "value": "Glass", "default": true },
-        { "id": "wood", "value": "Wood" },
-        { "id": "thaiGlass", "value": "Thai Glass" },
-        { "id": "none", "value": "No door" }
+        { "id": "glass", "value": "Glass", "default": true, "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "wood", "value": "Wood", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "thaiGlass", "value": "Thai Glass", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "none", "value": "No door", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } }
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 },
       "padding": { "top": 8, "bottom": 8, "left": 8, "right": 8 },
@@ -86,11 +86,11 @@ private val SAMPLE_FORM_JSON = """
     {
       "type": "checkboxGroup", "key": "interests", "label": "What do you like?", "required": false, "orientation": "vertical",
       "options": [
-        { "id": "music", "value": "Music", "default": true },
-        { "id": "books", "value": "Books" },
-        { "id": "games", "value": "Games" },
-        { "id": "gossiping", "value": "Gossiping" },
-        { "id": "coding", "value": "Coding", "style": { "weight": "bold" } }
+        { "id": "music", "value": "Music", "default": true, "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "books", "value": "Books", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "games", "value": "Games", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "gossiping", "value": "Gossiping", "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } },
+        { "id": "coding", "value": "Coding", "style": { "weight": "bold" }, "margin": { "top": 4, "bottom": 4, "left": 4, "right": 4 } }
       ],
       "margin": { "top": 24, "bottom": 8, "left": 0, "right": 0 }
     },
