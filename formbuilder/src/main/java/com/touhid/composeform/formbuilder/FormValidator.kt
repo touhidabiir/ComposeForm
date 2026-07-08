@@ -7,6 +7,7 @@ import com.touhid.composeform.formbuilder.schema.FormValue
 internal fun validate(schema: FormSchema, values: Map<String, FormValue>): Map<String, String> {
     val errors = mutableMapOf<String, String>()
     for (field in schema.fields) {
+        if (!field.isVisible(values)) continue
         val message = validateField(field, values[field.key])
         if (message != null) errors[field.key] = message
     }

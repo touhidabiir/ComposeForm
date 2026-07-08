@@ -9,6 +9,7 @@ import androidx.compose.runtime.remember
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.formbuilder.FormRenderer
+import com.touhid.composeform.formbuilder.JSON_FORM
 import com.touhid.composeform.formbuilder.parseFormSchema
 
 private val SAMPLE_FORM_JSON = """
@@ -113,7 +114,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ComposeFormTheme {
-                val schema = remember { parseFormSchema(SAMPLE_FORM_JSON) }
+                val schema = remember { parseFormSchema(JSON_FORM) }
                 AppScaffold {
                     FormRenderer(
                         schema = schema,

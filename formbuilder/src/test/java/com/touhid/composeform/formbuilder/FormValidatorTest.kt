@@ -6,6 +6,8 @@ import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormRadioAppearance
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.schema.FormValue
+import com.touhid.composeform.formbuilder.schema.FormVisibilityCondition
+import com.touhid.composeform.formbuilder.schema.FormVisibilityOperator
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -167,5 +169,35 @@ class FormValidatorTest {
         val field = FormField.CheckboxGroup(key = "interests", label = "Interests", required = false, options = emptyList())
         val schema = schemaOf(field)
         assertNull(validate(schema, mapOf("interests" to FormValue.Options(emptyList())))["interests"])
+    }
+
+    @Test
+    fun `hidden required field produces no error even when empty`() {
+        val gender = FormField.Radio(key = "gender", label = "Gender", options = listOf(FormOption("male", "Male")))
+        val newsletter = FormField.Radio(
+            key = "newsletter",
+            label = "Newsletter",
+            required = true,
+            options = listOf(FormOption("yes", "Yes")),
+            visibleWhen = FormVisibilityCondition("gender", FormVisibilityOperator.NotEquals, listOf("male")),
+        )
+        val schema = schemaOf(gender, newsletter)
+        val errors = validate(schema, mapOf("gender" to FormValue.Option("male", "Male")))
+        assertNull(errors["newsletter"])
+    }
+
+    @Test
+    fun `visible required field still errors when empty`() {
+        val gender = FormField.Radio(key = "gender", label = "Gender", options = listOf(FormOption("female", "Female")))
+        val newsletter = FormField.Radio(
+            key = "newsletter",
+            label = "Newsletter",
+            required = true,
+            options = listOf(FormOption("yes", "Yes")),
+            visibleWhen = FormVisibilityCondition("gender", FormVisibilityOperator.NotEquals, listOf("male")),
+        )
+        val schema = schemaOf(gender, newsletter)
+        val errors = validate(schema, mapOf("gender" to FormValue.Option("female", "Female")))
+        assertEquals("Please select an option", errors["newsletter"])
     }
 }

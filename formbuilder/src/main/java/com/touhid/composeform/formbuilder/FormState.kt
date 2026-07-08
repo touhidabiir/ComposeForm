@@ -13,17 +13,18 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 internal class FormState(
+    private val schema: FormSchema,
     initialValues: Map<String, FormValue>,
     initialTouched: Set<String>,
 ) {
-    var values: Map<String, FormValue> by mutableStateOf(initialValues)
+    var values: Map<String, FormValue> by mutableStateOf(initialValues.retainVisible(schema))
         private set
     var touched: Set<String> by mutableStateOf(initialTouched)
         private set
 
     fun update(key: String, value: FormValue) {
-        values = values + (key to value)
-        touched = touched + key
+        values = (values + (key to value)).retainVisible(schema)
+        touched = touched.filterTo(mutableSetOf()) { it in values } + key
     }
 }
 
@@ -35,7 +36,7 @@ private data class FormStateSnapshot(
 
 private val formStateJson = Json { ignoreUnknownKeys = true }
 
-private val FormStateSaver: Saver<FormState, String> = Saver(
+private fun formStateSaver(schema: FormSchema): Saver<FormState, String> = Saver(
     save = { state ->
         formStateJson.encodeToString(
             FormStateSnapshot.serializer(),
@@ -44,14 +45,15 @@ private val FormStateSaver: Saver<FormState, String> = Saver(
     },
     restore = { raw ->
         val snapshot = formStateJson.decodeFromString(FormStateSnapshot.serializer(), raw)
-        FormState(snapshot.values, snapshot.touched.toSet())
+        FormState(schema, snapshot.values, snapshot.touched.toSet())
     },
 )
 
 @Composable
 internal fun rememberFormState(schema: FormSchema): FormState {
-    return rememberSaveable(schema, saver = FormStateSaver) {
+    return rememberSaveable(schema, saver = formStateSaver(schema)) {
         FormState(
+            schema = schema,
             initialValues = schema.fields.mapNotNull { field ->
                 field.initialValue()?.let { field.key to it }
             }.toMap(),

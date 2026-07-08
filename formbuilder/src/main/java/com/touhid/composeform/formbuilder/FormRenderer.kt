@@ -39,6 +39,7 @@ fun FormRenderer(
 
     Column(modifier = modifier.verticalScroll(rememberScrollState())) {
         schema.fields.forEach { field ->
+            if (!field.isVisible(state.values)) return@forEach
             Box(modifier = field.margin.toInsetModifier()) {
                 Box(modifier = field.border.toModifier()) {
                     Box(modifier = field.padding.toInsetModifier()) {
