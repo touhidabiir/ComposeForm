@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -37,7 +38,7 @@ fun FormRenderer(
     val state = rememberFormState(schema)
     val errors = validate(schema, state.values)
 
-    Column(modifier = modifier.verticalScroll(rememberScrollState())) {
+    Column(modifier = modifier.verticalScroll(rememberScrollState()).imePadding()) {
         schema.fields.forEach { field ->
             if (!field.isVisible(state.values)) return@forEach
             Box(modifier = field.margin.toInsetModifier()) {
