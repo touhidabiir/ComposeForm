@@ -5,15 +5,26 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
+import com.touhid.composeform.formbuilder.FormFieldResult
 import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.JSON_FORM
 import com.touhid.composeform.formbuilder.parseFormSchema
@@ -114,26 +125,80 @@ private val SAMPLE_FORM_JSON = """
 }
 """.trimIndent()
 
+private val PICKER_OPTIONS = listOf("Alex Doe", "Sam Rivera", "Jordan Lee")
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ComposeFormTheme {
-                val schema = remember { parseFormSchema(JSON_FORM) }
-                AppScaffold(topBar = { scrollBehavior ->
-                    AppTopBar(
-                        title = "ComposeForm Demo",
-                        scrollBehavior = scrollBehavior,
-                        navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                        onNavigationClick = { finish() },
-                    )
-                }) {
-                    FormRenderer(
-                        schema = schema,
-                        modifier = Modifier.padding(16.dp),
-                        onSubmit = { values -> Log.d("FormDemo", values.toString()) },
-                    )
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = "form") {
+                    composable("form") { backStackEntry ->
+                        val schema = remember { parseFormSchema(JSON_FORM) }
+                        var activePickerKey by remember { mutableStateOf<String?>(null) }
+
+                        val resultFlow = remember(backStackEntry) {
+                            backStackEntry.savedStateHandle.getStateFlow("picker_result", null as String?)
+                        }
+                        val resultValue by resultFlow.collectAsState()
+                        val pendingResult = activePickerKey?.let { key ->
+                            resultValue?.let { value -> FormFieldResult(key, value) }
+                        }
+                        LaunchedEffect(pendingResult) {
+                            if (pendingResult != null) {
+                                backStackEntry.savedStateHandle["picker_result"] = null
+                                activePickerKey = null
+                            }
+                        }
+
+                        AppScaffold(topBar = { scrollBehavior ->
+                            AppTopBar(
+                                title = "ComposeForm Demo",
+                                scrollBehavior = scrollBehavior,
+                                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                                onNavigationClick = { finish() },
+                            )
+                        }) {
+                            FormRenderer(
+                                schema = schema,
+                                modifier = Modifier.padding(16.dp),
+                                pendingResult = pendingResult,
+                                onPickerFieldClick = { key ->
+                                    activePickerKey = key
+                                    navController.navigate("picker")
+                                },
+                                onSubmit = { values -> Log.d("FormDemo", values.toString()) },
+                            )
+                        }
+                    }
+
+                    composable("picker") {
+                        AppScaffold(topBar = { scrollBehavior ->
+                            AppTopBar(
+                                title = "Select a value",
+                                scrollBehavior = scrollBehavior,
+                                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                                onNavigationClick = { navController.popBackStack() },
+                            )
+                        }) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                PICKER_OPTIONS.forEach { option ->
+                                    AppButton(
+                                        text = option,
+                                        onClick = {
+                                            navController.previousBackStackEntry
+                                                ?.savedStateHandle
+                                                ?.set("picker_result", option)
+                                            navController.popBackStack()
+                                        },
+                                        modifier = Modifier.padding(vertical = 4.dp),
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

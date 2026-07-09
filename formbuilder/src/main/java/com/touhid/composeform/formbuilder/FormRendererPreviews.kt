@@ -33,6 +33,7 @@ val JSON_FORM = """
       "label": "Name",
       "required": true,
       "inputType": "text",
+      "hasPickerAction": true,
       "style": {
         "size": 16,
         "weight": "medium"

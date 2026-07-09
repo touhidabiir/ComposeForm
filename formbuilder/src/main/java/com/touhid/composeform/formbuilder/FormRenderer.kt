@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.button.AppButton
@@ -33,10 +34,16 @@ import com.touhid.composeform.formbuilder.schema.FormValue
 fun FormRenderer(
     schema: FormSchema,
     modifier: Modifier = Modifier,
+    pendingResult: FormFieldResult? = null,
+    onPickerFieldClick: (key: String) -> Unit = {},
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val state = rememberFormState(schema)
     val errors = validate(schema, state.values)
+
+    LaunchedEffect(pendingResult) {
+        pendingResult?.let { state.update(it.key, FormValue.Text(it.value)) }
+    }
 
     Column(modifier = modifier.verticalScroll(rememberScrollState()).imePadding()) {
         schema.fields.forEach { field ->
@@ -44,7 +51,13 @@ fun FormRenderer(
             Box(modifier = field.margin.toInsetModifier()) {
                 Box(modifier = field.border.toModifier()) {
                     Box(modifier = field.padding.toInsetModifier()) {
-                        RenderField(field = field, state = state, errors = errors, onSubmit = onSubmit)
+                        RenderField(
+                            field = field,
+                            state = state,
+                            errors = errors,
+                            onPickerFieldClick = onPickerFieldClick,
+                            onSubmit = onSubmit,
+                        )
                     }
                 }
             }
@@ -57,6 +70,7 @@ private fun RenderField(
     field: FormField,
     state: FormState,
     errors: Map<String, String>,
+    onPickerFieldClick: (key: String) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val sizeModifier = field.size.toModifier()
@@ -76,6 +90,9 @@ private fun RenderField(
                 supportingText = if (showError) errors[field.key] else null,
                 type = field.inputType.toAppTextFieldType(),
                 modifier = sizeModifier,
+                onTrailingActionClick = if (field.hasPickerAction) {
+                    { onPickerFieldClick(field.key) }
+                } else null,
             )
         }
 
