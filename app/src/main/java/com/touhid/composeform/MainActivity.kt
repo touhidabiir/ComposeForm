@@ -151,20 +151,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposeFormTheme {
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "form") {
-                    composable("form") { backStackEntry ->
-                        val schema = remember { parseFormSchema(JSON_FORM) }
-                        var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
+                var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
+                var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
 
-                        val pendingResult = activePickerKey?.let { key ->
-                            backStackEntry.savedStateHandle.get<String>("picker_result")?.let { value ->
-                                FormFieldResult(key, value)
-                            }
-                        }
+                NavHost(navController = navController, startDestination = "form") {
+                    composable("form") {
+                        val schema = remember { parseFormSchema(JSON_FORM) }
+
                         LaunchedEffect(pendingResult) {
                             if (pendingResult != null) {
-                                backStackEntry.savedStateHandle.remove<String>("picker_result")
                                 activePickerKey = null
+                                pendingResult = null
                             }
                         }
 
@@ -204,9 +201,7 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier.padding(16.dp),
                                 onSubmit = { values ->
                                     val result = (values["result"] as? FormValue.Text)?.value.orEmpty()
-                                    navController.previousBackStackEntry
-                                        ?.savedStateHandle
-                                        ?.set("picker_result", result)
+                                    activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
                                     navController.popBackStack()
                                 },
                             )
