@@ -26,6 +26,7 @@ fun AppTopBar(
     navigationIconContentDescription: String = "Navigate back",
     onNavigationClick: () -> Unit = {},
     actions: List<AppTopBarAction> = emptyList(),
+    scrollBehavior: AppTopBarScrollBehavior? = null,
 ) {
     TopAppBar(
         modifier = modifier,
@@ -48,5 +49,6 @@ fun AppTopBar(
                 )
             }
         },
+        scrollBehavior = scrollBehavior?.scrollBehavior,
     )
 }

@@ -116,7 +116,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposeFormTheme {
                 val schema = remember { parseFormSchema(JSON_FORM) }
-                AppScaffold(topBar = { AppTopBar(title = "ComposeForm Demo") }) {
+                AppScaffold(topBar = { scrollBehavior ->
+                    AppTopBar(title = "ComposeForm Demo", scrollBehavior = scrollBehavior)
+                }) {
                     FormRenderer(
                         schema = schema,
                         onSubmit = { values -> Log.d("FormDemo", values.toString()) },

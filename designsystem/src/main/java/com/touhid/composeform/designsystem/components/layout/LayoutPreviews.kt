@@ -24,7 +24,9 @@ private fun ScaffoldPreview() {
 @Composable
 private fun ScaffoldWithTopBarPreview() {
     ComposeFormTheme {
-        AppScaffold(topBar = { AppTopBar(title = "Screen Title") }) {
+        AppScaffold(topBar = { scrollBehavior ->
+            AppTopBar(title = "Screen Title", scrollBehavior = scrollBehavior)
+        }) {
             AppText("Content inside AppScaffold", style = AppTextStyle.TitleMedium)
         }
     }
