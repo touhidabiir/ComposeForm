@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
@@ -28,6 +26,7 @@ import com.touhid.composeform.formbuilder.FormFieldResult
 import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.JSON_FORM
 import com.touhid.composeform.formbuilder.parseFormSchema
+import com.touhid.composeform.formbuilder.schema.FormValue
 
 private val SAMPLE_FORM_JSON = """
 {
@@ -125,7 +124,25 @@ private val SAMPLE_FORM_JSON = """
 }
 """.trimIndent()
 
-private val PICKER_OPTIONS = listOf("Alex Doe", "Sam Rivera", "Jordan Lee")
+private val PICKER_FORM_JSON = """
+{
+  "fields": [
+    {
+      "type": "text", "key": "heading", "label": "Pick a name",
+      "style": { "size": 20, "weight": "bold" },
+      "margin": { "bottom": 16 }
+    },
+    {
+      "type": "inputBox", "key": "result", "label": "Name", "required": true, "inputType": "text",
+      "margin": { "bottom": 8 }
+    },
+    {
+      "type": "submit", "key": "submit", "label": "Confirm",
+      "margin": { "top": 16 }
+    }
+  ]
+}
+""".trimIndent()
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -173,6 +190,7 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("picker") {
+                        val pickerSchema = remember { parseFormSchema(PICKER_FORM_JSON) }
                         AppScaffold(topBar = { scrollBehavior ->
                             AppTopBar(
                                 title = "Select a value",
@@ -181,20 +199,17 @@ class MainActivity : ComponentActivity() {
                                 onNavigationClick = { navController.popBackStack() },
                             )
                         }) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                PICKER_OPTIONS.forEach { option ->
-                                    AppButton(
-                                        text = option,
-                                        onClick = {
-                                            navController.previousBackStackEntry
-                                                ?.savedStateHandle
-                                                ?.set("picker_result", option)
-                                            navController.popBackStack()
-                                        },
-                                        modifier = Modifier.padding(vertical = 4.dp),
-                                    )
-                                }
-                            }
+                            FormRenderer(
+                                schema = pickerSchema,
+                                modifier = Modifier.padding(16.dp),
+                                onSubmit = { values ->
+                                    val result = (values["result"] as? FormValue.Text)?.value.orEmpty()
+                                    navController.previousBackStackEntry
+                                        ?.savedStateHandle
+                                        ?.set("picker_result", result)
+                                    navController.popBackStack()
+                                },
+                            )
                         }
                     }
                 }
