@@ -5,8 +5,14 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.JSON_FORM
@@ -115,9 +121,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposeFormTheme {
                 val schema = remember { parseFormSchema(JSON_FORM) }
-                AppScaffold {
+                AppScaffold(topBar = { scrollBehavior ->
+                    AppTopBar(
+                        title = "ComposeForm Demo",
+                        scrollBehavior = scrollBehavior,
+                        navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                        onNavigationClick = { finish() },
+                    )
+                }) {
                     FormRenderer(
                         schema = schema,
+                        modifier = Modifier.padding(16.dp),
                         onSubmit = { values -> Log.d("FormDemo", values.toString()) },
                     )
                 }
