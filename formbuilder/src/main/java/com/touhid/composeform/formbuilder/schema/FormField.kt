@@ -16,6 +16,7 @@ sealed interface FormField {
     val style: FormTextStyle?
     val size: FormSize
     val border: FormBorder?
+    val visibleWhen: FormVisibilityCondition?
 
     @Serializable
     data class Text(
@@ -26,6 +27,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
     ) : FormField
 
     @Serializable
@@ -37,6 +39,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val inputType: String = "text",
         val defaultValue: String = "",
@@ -55,6 +58,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val defaultValue: Boolean = false,
     ) : FormField
@@ -68,6 +72,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val options: List<FormOption>,
         val orientation: FormOrientation = FormOrientation.Vertical,
@@ -82,6 +87,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val options: List<FormOption>,
         val orientation: FormOrientation = FormOrientation.Vertical,
@@ -97,6 +103,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val defaultValue: Boolean = false,
     ) : FormField
@@ -110,6 +117,7 @@ sealed interface FormField {
         override val style: FormTextStyle? = null,
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val options: List<FormOption>,
     ) : FormField
@@ -123,6 +131,7 @@ sealed interface FormField {
         override val padding: FormInsets = FormInsets(),
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
     ) : FormField
 }
 

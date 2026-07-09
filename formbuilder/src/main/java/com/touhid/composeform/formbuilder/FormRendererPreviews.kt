@@ -9,7 +9,7 @@ import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 
-private val sampleFormJson = """
+val JSON_FORM = """
 {
   "fields": [
     {
@@ -172,6 +172,11 @@ private val sampleFormJson = """
       "key": "newsletter",
       "label": "Subscribe to newsletter?",
       "required": true,
+      "visibleWhen": {
+        "key": "gender",
+        "operator": "notEquals",
+        "values": ["male"]
+      },
       "orientation": "horizontal",
       "appearance": "toggle",
       "options": [
@@ -429,7 +434,7 @@ private val sampleFormJson = """
 @Preview(name = "Dark", showBackground = true, heightDp = 1800, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun FormRendererPreview() {
-    val schema = parseFormSchema(sampleFormJson)
+    val schema = parseFormSchema(JSON_FORM)
     ComposeFormTheme {
         AppScaffold {
             FormRenderer(

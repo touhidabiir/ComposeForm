@@ -2,6 +2,7 @@ package com.touhid.composeform.formbuilder
 
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormOrientation
+import com.touhid.composeform.formbuilder.schema.FormVisibilityOperator
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -48,6 +49,11 @@ class FormSchemaParserTest {
             {
               "type": "submit", "key": "submit", "label": "Submit",
               "margin": { "top": 16, "bottom": 16, "left": 16, "right": 16 }
+            },
+            {
+              "type": "radio", "key": "newsletter", "label": "Newsletter",
+              "visibleWhen": { "key": "gender", "operator": "notEquals", "values": ["male"] },
+              "options": [ { "id": "yes", "value": "Yes" } ]
             }
           ]
         }
@@ -56,7 +62,7 @@ class FormSchemaParserTest {
     @Test
     fun `parses all field types with correct discriminator dispatch`() {
         val schema = parseFormSchema(sampleJson)
-        assertEquals(9, schema.fields.size)
+        assertEquals(10, schema.fields.size)
         assertTrue(schema.fields[0] is FormField.Text)
         assertTrue(schema.fields[1] is FormField.InputBox)
         assertTrue(schema.fields[3] is FormField.Checkbox)
@@ -65,6 +71,7 @@ class FormSchemaParserTest {
         assertTrue(schema.fields[6] is FormField.Switch)
         assertTrue(schema.fields[7] is FormField.Dropdown)
         assertTrue(schema.fields[8] is FormField.Submit)
+        assertTrue(schema.fields[9] is FormField.Radio)
     }
 
     @Test
@@ -153,5 +160,20 @@ class FormSchemaParserTest {
         assertEquals(12, coding.margin.top)
         assertEquals(2, coding.padding.top)
         assertEquals(2, coding.padding.left)
+    }
+
+    @Test
+    fun `field without visibleWhen parses with visibleWhen null`() {
+        val gender = parseFormSchema(sampleJson).fields[5] as FormField.Radio
+        assertNull(gender.visibleWhen)
+    }
+
+    @Test
+    fun `field with visibleWhen parses key, operator, and values`() {
+        val newsletter = parseFormSchema(sampleJson).fields[9] as FormField.Radio
+        val condition = newsletter.visibleWhen
+        assertEquals("gender", condition?.key)
+        assertEquals(FormVisibilityOperator.NotEquals, condition?.operator)
+        assertEquals(listOf("male"), condition?.values)
     }
 }
