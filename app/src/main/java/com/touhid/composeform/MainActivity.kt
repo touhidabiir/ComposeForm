@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.remember
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
@@ -117,7 +119,12 @@ class MainActivity : ComponentActivity() {
             ComposeFormTheme {
                 val schema = remember { parseFormSchema(JSON_FORM) }
                 AppScaffold(topBar = { scrollBehavior ->
-                    AppTopBar(title = "ComposeForm Demo", scrollBehavior = scrollBehavior)
+                    AppTopBar(
+                        title = "ComposeForm Demo",
+                        scrollBehavior = scrollBehavior,
+                        navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                        onNavigationClick = { finish() },
+                    )
                 }) {
                     FormRenderer(
                         schema = schema,
