@@ -26,8 +26,7 @@ import com.touhid.composeform.formbuilder.FormFieldResult
 import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.JSON_FORM
 import com.touhid.composeform.formbuilder.parseFormSchema
-import com.touhid.composeform.formbuilder.schema.FormField
-import com.touhid.composeform.formbuilder.schema.FormValue
+import com.touhid.composeform.formbuilder.singleAnswerValue
 
 private val SAMPLE_FORM_JSON = """
 {
@@ -145,13 +144,6 @@ private val PICKER_FORM_JSON = """
 }
 """.trimIndent()
 
-private fun FormValue?.toDisplayString(): String = when (this) {
-    is FormValue.Text -> value
-    is FormValue.Option -> value
-    is FormValue.Options -> selected.joinToString(", ") { it.value }
-    null -> ""
-}
-
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -208,10 +200,7 @@ class MainActivity : ComponentActivity() {
                                 schema = pickerSchema,
                                 modifier = Modifier.padding(16.dp),
                                 onSubmit = { values ->
-                                    val resultKey = pickerSchema.fields
-                                        .firstOrNull { it !is FormField.Text && it !is FormField.Submit }
-                                        ?.key
-                                    val result = resultKey?.let { values[it] }.toDisplayString()
+                                    val result = pickerSchema.singleAnswerValue(values)
                                     activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
                                     navController.popBackStack()
                                 },
