@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.remember
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.JSON_FORM
@@ -115,7 +116,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposeFormTheme {
                 val schema = remember { parseFormSchema(JSON_FORM) }
-                AppScaffold {
+                AppScaffold(topBar = { AppTopBar(title = "ComposeForm Demo") }) {
                     FormRenderer(
                         schema = schema,
                         onSubmit = { values -> Log.d("FormDemo", values.toString()) },

@@ -10,9 +10,10 @@ import androidx.compose.ui.Modifier
 @Composable
 fun AppScaffold(
     modifier: Modifier = Modifier.fillMaxSize(),
+    topBar: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
-    Scaffold(modifier = modifier) { innerPadding ->
+    Scaffold(modifier = modifier, topBar = topBar) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()
         }
