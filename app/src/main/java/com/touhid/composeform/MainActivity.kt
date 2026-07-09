@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -137,18 +137,16 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = "form") {
                     composable("form") { backStackEntry ->
                         val schema = remember { parseFormSchema(JSON_FORM) }
-                        var activePickerKey by remember { mutableStateOf<String?>(null) }
+                        var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
 
-                        val resultFlow = remember(backStackEntry) {
-                            backStackEntry.savedStateHandle.getStateFlow("picker_result", null as String?)
-                        }
-                        val resultValue by resultFlow.collectAsState()
                         val pendingResult = activePickerKey?.let { key ->
-                            resultValue?.let { value -> FormFieldResult(key, value) }
+                            backStackEntry.savedStateHandle.get<String>("picker_result")?.let { value ->
+                                FormFieldResult(key, value)
+                            }
                         }
                         LaunchedEffect(pendingResult) {
                             if (pendingResult != null) {
-                                backStackEntry.savedStateHandle["picker_result"] = null
+                                backStackEntry.savedStateHandle.remove<String>("picker_result")
                                 activePickerKey = null
                             }
                         }
