@@ -1,6 +1,8 @@
 package com.touhid.composeform.designsystem.components.input
 
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -8,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.touhid.composeform.designsystem.components.icon.AppIconButton
 
 enum class AppTextFieldType { Text, Number, Email, Password }
 
@@ -23,6 +26,7 @@ fun AppTextField(
     singleLine: Boolean = true,
     enabled: Boolean = true,
     type: AppTextFieldType = AppTextFieldType.Text,
+    onTrailingActionClick: (() -> Unit)? = null,
 ) {
     val keyboardType = when (type) {
         AppTextFieldType.Text -> KeyboardType.Text
@@ -47,5 +51,8 @@ fun AppTextField(
         singleLine = singleLine,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,
+        trailingIcon = onTrailingActionClick?.let { onClick ->
+            { AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick) }
+        },
     )
 }

@@ -8,15 +8,25 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
+import com.touhid.composeform.formbuilder.FormFieldResult
 import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.JSON_FORM
 import com.touhid.composeform.formbuilder.parseFormSchema
+import com.touhid.composeform.formbuilder.singleAnswerValue
 
 private val SAMPLE_FORM_JSON = """
 {
@@ -114,26 +124,89 @@ private val SAMPLE_FORM_JSON = """
 }
 """.trimIndent()
 
+private val PICKER_FORM_JSON = """
+{
+  "fields": [
+    {
+      "type": "text", "key": "heading", "label": "Pick a name",
+      "style": { "size": 20, "weight": "bold" },
+      "margin": { "bottom": 16 }
+    },
+    {
+      "type": "inputBox", "key": "result", "label": "Name", "required": true, "inputType": "text",
+      "margin": { "bottom": 8 }
+    },
+    {
+      "type": "submit", "key": "submit", "label": "Confirm",
+      "margin": { "top": 16 }
+    }
+  ]
+}
+""".trimIndent()
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             ComposeFormTheme {
-                val schema = remember { parseFormSchema(JSON_FORM) }
-                AppScaffold(topBar = { scrollBehavior ->
-                    AppTopBar(
-                        title = "ComposeForm Demo",
-                        scrollBehavior = scrollBehavior,
-                        navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                        onNavigationClick = { finish() },
-                    )
-                }) {
-                    FormRenderer(
-                        schema = schema,
-                        modifier = Modifier.padding(16.dp),
-                        onSubmit = { values -> Log.d("FormDemo", values.toString()) },
-                    )
+                val navController = rememberNavController()
+                var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
+                var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
+
+                NavHost(navController = navController, startDestination = "form") {
+                    composable("form") {
+                        val schema = remember { parseFormSchema(JSON_FORM) }
+
+                        LaunchedEffect(pendingResult) {
+                            if (pendingResult != null) {
+                                activePickerKey = null
+                                pendingResult = null
+                            }
+                        }
+
+                        AppScaffold(topBar = { scrollBehavior ->
+                            AppTopBar(
+                                title = "ComposeForm Demo",
+                                scrollBehavior = scrollBehavior,
+                                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                                onNavigationClick = { finish() },
+                            )
+                        }) {
+                            FormRenderer(
+                                schema = schema,
+                                modifier = Modifier.padding(16.dp),
+                                pendingResult = pendingResult,
+                                onPickerFieldClick = { key ->
+                                    activePickerKey = key
+                                    navController.navigate("picker")
+                                },
+                                onSubmit = { values -> Log.d("FormDemo", values.toString()) },
+                            )
+                        }
+                    }
+
+                    composable("picker") {
+                        val pickerSchema = remember { parseFormSchema(PICKER_FORM_JSON) }
+                        AppScaffold(topBar = { scrollBehavior ->
+                            AppTopBar(
+                                title = "Select a value",
+                                scrollBehavior = scrollBehavior,
+                                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                                onNavigationClick = { navController.popBackStack() },
+                            )
+                        }) {
+                            FormRenderer(
+                                schema = pickerSchema,
+                                modifier = Modifier.padding(16.dp),
+                                onSubmit = { values ->
+                                    val result = pickerSchema.singleAnswerValue(values)
+                                    activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
+                                    navController.popBackStack()
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }

@@ -41,6 +41,7 @@ sealed interface FormField {
         override val border: FormBorder? = null,
         override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
+        val hasPickerAction: Boolean = false,
         val inputType: String = "text",
         val defaultValue: String = "",
         val pattern: String? = null,
