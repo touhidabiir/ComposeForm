@@ -33,7 +33,22 @@ val JSON_FORM = """
       "label": "Name",
       "required": true,
       "inputType": "text",
-      "hasPickerAction": true,
+      "pickerScreen": {
+        "screenTitle": "Select a name",
+        "fields": [
+          {
+            "type": "inputBox",
+            "key": "result",
+            "label": "Name",
+            "required": true
+          },
+          {
+            "type": "submit",
+            "key": "submit",
+            "label": "Confirm"
+          }
+        ]
+      },
       "style": {
         "size": 16,
         "weight": "medium"

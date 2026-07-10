@@ -35,7 +35,7 @@ fun FormRenderer(
     schema: FormSchema,
     modifier: Modifier = Modifier,
     pendingResult: FormFieldResult? = null,
-    onPickerFieldClick: (key: String) -> Unit = {},
+    onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit = { _, _ -> },
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val state = rememberFormState(schema)
@@ -70,7 +70,7 @@ private fun RenderField(
     field: FormField,
     state: FormState,
     errors: Map<String, String>,
-    onPickerFieldClick: (key: String) -> Unit,
+    onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val sizeModifier = field.size.toModifier()
@@ -90,9 +90,9 @@ private fun RenderField(
                 supportingText = if (showError) errors[field.key] else null,
                 type = field.inputType.toAppTextFieldType(),
                 modifier = sizeModifier,
-                onTrailingActionClick = if (field.hasPickerAction) {
-                    { onPickerFieldClick(field.key) }
-                } else null,
+                onTrailingActionClick = field.pickerScreen?.let { pickerSchema ->
+                    { onPickerFieldClick(field.key, pickerSchema) }
+                },
             )
         }
 
