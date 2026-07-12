@@ -45,21 +45,55 @@ fun FormRenderer(
         pendingResult?.let { state.update(it.key, FormValue.Text(it.value)) }
     }
 
-    Column(modifier = modifier.imePadding().verticalScroll(rememberScrollState())) {
-        schema.fields.forEach { field ->
-            if (!field.isVisible(state.values)) return@forEach
-            Box(modifier = field.margin.toInsetModifier()) {
-                Box(modifier = field.border.toModifier()) {
-                    Box(modifier = field.padding.toInsetModifier()) {
-                        RenderField(
-                            field = field,
-                            state = state,
-                            errors = errors,
-                            onPickerFieldClick = onPickerFieldClick,
-                            onSubmit = onSubmit,
-                        )
-                    }
-                }
+    val (stickyFields, scrollableFields) = schema.fields.partition { it is FormField.Submit && it.sticky }
+
+    Column(modifier = modifier.imePadding()) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            scrollableFields.forEach { field ->
+                RenderFieldWithInsets(
+                    field = field,
+                    state = state,
+                    errors = errors,
+                    onPickerFieldClick = onPickerFieldClick,
+                    onSubmit = onSubmit,
+                )
+            }
+        }
+        stickyFields.forEach { field ->
+            RenderFieldWithInsets(
+                field = field,
+                state = state,
+                errors = errors,
+                onPickerFieldClick = onPickerFieldClick,
+                onSubmit = onSubmit,
+            )
+        }
+    }
+}
+
+@Composable
+private fun RenderFieldWithInsets(
+    field: FormField,
+    state: FormState,
+    errors: Map<String, String>,
+    onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
+    onSubmit: (Map<String, FormValue>) -> Unit,
+) {
+    if (!field.isVisible(state.values)) return
+    Box(modifier = field.margin.toInsetModifier()) {
+        Box(modifier = field.border.toModifier()) {
+            Box(modifier = field.padding.toInsetModifier()) {
+                RenderField(
+                    field = field,
+                    state = state,
+                    errors = errors,
+                    onPickerFieldClick = onPickerFieldClick,
+                    onSubmit = onSubmit,
+                )
             }
         }
     }

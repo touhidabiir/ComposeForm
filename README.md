@@ -155,7 +155,11 @@ A multi-select group of checkboxes.
 
 ### `submit`
 
-The submit button. No extra properties. Disabled automatically while any field in the same schema fails validation; calls the `onSubmit` callback with the current submitted values when tapped.
+The submit button. Disabled automatically while any field in the same schema fails validation; calls the `onSubmit` callback with the current submitted values when tapped.
+
+| Property | Type | Default | Description |
+|---|---|---|---|
+| `sticky` | Boolean | `false` | `false` (default): the button scrolls with the rest of the form content, exactly like any other field. `true`: the button is pinned to the bottom of the screen, and the remaining fields scroll in the space above it. |
 
 ## `FormOption`
 
