@@ -3,6 +3,7 @@ package com.touhid.composeform
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.padding
@@ -10,15 +11,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
@@ -175,6 +178,8 @@ private val MAIN_FORM_JSON = """
 }
 """.trimIndent()
 
+private data class PickerFrame(val key: String, val schema: FormSchema)
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -182,17 +187,26 @@ class MainActivity : ComponentActivity() {
         setContent {
             ComposeFormTheme {
                 val navController = rememberNavController()
-                var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
-                var activePickerSchema by remember { mutableStateOf<FormSchema?>(null) }
+                val pickerStack = remember { mutableStateListOf<PickerFrame>() }
                 var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
+
+                fun openPicker(key: String, schema: FormSchema) {
+                    pickerStack.add(PickerFrame(key, schema))
+                    navController.navigate("picker/${pickerStack.lastIndex}")
+                }
+
+                fun closeTopPicker() {
+                    if (pickerStack.isNotEmpty()) pickerStack.removeAt(pickerStack.lastIndex)
+                    navController.popBackStack()
+                }
 
                 NavHost(navController = navController, startDestination = "form") {
                     composable("form") {
                         val schema = remember { parseFormSchema(MAIN_FORM_JSON) }
+                        val resultForThisLevel = pendingResult.takeIf { pickerStack.isEmpty() }
 
                         LaunchedEffect(pendingResult) {
-                            if (pendingResult != null) {
-                                activePickerKey = null
+                            if (pendingResult != null && pickerStack.isEmpty()) {
                                 pendingResult = null
                             }
                         }
@@ -208,37 +222,49 @@ class MainActivity : ComponentActivity() {
                             FormRenderer(
                                 schema = schema,
                                 modifier = Modifier.padding(16.dp),
-                                pendingResult = pendingResult,
-                                onPickerFieldClick = { key, pickerSchema ->
-                                    activePickerKey = key
-                                    activePickerSchema = pickerSchema
-                                    navController.navigate("picker")
-                                },
+                                pendingResult = resultForThisLevel,
+                                onPickerFieldClick = ::openPicker,
                                 onSubmit = { values -> Log.d("FormDemo", values.toString()) },
                             )
                         }
                     }
 
-                    composable("picker") {
-                        val pickerSchema = activePickerSchema
-                        if (pickerSchema == null) {
+                    composable(
+                        route = "picker/{index}",
+                        arguments = listOf(navArgument("index") { type = NavType.IntType }),
+                    ) { backStackEntry ->
+                        val index = backStackEntry.arguments?.getInt("index") ?: 0
+                        val frame = pickerStack.getOrNull(index)
+                        if (frame == null) {
                             LaunchedEffect(Unit) { navController.popBackStack() }
                         } else {
+                            val resultForThisLevel = pendingResult.takeIf { pickerStack.lastIndex == index }
+
+                            BackHandler { closeTopPicker() }
+
+                            LaunchedEffect(pendingResult) {
+                                if (pendingResult != null && pickerStack.lastIndex == index) {
+                                    pendingResult = null
+                                }
+                            }
+
                             AppScaffold(topBar = { scrollBehavior ->
                                 AppTopBar(
-                                    title = pickerSchema.screenTitle ?: "Select a value",
+                                    title = frame.schema.screenTitle ?: "Select a value",
                                     scrollBehavior = scrollBehavior,
                                     navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                                    onNavigationClick = { navController.popBackStack() },
+                                    onNavigationClick = { closeTopPicker() },
                                 )
                             }) {
                                 FormRenderer(
-                                    schema = pickerSchema,
+                                    schema = frame.schema,
                                     modifier = Modifier.padding(16.dp),
+                                    pendingResult = resultForThisLevel,
+                                    onPickerFieldClick = ::openPicker,
                                     onSubmit = { values ->
-                                        val result = pickerSchema.singleAnswerValue(values)
-                                        activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
-                                        navController.popBackStack()
+                                        val result = frame.schema.singleAnswerValue(values)
+                                        pendingResult = FormFieldResult(frame.key, result)
+                                        closeTopPicker()
                                     },
                                 )
                             }
