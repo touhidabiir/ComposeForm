@@ -45,7 +45,7 @@ fun FormRenderer(
         pendingResult?.let { state.update(it.key, FormValue.Text(it.value)) }
     }
 
-    Column(modifier = modifier.verticalScroll(rememberScrollState()).imePadding()) {
+    Column(modifier = modifier.imePadding().verticalScroll(rememberScrollState())) {
         schema.fields.forEach { field ->
             if (!field.isVisible(state.values)) return@forEach
             Box(modifier = field.margin.toInsetModifier()) {
