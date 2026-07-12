@@ -90,6 +90,7 @@ private fun RenderField(
                 supportingText = if (showError) errors[field.key] else null,
                 type = field.inputType.toAppTextFieldType(),
                 modifier = sizeModifier,
+                enabled = field.enabled,
                 readOnly = !field.editable,
                 onTrailingActionClick = field.pickerScreen?.let { pickerSchema ->
                     { onPickerFieldClick(field.key, pickerSchema) }

@@ -43,6 +43,7 @@ sealed interface FormField {
         val required: Boolean = false,
         val pickerScreen: FormSchema? = null,
         val editable: Boolean = true,
+        val enabled: Boolean = true,
         val inputType: String = "text",
         val defaultValue: String = "",
         val pattern: String? = null,
