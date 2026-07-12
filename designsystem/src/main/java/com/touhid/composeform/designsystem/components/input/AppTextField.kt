@@ -65,17 +65,22 @@ fun AppTextField(
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,
         trailingIcon = onTrailingActionClick?.let { onClick ->
-            { AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick) }
+            { AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick, enabled = enabled) }
         },
         colors = if (wholeFieldOpensPicker) {
+            // Material3 resolves disabled colors before error colors, so forcing enabled=false
+            // above would otherwise silently hide error styling on a required, read-only field.
+            val textColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            val accentColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            val borderColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
             OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledTextColor = textColor,
                 disabledContainerColor = Color.Transparent,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledBorderColor = borderColor,
+                disabledLabelColor = accentColor,
+                disabledTrailingIconColor = accentColor,
                 disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledSupportingTextColor = accentColor,
             )
         } else {
             OutlinedTextFieldDefaults.colors()
