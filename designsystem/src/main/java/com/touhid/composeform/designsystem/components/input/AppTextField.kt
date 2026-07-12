@@ -1,12 +1,16 @@
 package com.touhid.composeform.designsystem.components.input
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -25,6 +29,7 @@ fun AppTextField(
     supportingText: String? = null,
     singleLine: Boolean = true,
     enabled: Boolean = true,
+    readOnly: Boolean = false,
     type: AppTextFieldType = AppTextFieldType.Text,
     onTrailingActionClick: (() -> Unit)? = null,
 ) {
@@ -39,11 +44,19 @@ fun AppTextField(
     } else {
         VisualTransformation.None
     }
+
+    val wholeFieldOpensPicker = readOnly && enabled && onTrailingActionClick != null
+
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = modifier,
-        enabled = enabled,
+        modifier = if (wholeFieldOpensPicker) {
+            modifier.clickable(onClick = onTrailingActionClick!!)
+        } else {
+            modifier
+        },
+        enabled = if (wholeFieldOpensPicker) false else enabled,
+        readOnly = readOnly,
         label = label?.let { { Text(it) } },
         placeholder = placeholder?.let { { Text(it) } },
         isError = isError,
@@ -52,7 +65,25 @@ fun AppTextField(
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,
         trailingIcon = onTrailingActionClick?.let { onClick ->
-            { AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick) }
+            { AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick, enabled = enabled) }
+        },
+        colors = if (wholeFieldOpensPicker) {
+            // Material3 resolves disabled colors before error colors, so forcing enabled=false
+            // above would otherwise silently hide error styling on a required, read-only field.
+            val textColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
+            val accentColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+            val borderColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline
+            OutlinedTextFieldDefaults.colors(
+                disabledTextColor = textColor,
+                disabledContainerColor = Color.Transparent,
+                disabledBorderColor = borderColor,
+                disabledLabelColor = accentColor,
+                disabledTrailingIconColor = accentColor,
+                disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                disabledSupportingTextColor = accentColor,
+            )
+        } else {
+            OutlinedTextFieldDefaults.colors()
         },
     )
 }

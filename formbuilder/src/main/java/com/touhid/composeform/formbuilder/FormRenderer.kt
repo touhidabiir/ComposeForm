@@ -35,7 +35,7 @@ fun FormRenderer(
     schema: FormSchema,
     modifier: Modifier = Modifier,
     pendingResult: FormFieldResult? = null,
-    onPickerFieldClick: (key: String) -> Unit = {},
+    onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit = { _, _ -> },
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val state = rememberFormState(schema)
@@ -45,7 +45,7 @@ fun FormRenderer(
         pendingResult?.let { state.update(it.key, FormValue.Text(it.value)) }
     }
 
-    Column(modifier = modifier.verticalScroll(rememberScrollState()).imePadding()) {
+    Column(modifier = modifier.imePadding().verticalScroll(rememberScrollState())) {
         schema.fields.forEach { field ->
             if (!field.isVisible(state.values)) return@forEach
             Box(modifier = field.margin.toInsetModifier()) {
@@ -70,7 +70,7 @@ private fun RenderField(
     field: FormField,
     state: FormState,
     errors: Map<String, String>,
-    onPickerFieldClick: (key: String) -> Unit,
+    onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val sizeModifier = field.size.toModifier()
@@ -90,9 +90,11 @@ private fun RenderField(
                 supportingText = if (showError) errors[field.key] else null,
                 type = field.inputType.toAppTextFieldType(),
                 modifier = sizeModifier,
-                onTrailingActionClick = if (field.hasPickerAction) {
-                    { onPickerFieldClick(field.key) }
-                } else null,
+                enabled = field.enabled,
+                readOnly = !field.editable,
+                onTrailingActionClick = field.pickerScreen?.let { pickerSchema ->
+                    { onPickerFieldClick(field.key, pickerSchema) }
+                },
             )
         }
 
@@ -121,7 +123,9 @@ private fun RenderField(
         is FormField.Radio -> {
             val selectedId = (state.values[field.key] as? FormValue.Option)?.id
             Column(modifier = sizeModifier) {
-                AppText(text = field.label, override = field.style.toOverride())
+                if (field.label.isNotBlank()) {
+                    AppText(text = field.label, override = field.style.toOverride())
+                }
                 OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
                         RenderOption(option, optionModifier) {
@@ -179,7 +183,9 @@ private fun RenderField(
         is FormField.CheckboxGroup -> {
             val selected = (state.values[field.key] as? FormValue.Options)?.selected.orEmpty()
             Column(modifier = sizeModifier) {
-                AppText(text = field.label, override = field.style.toOverride())
+                if (field.label.isNotBlank()) {
+                    AppText(text = field.label, override = field.style.toOverride())
+                }
                 OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
                         val isChecked = selected.any { it.id == option.id }

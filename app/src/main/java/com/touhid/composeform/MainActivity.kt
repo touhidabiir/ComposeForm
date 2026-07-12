@@ -24,8 +24,8 @@ import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.formbuilder.FormFieldResult
 import com.touhid.composeform.formbuilder.FormRenderer
-import com.touhid.composeform.formbuilder.JSON_FORM
 import com.touhid.composeform.formbuilder.parseFormSchema
+import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
 
 private val SAMPLE_FORM_JSON = """
@@ -124,20 +124,51 @@ private val SAMPLE_FORM_JSON = """
 }
 """.trimIndent()
 
-private val PICKER_FORM_JSON = """
+private val MAIN_FORM_JSON = """
 {
+  "screenTitle": "ComposeForm Demo",
   "fields": [
     {
-      "type": "text", "key": "heading", "label": "Pick a name",
-      "style": { "size": 20, "weight": "bold" },
-      "margin": { "bottom": 16 }
+      "type": "inputBox", "key": "location", "label": "Location Type", "required": true,
+      "margin": { "bottom": 8 },
+      "pickerScreen": {
+        "screenTitle": "Select Location Type",
+        "fields": [
+          {
+            "type": "radio", "key": "location_type", "required": true, "orientation": "vertical", "appearance": "check",
+            "options": [
+              { "id": "inside_market", "value": "মার্কেটের ভেতরে" },
+              { "id": "beside_road", "value": "রাস্তার পাশে" },
+              { "id": "main_road", "value": "মেইন রোড" },
+              { "id": "road_corner", "value": "মোড়ের কাছে" },
+              { "id": "residential", "value": "আবাসিক এলাকা" }
+            ]
+          },
+          { "type": "submit", "key": "submit", "label": "Confirm" }
+        ]
+      }
     },
     {
-      "type": "inputBox", "key": "result", "label": "Name", "required": true, "inputType": "text",
-      "margin": { "bottom": 8 }
+      "type": "inputBox", "key": "propertyType", "label": "Property Type", "required": true,
+      "margin": { "bottom": 8 },
+      "pickerScreen": {
+        "screenTitle": "Select Property Type",
+        "fields": [
+          {
+            "type": "radio", "key": "property_type", "required": true, "orientation": "vertical", "appearance": "check",
+            "options": [
+              { "id": "shop", "value": "দোকান" },
+              { "id": "office", "value": "অফিস" },
+              { "id": "warehouse", "value": "গুদাম" },
+              { "id": "apartment", "value": "এপার্টমেন্ট" }
+            ]
+          },
+          { "type": "submit", "key": "submit", "label": "Confirm" }
+        ]
+      }
     },
     {
-      "type": "submit", "key": "submit", "label": "Confirm",
+      "type": "submit", "key": "submit", "label": "Submit",
       "margin": { "top": 16 }
     }
   ]
@@ -152,11 +183,12 @@ class MainActivity : ComponentActivity() {
             ComposeFormTheme {
                 val navController = rememberNavController()
                 var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
+                var activePickerSchema by remember { mutableStateOf<FormSchema?>(null) }
                 var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
 
                 NavHost(navController = navController, startDestination = "form") {
                     composable("form") {
-                        val schema = remember { parseFormSchema(JSON_FORM) }
+                        val schema = remember { parseFormSchema(MAIN_FORM_JSON) }
 
                         LaunchedEffect(pendingResult) {
                             if (pendingResult != null) {
@@ -167,7 +199,7 @@ class MainActivity : ComponentActivity() {
 
                         AppScaffold(topBar = { scrollBehavior ->
                             AppTopBar(
-                                title = "ComposeForm Demo",
+                                title = schema.screenTitle ?: "ComposeForm Demo",
                                 scrollBehavior = scrollBehavior,
                                 navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                                 onNavigationClick = { finish() },
@@ -177,8 +209,9 @@ class MainActivity : ComponentActivity() {
                                 schema = schema,
                                 modifier = Modifier.padding(16.dp),
                                 pendingResult = pendingResult,
-                                onPickerFieldClick = { key ->
+                                onPickerFieldClick = { key, pickerSchema ->
                                     activePickerKey = key
+                                    activePickerSchema = pickerSchema
                                     navController.navigate("picker")
                                 },
                                 onSubmit = { values -> Log.d("FormDemo", values.toString()) },
@@ -187,24 +220,28 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("picker") {
-                        val pickerSchema = remember { parseFormSchema(PICKER_FORM_JSON) }
-                        AppScaffold(topBar = { scrollBehavior ->
-                            AppTopBar(
-                                title = "Select a value",
-                                scrollBehavior = scrollBehavior,
-                                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                                onNavigationClick = { navController.popBackStack() },
-                            )
-                        }) {
-                            FormRenderer(
-                                schema = pickerSchema,
-                                modifier = Modifier.padding(16.dp),
-                                onSubmit = { values ->
-                                    val result = pickerSchema.singleAnswerValue(values)
-                                    activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
-                                    navController.popBackStack()
-                                },
-                            )
+                        val pickerSchema = activePickerSchema
+                        if (pickerSchema == null) {
+                            LaunchedEffect(Unit) { navController.popBackStack() }
+                        } else {
+                            AppScaffold(topBar = { scrollBehavior ->
+                                AppTopBar(
+                                    title = pickerSchema.screenTitle ?: "Select a value",
+                                    scrollBehavior = scrollBehavior,
+                                    navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                                    onNavigationClick = { navController.popBackStack() },
+                                )
+                            }) {
+                                FormRenderer(
+                                    schema = pickerSchema,
+                                    modifier = Modifier.padding(16.dp),
+                                    onSubmit = { values ->
+                                        val result = pickerSchema.singleAnswerValue(values)
+                                        activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
+                                        navController.popBackStack()
+                                    },
+                                )
+                            }
                         }
                     }
                 }
