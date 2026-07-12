@@ -135,6 +135,7 @@ sealed interface FormField {
         override val size: FormSize = FormSize(),
         override val border: FormBorder? = null,
         override val visibleWhen: FormVisibilityCondition? = null,
+        val sticky: Boolean = false,
     ) : FormField
 }
 
