@@ -25,6 +25,7 @@ fun AppTextField(
     supportingText: String? = null,
     singleLine: Boolean = true,
     enabled: Boolean = true,
+    readOnly: Boolean = false,
     type: AppTextFieldType = AppTextFieldType.Text,
     onTrailingActionClick: (() -> Unit)? = null,
 ) {
@@ -44,6 +45,7 @@ fun AppTextField(
         onValueChange = onValueChange,
         modifier = modifier,
         enabled = enabled,
+        readOnly = readOnly,
         label = label?.let { { Text(it) } },
         placeholder = placeholder?.let { { Text(it) } },
         isError = isError,

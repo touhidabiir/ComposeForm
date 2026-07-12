@@ -42,6 +42,7 @@ sealed interface FormField {
         override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val pickerScreen: FormSchema? = null,
+        val editable: Boolean = true,
         val inputType: String = "text",
         val defaultValue: String = "",
         val pattern: String? = null,
