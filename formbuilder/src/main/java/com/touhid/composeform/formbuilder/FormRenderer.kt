@@ -121,7 +121,9 @@ private fun RenderField(
         is FormField.Radio -> {
             val selectedId = (state.values[field.key] as? FormValue.Option)?.id
             Column(modifier = sizeModifier) {
-                AppText(text = field.label, override = field.style.toOverride())
+                if (field.label.isNotBlank()) {
+                    AppText(text = field.label, override = field.style.toOverride())
+                }
                 OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
                         RenderOption(option, optionModifier) {
@@ -179,7 +181,9 @@ private fun RenderField(
         is FormField.CheckboxGroup -> {
             val selected = (state.values[field.key] as? FormValue.Options)?.selected.orEmpty()
             Column(modifier = sizeModifier) {
-                AppText(text = field.label, override = field.style.toOverride())
+                if (field.label.isNotBlank()) {
+                    AppText(text = field.label, override = field.style.toOverride())
+                }
                 OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
                         val isChecked = selected.any { it.id == option.id }
