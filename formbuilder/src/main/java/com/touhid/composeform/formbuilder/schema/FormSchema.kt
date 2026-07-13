@@ -6,4 +6,6 @@ import kotlinx.serialization.Serializable
 data class FormSchema(
     val fields: List<FormField>,
     val screenTitle: String? = null,
+    val numbered: Boolean = false,
+    val language: FormLanguage = FormLanguage.En,
 )
