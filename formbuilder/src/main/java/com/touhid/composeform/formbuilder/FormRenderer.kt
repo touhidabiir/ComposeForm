@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.button.AppButton
+import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.input.AppCheckbox
 import com.touhid.composeform.designsystem.components.input.AppDropdown
 import com.touhid.composeform.designsystem.components.input.AppDropdownOption
@@ -28,6 +29,7 @@ import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormOrientation
 import com.touhid.composeform.formbuilder.schema.FormRadioAppearance
 import com.touhid.composeform.formbuilder.schema.FormSchema
+import com.touhid.composeform.formbuilder.schema.FormSubmitAppearance
 import com.touhid.composeform.formbuilder.schema.FormValue
 
 @Composable
@@ -244,13 +246,24 @@ private fun RenderField(
         }
 
         is FormField.Submit -> {
-            AppButton(
-                text = field.label,
-                onClick = { onSubmit(state.values) },
-                enabled = errors.isEmpty(),
-                textOverride = field.style.toOverride(),
-                modifier = sizeModifier,
-            )
+            when (field.appearance) {
+                FormSubmitAppearance.Plain -> AppButton(
+                    text = field.label,
+                    onClick = { onSubmit(state.values) },
+                    enabled = errors.isEmpty(),
+                    textOverride = field.style.toOverride(),
+                    modifier = sizeModifier,
+                )
+
+                FormSubmitAppearance.Stepper -> AppStepperButton(
+                    label = field.label,
+                    onClick = { onSubmit(state.values) },
+                    enabled = errors.isEmpty(),
+                    progressText = field.progressText,
+                    textOverride = field.style.toOverride(),
+                    modifier = sizeModifier,
+                )
+            }
         }
     }
 }

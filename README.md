@@ -160,6 +160,8 @@ The submit button. Disabled automatically while any field in the same schema fai
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `sticky` | Boolean | `false` | `false` (default): the button scrolls with the rest of the form content, exactly like any other field. `true`: the button is pinned to the bottom of the screen, and the remaining fields scroll in the space above it. |
+| `appearance` | `"plain"` \| `"stepper"` | `"plain"` | `plain` = today's single-zone button. `stepper` = a pill-shaped button split into a progress zone (`progressText`) and a label zone with a fixed trailing chevron — for survey/wizard-style "next step" buttons. |
+| `progressText` | string, nullable | `null` | Only used when `appearance` is `"stepper"` — literal text shown in the left zone (e.g. `"১/১০"`). Not computed automatically; author it directly in the JSON. If `null`, the left zone and divider are omitted. |
 
 ## `FormOption`
 
