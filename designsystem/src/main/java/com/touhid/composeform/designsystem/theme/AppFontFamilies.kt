@@ -1,7 +1,7 @@
 package com.touhid.composeform.designsystem.theme
 
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.googlefonts.Font
 import androidx.compose.ui.text.googlefonts.GoogleFont
 import com.touhid.composeform.designsystem.R
 
