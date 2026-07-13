@@ -1,5 +1,6 @@
 package com.touhid.composeform.designsystem.components.input
 
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
@@ -46,7 +47,7 @@ fun AppDropdown(
         modifier = modifier,
     ) {
         OutlinedTextField(
-            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable),
+            modifier = Modifier.menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable).fillMaxWidth(),
             value = selectedOption?.label.orEmpty(),
             onValueChange = {},
             readOnly = true,
