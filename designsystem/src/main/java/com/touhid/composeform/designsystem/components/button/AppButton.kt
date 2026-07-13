@@ -50,6 +50,9 @@ fun AppOutlinedButton(
     }
 }
 
+// Matches Material3 ButtonDefaults.buttonColors()' disabled container/content colors,
+// so AppButton and AppStepperButton look identical when disabled.
+private const val DisabledContainerAlpha = 0.12f
 private const val DisabledContentAlpha = 0.38f
 
 @Composable
@@ -63,13 +66,14 @@ fun AppStepperButton(
 ) {
     val containerColor = MaterialTheme.colorScheme.primary
     val contentColor = MaterialTheme.colorScheme.onPrimary
+    val disabledColor = MaterialTheme.colorScheme.onSurface
     Surface(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier,
         shape = RoundedCornerShape(percent = 50),
-        color = if (enabled) containerColor else containerColor.copy(alpha = DisabledContentAlpha),
-        contentColor = if (enabled) contentColor else contentColor.copy(alpha = DisabledContentAlpha),
+        color = if (enabled) containerColor else disabledColor.copy(alpha = DisabledContainerAlpha),
+        contentColor = if (enabled) contentColor else disabledColor.copy(alpha = DisabledContentAlpha),
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
