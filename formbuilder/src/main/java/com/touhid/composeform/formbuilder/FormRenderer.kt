@@ -22,6 +22,7 @@ import com.touhid.composeform.designsystem.components.input.AppRadioToggleChip
 import com.touhid.composeform.designsystem.components.input.AppSwitch
 import com.touhid.composeform.designsystem.components.input.AppTextField
 import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.theme.AppLocalizedTypography
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormInsets
 import com.touhid.composeform.formbuilder.schema.FormLanguage
@@ -49,13 +50,25 @@ fun FormRenderer(
 
     val (stickyFields, scrollableFields) = schema.fields.partition { it is FormField.Submit && it.sticky }
 
-    Column(modifier = modifier.imePadding()) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            scrollableFields.forEach { field ->
+    AppLocalizedTypography(fontFamily = schema.language.toFontFamily()) {
+        Column(modifier = modifier.imePadding()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                scrollableFields.forEach { field ->
+                    RenderFieldWithInsets(
+                        field = field,
+                        state = state,
+                        errors = errors,
+                        questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
+                        onPickerFieldClick = onPickerFieldClick,
+                        onSubmit = onSubmit,
+                    )
+                }
+            }
+            stickyFields.forEach { field ->
                 RenderFieldWithInsets(
                     field = field,
                     state = state,
@@ -65,16 +78,6 @@ fun FormRenderer(
                     onSubmit = onSubmit,
                 )
             }
-        }
-        stickyFields.forEach { field ->
-            RenderFieldWithInsets(
-                field = field,
-                state = state,
-                errors = errors,
-                questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
-                onPickerFieldClick = onPickerFieldClick,
-                onSubmit = onSubmit,
-            )
         }
     }
 }
