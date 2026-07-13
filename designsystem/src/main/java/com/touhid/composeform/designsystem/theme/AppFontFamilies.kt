@@ -1,5 +1,6 @@
 package com.touhid.composeform.designsystem.theme
 
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontVariation
@@ -10,6 +11,7 @@ import com.touhid.composeform.designsystem.R
 // one Font() entry per weight maps that axis to a FontWeight, since Compose won't otherwise know
 // which instance of a variable font to pick for a requested weight (licensed under OFL 1.1,
 // see designsystem/licenses/).
+@OptIn(ExperimentalTextApi::class)
 private fun variableFontFamily(resId: Int): FontFamily = FontFamily(
     Font(resId, weight = FontWeight.Light, variationSettings = FontVariation.Settings(FontVariation.weight(300))),
     Font(resId, weight = FontWeight.Normal, variationSettings = FontVariation.Settings(FontVariation.weight(400))),
