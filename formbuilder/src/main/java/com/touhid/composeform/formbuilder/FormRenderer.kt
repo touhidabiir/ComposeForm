@@ -99,6 +99,10 @@ private fun FormSchema.questionNumbers(values: Map<String, FormValue>): Map<Stri
 
 private fun FormField.isCountableQuestion(): Boolean = this !is FormField.Text && this !is FormField.Submit
 
+private fun Map<String, FormValue>.withTrimmedText(): Map<String, FormValue> = mapValues { (_, value) ->
+    if (value is FormValue.Text) FormValue.Text(value.value.trim()) else value
+}
+
 private val bengaliDigits = charArrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
 
 private fun Int.toLocalizedDigits(language: FormLanguage): String =
@@ -277,10 +281,11 @@ private fun RenderField(
         }
 
         is FormField.Submit -> {
+            val onClick = { onSubmit(state.values.withTrimmedText()) }
             when (field.appearance) {
                 FormSubmitAppearance.Plain -> AppButton(
                     text = displayLabel,
-                    onClick = { onSubmit(state.values) },
+                    onClick = onClick,
                     enabled = errors.isEmpty(),
                     textOverride = field.style.toOverride(),
                     modifier = sizeModifier,
@@ -288,7 +293,7 @@ private fun RenderField(
 
                 FormSubmitAppearance.Stepper -> AppStepperButton(
                     label = displayLabel,
-                    onClick = { onSubmit(state.values) },
+                    onClick = onClick,
                     enabled = errors.isEmpty(),
                     progressText = field.progressText,
                     textOverride = field.style.toOverride(),
