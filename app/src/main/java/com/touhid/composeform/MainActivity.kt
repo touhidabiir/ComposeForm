@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -20,6 +21,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.components.layout.rememberAppSnackbarHostState
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.formbuilder.FormFieldResult
@@ -27,6 +29,7 @@ import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.parseFormSchema
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
+import kotlinx.coroutines.launch
 
 private val SAMPLE_FORM_JSON = """
 {
@@ -189,6 +192,8 @@ class MainActivity : ComponentActivity() {
                 NavHost(navController = navController, startDestination = "form") {
                     composable("form") {
                         val schema = remember { parseFormSchema(MAIN_FORM_JSON) }
+                        val snackbarHostState = rememberAppSnackbarHostState()
+                        val scope = rememberCoroutineScope()
 
                         LaunchedEffect(pendingResult) {
                             if (pendingResult != null) {
@@ -197,14 +202,17 @@ class MainActivity : ComponentActivity() {
                             }
                         }
 
-                        AppScaffold(topBar = { scrollBehavior ->
-                            AppTopBar(
-                                title = schema.screenTitle ?: "ComposeForm Demo",
-                                scrollBehavior = scrollBehavior,
-                                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                                onNavigationClick = { finish() },
-                            )
-                        }) {
+                        AppScaffold(
+                            topBar = { scrollBehavior ->
+                                AppTopBar(
+                                    title = schema.screenTitle ?: "ComposeForm Demo",
+                                    scrollBehavior = scrollBehavior,
+                                    navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                                    onNavigationClick = { finish() },
+                                )
+                            },
+                            snackbarHostState = snackbarHostState,
+                        ) {
                             FormRenderer(
                                 schema = schema,
                                 modifier = Modifier.padding(16.dp),
@@ -213,6 +221,9 @@ class MainActivity : ComponentActivity() {
                                     activePickerKey = key
                                     activePickerSchema = pickerSchema
                                     navController.navigate("picker")
+                                },
+                                onValidationError = { message ->
+                                    scope.launch { snackbarHostState.showMessage(message) }
                                 },
                                 onSubmit = { values -> Log.d("FormDemo", values.toString()) },
                             )
@@ -224,17 +235,26 @@ class MainActivity : ComponentActivity() {
                         if (pickerSchema == null) {
                             LaunchedEffect(Unit) { navController.popBackStack() }
                         } else {
-                            AppScaffold(topBar = { scrollBehavior ->
-                                AppTopBar(
-                                    title = pickerSchema.screenTitle ?: "Select a value",
-                                    scrollBehavior = scrollBehavior,
-                                    navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                                    onNavigationClick = { navController.popBackStack() },
-                                )
-                            }) {
+                            val snackbarHostState = rememberAppSnackbarHostState()
+                            val scope = rememberCoroutineScope()
+
+                            AppScaffold(
+                                topBar = { scrollBehavior ->
+                                    AppTopBar(
+                                        title = pickerSchema.screenTitle ?: "Select a value",
+                                        scrollBehavior = scrollBehavior,
+                                        navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                                        onNavigationClick = { navController.popBackStack() },
+                                    )
+                                },
+                                snackbarHostState = snackbarHostState,
+                            ) {
                                 FormRenderer(
                                     schema = pickerSchema,
                                     modifier = Modifier.padding(16.dp),
+                                    onValidationError = { message ->
+                                        scope.launch { snackbarHostState.showMessage(message) }
+                                    },
                                     onSubmit = { values ->
                                         val result = pickerSchema.singleAnswerValue(values)
                                         activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }

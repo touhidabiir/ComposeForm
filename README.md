@@ -162,6 +162,8 @@ The submit button. Disabled automatically while any field in the same schema fai
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `sticky` | Boolean | `false` | `false` (default): the button scrolls with the rest of the form content, exactly like any other field. `true`: the button is pinned to the bottom of the screen, and the remaining fields scroll in the space above it. |
+| `alwaysEnabled` | Boolean | `false` | `false` (default): the button is disabled until every field passes validation, exactly like today. `true`: the button is always tappable — tapping it while the form is invalid shows a Snackbar with `requiredFieldsMessage` instead of calling `onSubmit`; tapping it while valid submits normally. |
+| `requiredFieldsMessage` | string, nullable | `null` | The Snackbar text shown when `alwaysEnabled` is `true` and the form is tapped while invalid. Falls back to a generic English message if omitted. |
 
 ## `FormOption`
 
