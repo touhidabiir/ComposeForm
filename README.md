@@ -24,7 +24,7 @@ Every JSON document is a single object with these properties:
 | `fields` | array of fields (required) | — | The fields to render, in order. See [Field types](#field-types). |
 | `screenTitle` | string, nullable | `null` | Used as the screen's top app bar title when `FormRenderer` is hosted inside `AppScaffold`/`AppTopBar`. If omitted, the hosting screen falls back to its own default title. |
 | `numbered` | boolean | `false` | When `true`, prefixes each answerable field's label with its live serial number (`"1. What is your name?"`). Only counts `inputBox`, `checkbox`, `checkboxGroup`, `radio`, `switch`, and `dropdown` fields — `text` and `submit` are never numbered. The count only includes currently-visible fields, so a field hidden/shown via `visibleWhen` immediately renumbers everything after it. |
-| `language` | string | `"en"` | One of `"en"` or `"bn"`. Controls only the numeral script used when `numbered` is `true` — `"bn"` renders question numbers as Bangla numerals (`১, ২, ৩...`) instead of Arabic digits. Does not translate any other text; field/option labels are still authored directly in whichever language the JSON already uses. |
+| `language` | string | `"en"` | One of `"en"` or `"bn"`. Selects both the numeral script used when `numbered` is `true` (`"bn"` renders question numbers as Bangla numerals, `১, ২, ৩...`, instead of Arabic digits) and the font every field in this schema renders with — `"en"` uses Inter, `"bn"` uses Noto Sans Bengali. Both are bundled variable fonts (no network access or Google Play Services needed). Does not translate any other text; field/option labels are still authored directly in whichever language the JSON already uses. |
 
 ## Properties common to every field
 
@@ -162,6 +162,8 @@ The submit button. Disabled automatically while any field in the same schema fai
 | Property | Type | Default | Description |
 |---|---|---|---|
 | `sticky` | Boolean | `false` | `false` (default): the button scrolls with the rest of the form content, exactly like any other field. `true`: the button is pinned to the bottom of the screen, and the remaining fields scroll in the space above it. |
+| `appearance` | `"plain"` \| `"stepper"` | `"plain"` | `plain` = today's single-zone button. `stepper` = a pill-shaped button split into a progress zone (`progressText`) and a label zone with a fixed trailing chevron — for survey/wizard-style "next step" buttons. |
+| `progressText` | string, nullable | `null` | Only used when `appearance` is `"stepper"` — literal text shown in the left zone (e.g. `"১/১০"`). Not computed automatically; author it directly in the JSON. If `null`, the left zone and divider are omitted. |
 | `alwaysEnabled` | Boolean | `false` | `false` (default): the button is disabled until every field passes validation, exactly like today. `true`: the button is always tappable — tapping it while the form is invalid shows a Snackbar with `requiredFieldsMessage` instead of calling `onSubmit`; tapping it while valid submits normally. |
 | `requiredFieldsMessage` | string, nullable | `null` | The Snackbar text shown when `alwaysEnabled` is `true` and the form is tapped while invalid. Falls back to a generic English message if omitted. |
 

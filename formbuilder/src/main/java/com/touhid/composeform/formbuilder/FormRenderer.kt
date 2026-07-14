@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.button.AppButton
+import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.input.AppCheckbox
 import com.touhid.composeform.designsystem.components.input.AppDropdown
 import com.touhid.composeform.designsystem.components.input.AppDropdownOption
@@ -22,6 +23,7 @@ import com.touhid.composeform.designsystem.components.input.AppRadioToggleChip
 import com.touhid.composeform.designsystem.components.input.AppSwitch
 import com.touhid.composeform.designsystem.components.input.AppTextField
 import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.theme.AppLocalizedTypography
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormInsets
 import com.touhid.composeform.formbuilder.schema.FormLanguage
@@ -29,6 +31,7 @@ import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormOrientation
 import com.touhid.composeform.formbuilder.schema.FormRadioAppearance
 import com.touhid.composeform.formbuilder.schema.FormSchema
+import com.touhid.composeform.formbuilder.schema.FormSubmitAppearance
 import com.touhid.composeform.formbuilder.schema.FormValue
 
 @Composable
@@ -50,13 +53,26 @@ fun FormRenderer(
 
     val (stickyFields, scrollableFields) = schema.fields.partition { it is FormField.Submit && it.sticky }
 
-    Column(modifier = modifier.imePadding()) {
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            scrollableFields.forEach { field ->
+    AppLocalizedTypography(fontFamily = schema.language.toFontFamily()) {
+        Column(modifier = modifier.imePadding()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                scrollableFields.forEach { field ->
+                    RenderFieldWithInsets(
+                        field = field,
+                        state = state,
+                        errors = errors,
+                        questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
+                        onPickerFieldClick = onPickerFieldClick,
+                        onValidationError = onValidationError,
+                        onSubmit = onSubmit,
+                    )
+                }
+            }
+            stickyFields.forEach { field ->
                 RenderFieldWithInsets(
                     field = field,
                     state = state,
@@ -67,17 +83,6 @@ fun FormRenderer(
                     onSubmit = onSubmit,
                 )
             }
-        }
-        stickyFields.forEach { field ->
-            RenderFieldWithInsets(
-                field = field,
-                state = state,
-                errors = errors,
-                questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
-                onPickerFieldClick = onPickerFieldClick,
-                onValidationError = onValidationError,
-                onSubmit = onSubmit,
-            )
         }
     }
 }
@@ -278,19 +283,32 @@ private fun RenderField(
         }
 
         is FormField.Submit -> {
-            AppButton(
-                text = displayLabel,
-                onClick = {
-                    if (field.alwaysEnabled && errors.isNotEmpty()) {
-                        onValidationError(field.requiredFieldsMessage ?: "Please fill all required fields")
-                    } else {
-                        onSubmit(state.values)
-                    }
-                },
-                enabled = if (field.alwaysEnabled) true else errors.isEmpty(),
-                textOverride = field.style.toOverride(),
-                modifier = sizeModifier,
-            )
+            val onClick = {
+                if (field.alwaysEnabled && errors.isNotEmpty()) {
+                    onValidationError(field.requiredFieldsMessage ?: "Please fill all required fields")
+                } else {
+                    onSubmit(state.values)
+                }
+            }
+            val enabled = if (field.alwaysEnabled) true else errors.isEmpty()
+            when (field.appearance) {
+                FormSubmitAppearance.Plain -> AppButton(
+                    text = displayLabel,
+                    onClick = onClick,
+                    enabled = enabled,
+                    textOverride = field.style.toOverride(),
+                    modifier = sizeModifier,
+                )
+
+                FormSubmitAppearance.Stepper -> AppStepperButton(
+                    label = displayLabel,
+                    onClick = onClick,
+                    enabled = enabled,
+                    progressText = field.progressText,
+                    textOverride = field.style.toOverride(),
+                    modifier = sizeModifier,
+                )
+            }
         }
     }
 }

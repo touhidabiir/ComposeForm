@@ -136,6 +136,8 @@ sealed interface FormField {
         override val border: FormBorder? = null,
         override val visibleWhen: FormVisibilityCondition? = null,
         val sticky: Boolean = false,
+        val appearance: FormSubmitAppearance = FormSubmitAppearance.Plain,
+        val progressText: String? = null,
         val alwaysEnabled: Boolean = false,
         val requiredFieldsMessage: String? = null,
     ) : FormField

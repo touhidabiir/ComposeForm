@@ -23,6 +23,8 @@ private fun ButtonPreview() {
             ) {
                 AppButton(text = "Primary Action", onClick = {})
                 AppOutlinedButton(text = "Secondary Action", onClick = {})
+                AppStepperButton(label = "Next step", onClick = {}, progressText = "১/১০")
+                AppStepperButton(label = "Next step", onClick = {})
             }
         }
     }
