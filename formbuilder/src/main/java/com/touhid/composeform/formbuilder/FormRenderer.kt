@@ -38,11 +38,12 @@ import com.touhid.composeform.formbuilder.schema.FormValue
 fun FormRenderer(
     schema: FormSchema,
     modifier: Modifier = Modifier,
+    initialValues: Map<String, FormValue> = emptyMap(),
     pendingResult: FormFieldResult? = null,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit = { _, _ -> },
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
-    val state = rememberFormState(schema)
+    val state = rememberFormState(schema, initialValues)
     val errors = validate(schema, state.values)
     val questionNumbers = schema.questionNumbers(state.values)
 
