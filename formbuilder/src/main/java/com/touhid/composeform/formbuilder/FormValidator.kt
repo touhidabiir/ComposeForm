@@ -19,7 +19,7 @@ private fun validateField(field: FormField, value: FormValue?): String? = when (
     is FormField.Submit -> null
 
     is FormField.InputBox -> {
-        val text = (value as? FormValue.Text)?.value.orEmpty()
+        val text = (value as? FormValue.Text)?.value.orEmpty().trim()
         when {
             field.required && text.isBlank() -> field.errorMessage ?: "This field is required"
             field.minLength != null && text.length < field.minLength -> field.errorMessage ?: "Must be at least ${field.minLength} characters"
