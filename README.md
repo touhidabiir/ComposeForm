@@ -23,6 +23,8 @@ Every JSON document is a single object with these properties:
 |---|---|---|---|
 | `fields` | array of fields (required) | — | The fields to render, in order. See [Field types](#field-types). |
 | `screenTitle` | string, nullable | `null` | Used as the screen's top app bar title when `FormRenderer` is hosted inside `AppScaffold`/`AppTopBar`. If omitted, the hosting screen falls back to its own default title. |
+| `numbered` | boolean | `false` | When `true`, prefixes each answerable field's label with its live serial number (`"1. What is your name?"`). Only counts `inputBox`, `checkbox`, `checkboxGroup`, `radio`, `switch`, and `dropdown` fields — `text` and `submit` are never numbered. The count only includes currently-visible fields, so a field hidden/shown via `visibleWhen` immediately renumbers everything after it. |
+| `language` | string | `"en"` | One of `"en"` or `"bn"`. Controls only the numeral script used when `numbered` is `true` — `"bn"` renders question numbers as Bangla numerals (`১, ২, ৩...`) instead of Arabic digits. Does not translate any other text; field/option labels are still authored directly in whichever language the JSON already uses. |
 
 ## Properties common to every field
 

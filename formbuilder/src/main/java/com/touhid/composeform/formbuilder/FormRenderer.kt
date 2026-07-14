@@ -25,6 +25,7 @@ import com.touhid.composeform.designsystem.components.input.AppTextField
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormInsets
+import com.touhid.composeform.formbuilder.schema.FormLanguage
 import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormOrientation
 import com.touhid.composeform.formbuilder.schema.FormRadioAppearance
@@ -42,6 +43,7 @@ fun FormRenderer(
 ) {
     val state = rememberFormState(schema)
     val errors = validate(schema, state.values)
+    val questionNumbers = schema.questionNumbers(state.values)
 
     LaunchedEffect(pendingResult) {
         pendingResult?.let { state.update(it.key, FormValue.Text(it.value)) }
@@ -60,6 +62,7 @@ fun FormRenderer(
                     field = field,
                     state = state,
                     errors = errors,
+                    questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
                     onPickerFieldClick = onPickerFieldClick,
                     onSubmit = onSubmit,
                 )
@@ -70,6 +73,7 @@ fun FormRenderer(
                 field = field,
                 state = state,
                 errors = errors,
+                questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
                 onPickerFieldClick = onPickerFieldClick,
                 onSubmit = onSubmit,
             )
@@ -77,11 +81,32 @@ fun FormRenderer(
     }
 }
 
+private fun FormSchema.questionNumbers(values: Map<String, FormValue>): Map<String, Int> {
+    if (!numbered) return emptyMap()
+    var count = 0
+    return buildMap {
+        fields.forEach { field ->
+            if (field.isCountableQuestion() && field.isVisible(values)) {
+                count++
+                put(field.key, count)
+            }
+        }
+    }
+}
+
+private fun FormField.isCountableQuestion(): Boolean = this !is FormField.Text && this !is FormField.Submit
+
+private val bengaliDigits = charArrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
+
+private fun Int.toLocalizedDigits(language: FormLanguage): String =
+    if (language == FormLanguage.Bn) toString().map { bengaliDigits[it - '0'] }.joinToString("") else toString()
+
 @Composable
 private fun RenderFieldWithInsets(
     field: FormField,
     state: FormState,
     errors: Map<String, String>,
+    questionNumberText: String?,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
@@ -93,6 +118,7 @@ private fun RenderFieldWithInsets(
                     field = field,
                     state = state,
                     errors = errors,
+                    questionNumberText = questionNumberText,
                     onPickerFieldClick = onPickerFieldClick,
                     onSubmit = onSubmit,
                 )
@@ -106,13 +132,15 @@ private fun RenderField(
     field: FormField,
     state: FormState,
     errors: Map<String, String>,
+    questionNumberText: String?,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val sizeModifier = field.size.toModifier()
+    val displayLabel = questionNumberText?.let { "$it. ${field.label}" } ?: field.label
     when (field) {
         is FormField.Text -> {
-            AppText(text = field.label, override = field.style.toOverride(), modifier = sizeModifier)
+            AppText(text = displayLabel, override = field.style.toOverride(), modifier = sizeModifier)
         }
 
         is FormField.InputBox -> {
@@ -121,7 +149,7 @@ private fun RenderField(
             AppTextField(
                 value = text,
                 onValueChange = { state.update(field.key, FormValue.Text(it)) },
-                label = field.label,
+                label = displayLabel,
                 isError = showError,
                 supportingText = if (showError) errors[field.key] else null,
                 type = field.inputType.toAppTextFieldType(),
@@ -139,7 +167,7 @@ private fun RenderField(
             AppCheckbox(
                 checked = checked,
                 onCheckedChange = { state.update(field.key, FormValue.Text(it.toString())) },
-                label = field.label,
+                label = displayLabel,
                 labelOverride = field.style.toOverride(),
                 modifier = sizeModifier,
             )
@@ -150,7 +178,7 @@ private fun RenderField(
             AppSwitch(
                 checked = checked,
                 onCheckedChange = { state.update(field.key, FormValue.Text(it.toString())) },
-                label = field.label,
+                label = displayLabel,
                 labelOverride = field.style.toOverride(),
                 modifier = sizeModifier,
             )
@@ -160,7 +188,7 @@ private fun RenderField(
             val selectedId = (state.values[field.key] as? FormValue.Option)?.id
             Column(modifier = sizeModifier) {
                 if (field.label.isNotBlank()) {
-                    AppText(text = field.label, override = field.style.toOverride())
+                    AppText(text = displayLabel, override = field.style.toOverride())
                 }
                 OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
@@ -210,7 +238,7 @@ private fun RenderField(
                     val option = field.options[index]
                     state.update(field.key, FormValue.Option(option.id, option.value))
                 },
-                label = field.label,
+                label = displayLabel,
                 labelOverride = field.style.toOverride(),
                 modifier = sizeModifier,
             )
@@ -220,7 +248,7 @@ private fun RenderField(
             val selected = (state.values[field.key] as? FormValue.Options)?.selected.orEmpty()
             Column(modifier = sizeModifier) {
                 if (field.label.isNotBlank()) {
-                    AppText(text = field.label, override = field.style.toOverride())
+                    AppText(text = displayLabel, override = field.style.toOverride())
                 }
                 OptionsContainer(field.orientation) { optionModifier ->
                     field.options.forEach { option ->
@@ -248,7 +276,7 @@ private fun RenderField(
         is FormField.Submit -> {
             when (field.appearance) {
                 FormSubmitAppearance.Plain -> AppButton(
-                    text = field.label,
+                    text = displayLabel,
                     onClick = { onSubmit(state.values) },
                     enabled = errors.isEmpty(),
                     textOverride = field.style.toOverride(),
@@ -256,7 +284,7 @@ private fun RenderField(
                 )
 
                 FormSubmitAppearance.Stepper -> AppStepperButton(
-                    label = field.label,
+                    label = displayLabel,
                     onClick = { onSubmit(state.values) },
                     enabled = errors.isEmpty(),
                     progressText = field.progressText,
