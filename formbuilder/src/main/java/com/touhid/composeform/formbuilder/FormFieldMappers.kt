@@ -8,13 +8,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.touhid.composeform.designsystem.components.input.AppTextFieldType
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
+import com.touhid.composeform.designsystem.theme.InterFontFamily
+import com.touhid.composeform.designsystem.theme.NotoSansBengaliFontFamily
 import com.touhid.composeform.formbuilder.schema.FormBorder
+import com.touhid.composeform.formbuilder.schema.FormLanguage
 import com.touhid.composeform.formbuilder.schema.FormSize
 import com.touhid.composeform.formbuilder.schema.FormTextStyle
 
@@ -44,6 +48,11 @@ private fun parseHexColor(hex: String): Color? {
         8 -> Color(colorLong.toInt())
         else -> null
     }
+}
+
+internal fun FormLanguage.toFontFamily(): FontFamily = when (this) {
+    FormLanguage.En -> InterFontFamily
+    FormLanguage.Bn -> NotoSansBengaliFontFamily
 }
 
 internal fun String.toAppTextFieldType(): AppTextFieldType = when (lowercase()) {
