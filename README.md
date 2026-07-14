@@ -15,6 +15,8 @@ FormRenderer(
 )
 ```
 
+`FormValue` is `Text(value)` / `Option(id, value)` / `Options(selected: List<Option>)` — to get the plain answered value per field instead of pattern-matching yourself, call `values.toPlainValues()` for a flattened `Map<String, String>` (or `formValue.toPlainString()` for a single one).
+
 ## Top-level schema
 
 Every JSON document is a single object with these properties:
