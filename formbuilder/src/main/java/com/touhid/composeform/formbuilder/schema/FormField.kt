@@ -138,6 +138,8 @@ sealed interface FormField {
         val sticky: Boolean = false,
         val appearance: FormSubmitAppearance = FormSubmitAppearance.Plain,
         val progressText: String? = null,
+        val alwaysEnabled: Boolean = false,
+        val requiredFieldsMessage: String? = null,
     ) : FormField
 }
 

@@ -40,6 +40,7 @@ fun FormRenderer(
     modifier: Modifier = Modifier,
     pendingResult: FormFieldResult? = null,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit = { _, _ -> },
+    onValidationError: (message: String) -> Unit = {},
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val state = rememberFormState(schema)
@@ -66,6 +67,7 @@ fun FormRenderer(
                         errors = errors,
                         questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
                         onPickerFieldClick = onPickerFieldClick,
+                        onValidationError = onValidationError,
                         onSubmit = onSubmit,
                     )
                 }
@@ -77,6 +79,7 @@ fun FormRenderer(
                     errors = errors,
                     questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
                     onPickerFieldClick = onPickerFieldClick,
+                    onValidationError = onValidationError,
                     onSubmit = onSubmit,
                 )
             }
@@ -111,6 +114,7 @@ private fun RenderFieldWithInsets(
     errors: Map<String, String>,
     questionNumberText: String?,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
+    onValidationError: (message: String) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     if (!field.isVisible(state.values)) return
@@ -123,6 +127,7 @@ private fun RenderFieldWithInsets(
                     errors = errors,
                     questionNumberText = questionNumberText,
                     onPickerFieldClick = onPickerFieldClick,
+                    onValidationError = onValidationError,
                     onSubmit = onSubmit,
                 )
             }
@@ -137,6 +142,7 @@ private fun RenderField(
     errors: Map<String, String>,
     questionNumberText: String?,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
+    onValidationError: (message: String) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val sizeModifier = field.size.toModifier()
@@ -277,19 +283,27 @@ private fun RenderField(
         }
 
         is FormField.Submit -> {
+            val onClick = {
+                if (field.alwaysEnabled && errors.isNotEmpty()) {
+                    onValidationError(field.requiredFieldsMessage ?: "Please fill all required fields")
+                } else {
+                    onSubmit(state.values)
+                }
+            }
+            val enabled = if (field.alwaysEnabled) true else errors.isEmpty()
             when (field.appearance) {
                 FormSubmitAppearance.Plain -> AppButton(
                     text = displayLabel,
-                    onClick = { onSubmit(state.values) },
-                    enabled = errors.isEmpty(),
+                    onClick = onClick,
+                    enabled = enabled,
                     textOverride = field.style.toOverride(),
                     modifier = sizeModifier,
                 )
 
                 FormSubmitAppearance.Stepper -> AppStepperButton(
                     label = displayLabel,
-                    onClick = { onSubmit(state.values) },
-                    enabled = errors.isEmpty(),
+                    onClick = onClick,
+                    enabled = enabled,
                     progressText = field.progressText,
                     textOverride = field.style.toOverride(),
                     modifier = sizeModifier,
