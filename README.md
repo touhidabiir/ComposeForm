@@ -137,6 +137,7 @@ A single-select group of options.
 | `options` | array of [`FormOption`](#formoption) (required) | — | The choices. |
 | `orientation` | `"vertical"` \| `"horizontal"` | `"vertical"` | Layout direction. Horizontal options are distributed with equal width. |
 | `appearance` | `"dot"` \| `"check"` \| `"toggle"` | `"dot"` | `dot` = standard Material radio button; `check` = checkmark-in-circle list item; `toggle` = equal-width pill/chip. |
+| `optionsUrl` | string, nullable | `null` | See [Dynamic options (`optionsUrl`)](#dynamic-options-optionsurl) below. |
 
 ### `dropdown`
 
@@ -146,6 +147,7 @@ A single-select dropdown menu.
 |---|---|---|---|
 | `required` | Boolean | `false` | Must have a selection to pass validation. |
 | `options` | array of [`FormOption`](#formoption) (required) | — | The choices. |
+| `optionsUrl` | string, nullable | `null` | See [Dynamic options (`optionsUrl`)](#dynamic-options-optionsurl) below. |
 
 ### `checkboxGroup`
 
@@ -156,6 +158,7 @@ A multi-select group of checkboxes.
 | `required` | Boolean | `false` | Must have at least one selection to pass validation. |
 | `options` | array of [`FormOption`](#formoption) (required) | — | The choices. |
 | `orientation` | `"vertical"` \| `"horizontal"` | `"vertical"` | Layout direction. |
+| `optionsUrl` | string, nullable | `null` | See [Dynamic options (`optionsUrl`)](#dynamic-options-optionsurl) below. |
 
 ### `submit`
 
@@ -208,6 +211,28 @@ Because the picker's schema is nested directly in the same JSON document (rather
   }
 }
 ```
+
+## Dynamic options (`optionsUrl`)
+
+`radio`, `checkboxGroup`, and `dropdown` fields also accept an `optionsUrl: String?`. Like `nextFormUrl`/`submitUrl` on a page response, this is **inert metadata that `:formbuilder` never reads or acts on** — `FormRenderer` simply renders whatever `options` list the field already has, exactly as if `optionsUrl` weren't there. It exists purely for the hosting app to interpret: read the URL, fetch the options from wherever they really live (a backend, in the demo app's case a stub), and merge them into the schema *before* handing that schema to `FormRenderer`.
+
+This is the pattern used for picker-nested fields whose real choices only exist in an external system (e.g. a `spot_code`/`bmcc_code` radio group inside a `pickerScreen`, shipped with `"options": []` because the JSON author doesn't know the values yet):
+
+```json
+{
+  "type": "radio", "key": "location_type", "required": true,
+  "optionsUrl": "demo://options/location-types",
+  "options": [
+    { "id": "inside_market", "value": "Inside the market" }
+  ]
+}
+```
+
+The app's demo flow (`app/src/main/java/com/touhid/composeform/flow/DemoFormApi.kt`, `MainActivity.kt`) shows the full round trip:
+
+- `FormSchemaOptions.kt` (`:formbuilder`) provides two pure, non-networking helpers: `FormSchema.fieldsWithOptionsUrl()` recursively walks the schema (including nested `pickerScreen`s) and returns every field key + `optionsUrl` pair; `FormSchema.withOptions(key, options)` returns a copy of the schema with `options` **appended** (not replaced) on the matching field, also recursing into `pickerScreen`.
+- `DemoFormApi.fetchOptions(url)` is a stand-in fetch (`delay(...)` + canned data, no real networking) mirroring how `fetchPage`/`submit` stand in for `nextFormUrl`/`submitUrl`.
+- `MainActivity` fetches lazily — only when a picker screen is opened — and re-fetches every time it's reopened, since popping the picker off the nav back stack discards its composed state. While fetching it shows "Loading options…"; on failure, an error message plus a Retry button.
 
 ## Conditional visibility (`visibleWhen`)
 

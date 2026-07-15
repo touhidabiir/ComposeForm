@@ -79,6 +79,7 @@ sealed interface FormField {
         val required: Boolean = false,
         val options: List<FormOption>,
         val orientation: FormOrientation = FormOrientation.Vertical,
+        val optionsUrl: String? = null,
     ) : FormField
 
     @Serializable
@@ -95,6 +96,7 @@ sealed interface FormField {
         val options: List<FormOption>,
         val orientation: FormOrientation = FormOrientation.Vertical,
         val appearance: FormRadioAppearance = FormRadioAppearance.Dot,
+        val optionsUrl: String? = null,
     ) : FormField
 
     @Serializable
@@ -123,6 +125,7 @@ sealed interface FormField {
         override val visibleWhen: FormVisibilityCondition? = null,
         val required: Boolean = false,
         val options: List<FormOption>,
+        val optionsUrl: String? = null,
     ) : FormField
 
     @Serializable

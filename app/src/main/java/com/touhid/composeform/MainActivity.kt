@@ -26,12 +26,23 @@ import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
+import com.touhid.composeform.flow.DemoFormApi
 import com.touhid.composeform.flow.FormFlowState
 import com.touhid.composeform.flow.FormFlowViewModel
 import com.touhid.composeform.formbuilder.FormFieldResult
 import com.touhid.composeform.formbuilder.FormRenderer
+import com.touhid.composeform.formbuilder.fieldsWithOptionsUrl
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
+import com.touhid.composeform.formbuilder.withOptions
+
+// Mirrors FormFlowState but scoped to the picker destination, since picker schemas aren't
+// ViewModel-backed today. Only :app interprets a field's optionsUrl - FormRenderer never does.
+private sealed interface PickerLoadState {
+    data object Loading : PickerLoadState
+    data class Error(val message: String) : PickerLoadState
+    data class Ready(val schema: FormSchema) : PickerLoadState
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -105,6 +116,24 @@ class MainActivity : ComponentActivity() {
                         if (pickerSchema == null) {
                             LaunchedEffect(Unit) { navController.popBackStack() }
                         } else {
+                            var loadState by remember { mutableStateOf<PickerLoadState>(PickerLoadState.Loading) }
+                            var retryTrigger by remember { mutableStateOf(0) }
+
+                            LaunchedEffect(retryTrigger) {
+                                val fieldsToFetch = pickerSchema.fieldsWithOptionsUrl()
+                                if (fieldsToFetch.isEmpty()) {
+                                    loadState = PickerLoadState.Ready(pickerSchema)
+                                } else {
+                                    loadState = PickerLoadState.Loading
+                                    runCatching {
+                                        fieldsToFetch.fold(pickerSchema) { schema, field ->
+                                            schema.withOptions(field.key, DemoFormApi.fetchOptions(field.optionsUrl))
+                                        }
+                                    }.onSuccess { loadState = PickerLoadState.Ready(it) }
+                                        .onFailure { loadState = PickerLoadState.Error(it.message ?: "Failed to load options") }
+                                }
+                            }
+
                             AppScaffold(topBar = { scrollBehavior ->
                                 AppTopBar(
                                     title = pickerSchema.screenTitle ?: "Select a value",
@@ -113,15 +142,30 @@ class MainActivity : ComponentActivity() {
                                     onNavigationClick = { navController.popBackStack() },
                                 )
                             }) {
-                                FormRenderer(
-                                    schema = pickerSchema,
-                                    modifier = Modifier.padding(16.dp),
-                                    onSubmit = { values ->
-                                        val result = pickerSchema.singleAnswerValue(values)
-                                        activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
-                                        navController.popBackStack()
-                                    },
-                                )
+                                when (val state = loadState) {
+                                    is PickerLoadState.Loading -> {
+                                        AppText(text = "Loading options…", modifier = Modifier.padding(16.dp))
+                                    }
+
+                                    is PickerLoadState.Error -> {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            AppText(text = state.message)
+                                            AppButton(text = "Retry", onClick = { retryTrigger++ })
+                                        }
+                                    }
+
+                                    is PickerLoadState.Ready -> {
+                                        FormRenderer(
+                                            schema = state.schema,
+                                            modifier = Modifier.padding(16.dp),
+                                            onSubmit = { values ->
+                                                val result = state.schema.singleAnswerValue(values)
+                                                activePickerKey?.let { key -> pendingResult = FormFieldResult(key, result) }
+                                                navController.popBackStack()
+                                            },
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

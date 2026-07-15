@@ -1,6 +1,7 @@
 package com.touhid.composeform.flow
 
 import android.util.Log
+import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormValue
 import kotlinx.coroutines.delay
 
@@ -29,7 +30,28 @@ object DemoFormApi {
         delay(300)
         Log.d("FormFlow", "submit($url) -> $data")
     }
+
+    // Stands in for a real backend call to fetch options for a field whose choices aren't known
+    // upfront - referenced by a field's optionsUrl, exactly like fetchPage/submit stand in for
+    // nextFormUrl/submitUrl. FormRenderer never calls this; only the app's picker flow does.
+    suspend fun fetchOptions(url: String): List<FormOption> {
+        delay(400)
+        return DEMO_OPTIONS[url].orEmpty()
+    }
 }
+
+// Distinct from the static options already listed in PAGE_1_JSON, so the demo shows fetched
+// options getting appended after the static ones rather than duplicating them.
+private val DEMO_OPTIONS: Map<String, List<FormOption>> = mapOf(
+    "demo://options/location-types" to listOf(
+        FormOption(id = "highway_side", value = "হাইওয়ের পাশে"),
+        FormOption(id = "market_entrance", value = "মার্কেটের প্রবেশপথে"),
+    ),
+    "demo://options/property-types" to listOf(
+        FormOption(id = "restaurant", value = "রেস্টুরেন্ট"),
+        FormOption(id = "showroom", value = "শোরুম"),
+    ),
+)
 
 private val PAGE_1_JSON = """
 {
@@ -49,6 +71,7 @@ private val PAGE_1_JSON = """
           "fields": [
             {
               "type": "radio", "key": "location_type", "required": true, "orientation": "vertical", "appearance": "check",
+              "optionsUrl": "demo://options/location-types",
               "options": [
                 { "id": "inside_market", "value": "মার্কেটের ভেতরে" },
                 { "id": "beside_road", "value": "রাস্তার পাশে" },
@@ -69,6 +92,7 @@ private val PAGE_1_JSON = """
           "fields": [
             {
               "type": "radio", "key": "property_type", "required": true, "orientation": "vertical", "appearance": "check",
+              "optionsUrl": "demo://options/property-types",
               "options": [
                 { "id": "shop", "value": "দোকান" },
                 { "id": "office", "value": "অফিস" },
