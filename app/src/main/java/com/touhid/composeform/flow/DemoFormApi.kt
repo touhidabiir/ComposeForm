@@ -2,7 +2,6 @@ package com.touhid.composeform.flow
 
 import android.util.Log
 import com.touhid.composeform.formbuilder.schema.FormOption
-import com.touhid.composeform.formbuilder.schema.FormValue
 import kotlinx.coroutines.delay
 
 /**
@@ -26,7 +25,7 @@ object DemoFormApi {
         return parseFormPageResponse(json)
     }
 
-    suspend fun submit(url: String, data: Map<String, FormValue>) {
+    suspend fun submit(url: String, data: Map<String, String>) {
         delay(300)
         Log.d("FormFlow", "submit($url) -> $data")
     }

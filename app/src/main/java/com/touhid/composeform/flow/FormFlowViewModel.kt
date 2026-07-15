@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.touhid.composeform.formbuilder.fieldsWithOptionsUrl
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.schema.FormValue
+import com.touhid.composeform.formbuilder.toKeyValues
 import com.touhid.composeform.formbuilder.withOptions
 import kotlinx.coroutines.launch
 
@@ -73,7 +74,7 @@ class FormFlowViewModel : ViewModel() {
         viewModelScope.launch {
             val submitUrl = page.submitUrl
             if (submitUrl != null) {
-                val snapshot = accumulated.toMap()
+                val snapshot = accumulated.toMap().toKeyValues()
                 val result = runCatching { DemoFormApi.submit(submitUrl, snapshot) }
                 if (result.isFailure) {
                     state = FormFlowState.Error(result.exceptionOrNull()?.message ?: "Submit failed")

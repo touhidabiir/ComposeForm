@@ -210,6 +210,7 @@ private fun RenderField(
                                     onClick = onClick,
                                     label = option.value,
                                     labelOverride = labelOverride,
+                                    modifier = Modifier.fillMaxWidth(),
                                 )
 
                                 FormRadioAppearance.Check -> AppRadioCheckCircle(
@@ -274,6 +275,7 @@ private fun RenderField(
                                 },
                                 label = option.value,
                                 labelOverride = option.style.toOverride(),
+                                modifier = Modifier.fillMaxWidth(),
                             )
                         }
                     }
