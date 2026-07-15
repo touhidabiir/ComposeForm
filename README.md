@@ -295,6 +295,28 @@ The `submit` button is disabled whenever any field in the schema currently has a
 }
 ```
 
+## Alternate input format: `parseSpecificFormSchema`
+
+Alongside the generic `parseFormSchema`, `formbuilder/.../SpecificFormSchemaParser.kt` exposes a second, one-off entry point — `parseSpecificFormSchema(jsonString: String): FormSchema` — for a specific external JSON format (Bangla survey-style questions) that uses different key names but a similar shape. It maps into the exact same `FormSchema`/`FormField` model as `parseFormSchema`, so `FormRenderer` needs no changes to render either.
+
+| Specific format | Generic equivalent |
+|---|---|
+| `{ "questions": [...] }` | `{ "fields": [...] }` |
+| `question.key` | `field.key` (same name) |
+| `question.question` | `field.label` |
+| `question.type: "single_choice"` | `type: "radio"` (also the fallback for any unrecognized `type`) |
+| `question.type: "multiple_choice"` | `type: "checkboxGroup"` |
+| `question.orientation: "horizontal"` / `"vertical"` | `orientation` (identical values, reused as-is) |
+| `question.answers: [{key, value}]` | `field.options: [{id, value}]` (`key` → `id`) |
+| `question.depends_on: {question, answer}` | `field.visibleWhen: {key, operator: "equals", values: [answer]}` |
+| `question.is_dependent`, answer-level `show`/`hide` | *(ignored — redundant with `depends_on`, which alone fully determines `visibleWhen`)* |
+
+Notable differences from `parseFormSchema`:
+- Always sets `numbered = true` and `language = "bn"` on the resulting schema (this format is always a numbered Bangla survey).
+- Injects default spacing (`margin` on each question and each option) and a default text color (`#262626`) since the format carries no styling info at all.
+- Does **not** add a `submit` field — the format has no such concept, so the caller appends one after parsing: `parseSpecificFormSchema(json).copy(fields = schema.fields + FormField.Submit(key = "submit", label = "..."))`.
+- `required` is left at the schema default (`false`) on every mapped field, since the format has no equivalent property.
+
 ## Where to modify this
 
 | To do this | Edit these files |
