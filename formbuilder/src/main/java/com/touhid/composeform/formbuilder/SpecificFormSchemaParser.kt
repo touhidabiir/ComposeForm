@@ -6,6 +6,7 @@ import com.touhid.composeform.formbuilder.schema.FormLanguage
 import com.touhid.composeform.formbuilder.schema.FormOption
 import com.touhid.composeform.formbuilder.schema.FormOrientation
 import com.touhid.composeform.formbuilder.schema.FormSchema
+import com.touhid.composeform.formbuilder.schema.FormTextStyle
 import com.touhid.composeform.formbuilder.schema.FormVisibilityCondition
 import com.touhid.composeform.formbuilder.schema.FormVisibilityOperator
 import kotlinx.serialization.SerialName
@@ -16,6 +17,7 @@ private val json = Json { ignoreUnknownKeys = true }
 
 private val questionMargin = FormInsets(top = 24, bottom = 8)
 private val optionMargin = FormInsets(top = 4, bottom = 4, left = 4, right = 4)
+private val defaultTextStyle = FormTextStyle(color = "#262626")
 
 @Serializable
 private data class SpecificForm(val questions: List<SpecificQuestion>)
@@ -46,7 +48,7 @@ fun parseSpecificFormSchema(jsonString: String): FormSchema {
 }
 
 private fun SpecificQuestion.toFormField(): FormField {
-    val options = answers.map { FormOption(id = it.key, value = it.value, margin = optionMargin) }
+    val options = answers.map { FormOption(id = it.key, value = it.value, style = defaultTextStyle, margin = optionMargin) }
     val visibleWhen = dependsOn?.let {
         FormVisibilityCondition(key = it.question, operator = FormVisibilityOperator.Equals, values = listOf(it.answer))
     }
@@ -56,6 +58,7 @@ private fun SpecificQuestion.toFormField(): FormField {
             label = question,
             options = options,
             orientation = orientation,
+            style = defaultTextStyle,
             margin = questionMargin,
             visibleWhen = visibleWhen,
         )
@@ -65,6 +68,7 @@ private fun SpecificQuestion.toFormField(): FormField {
             label = question,
             options = options,
             orientation = orientation,
+            style = defaultTextStyle,
             margin = questionMargin,
             visibleWhen = visibleWhen,
         )

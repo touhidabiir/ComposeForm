@@ -313,7 +313,7 @@ Alongside the generic `parseFormSchema`, `formbuilder/.../SpecificFormSchemaPars
 
 Notable differences from `parseFormSchema`:
 - Always sets `numbered = true` and `language = "bn"` on the resulting schema (this format is always a numbered Bangla survey).
-- Injects default spacing (`margin` on each question and each option) since the format carries no styling info at all.
+- Injects default spacing (`margin` on each question and each option) and a default text color (`#262626`) since the format carries no styling info at all.
 - Does **not** add a `submit` field — the format has no such concept, so the caller appends one after parsing: `parseSpecificFormSchema(json).copy(fields = schema.fields + FormField.Submit(key = "submit", label = "..."))`.
 - `required` is left at the schema default (`false`) on every mapped field, since the format has no equivalent property.
 
