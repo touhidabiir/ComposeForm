@@ -40,8 +40,8 @@ object DemoFormApi {
     }
 }
 
-// Distinct from the static options already listed in PAGE_1_JSON, so the demo shows fetched
-// options getting appended after the static ones rather than duplicating them.
+// Distinct from the static options already listed in the page JSON below, so the demo shows
+// fetched options getting appended after the static ones rather than duplicating them.
 private val DEMO_OPTIONS: Map<String, List<FormOption>> = mapOf(
     "demo://options/location-types" to listOf(
         FormOption(id = "highway_side", value = "হাইওয়ের পাশে"),
@@ -50,6 +50,11 @@ private val DEMO_OPTIONS: Map<String, List<FormOption>> = mapOf(
     "demo://options/property-types" to listOf(
         FormOption(id = "restaurant", value = "রেস্টুরেন্ট"),
         FormOption(id = "showroom", value = "শোরুম"),
+    ),
+    // A top-level (non-pickerScreen) example - fetched by FormFlowViewModel.loadPage when
+    // PAGE_3_JSON loads, not by the picker orchestration in MainActivity.
+    "demo://options/genders" to listOf(
+        FormOption(id = "non_binary", value = "Non-binary"),
     ),
 )
 
@@ -167,6 +172,7 @@ private val PAGE_3_JSON = """
       },
       {
         "type": "radio", "key": "gender", "label": "Gender", "required": true, "orientation": "horizontal",
+        "optionsUrl": "demo://options/genders",
         "options": [
           { "id": "male", "value": "Male" },
           { "id": "female", "value": "Female" },

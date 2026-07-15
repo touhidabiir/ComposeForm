@@ -5,8 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.touhid.composeform.formbuilder.fieldsWithOptionsUrl
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.schema.FormValue
+import com.touhid.composeform.formbuilder.withOptions
 import kotlinx.coroutines.launch
 
 sealed interface FormFlowState {
@@ -51,8 +53,13 @@ class FormFlowViewModel : ViewModel() {
         currentUrl = url
         state = FormFlowState.Loading
         viewModelScope.launch {
-            runCatching { DemoFormApi.fetchPage(url) }
-                .onSuccess { state = FormFlowState.Page(it.schema, it.submitUrl, it.nextFormUrl) }
+            runCatching {
+                val response = DemoFormApi.fetchPage(url)
+                val schema = response.schema.fieldsWithOptionsUrl().fold(response.schema) { schema, field ->
+                    schema.withOptions(field.key, DemoFormApi.fetchOptions(field.optionsUrl))
+                }
+                FormFlowState.Page(schema, response.submitUrl, response.nextFormUrl)
+            }.onSuccess { state = it }
                 .onFailure { state = FormFlowState.Error(it.message ?: "Failed to load form") }
         }
     }

@@ -21,16 +21,17 @@ private fun FormField.withOptions(key: String, options: List<FormOption>): FormF
 
 data class FieldWithOptionsUrl(val key: String, val optionsUrl: String)
 
-/** Recursively collects every field (including inside nested pickerScreens) that declares an [optionsUrl]. */
-fun FormSchema.fieldsWithOptionsUrl(): List<FieldWithOptionsUrl> = fields.flatMap { it.fieldsWithOptionsUrl() }
+/**
+ * Collects the [optionsUrl] fields among this schema's immediate [FormSchema.fields] only - it does
+ * NOT descend into a [FormField.InputBox.pickerScreen]. Each schema level (the main page, or any
+ * given pickerScreen) is its own lazy fetch scope, resolved right before that level renders; the
+ * caller re-runs this on a pickerScreen's own schema once that picker is actually opened.
+ */
+fun FormSchema.fieldsWithOptionsUrl(): List<FieldWithOptionsUrl> = fields.mapNotNull { it.optionsUrlOrNull() }
 
-private fun FormField.fieldsWithOptionsUrl(): List<FieldWithOptionsUrl> {
-    val self = when (this) {
-        is FormField.Radio -> optionsUrl?.let { listOf(FieldWithOptionsUrl(key, it)) }
-        is FormField.CheckboxGroup -> optionsUrl?.let { listOf(FieldWithOptionsUrl(key, it)) }
-        is FormField.Dropdown -> optionsUrl?.let { listOf(FieldWithOptionsUrl(key, it)) }
-        else -> null
-    }.orEmpty()
-    val nested = (this as? FormField.InputBox)?.pickerScreen?.fieldsWithOptionsUrl().orEmpty()
-    return self + nested
+private fun FormField.optionsUrlOrNull(): FieldWithOptionsUrl? = when (this) {
+    is FormField.Radio -> optionsUrl?.let { FieldWithOptionsUrl(key, it) }
+    is FormField.CheckboxGroup -> optionsUrl?.let { FieldWithOptionsUrl(key, it) }
+    is FormField.Dropdown -> optionsUrl?.let { FieldWithOptionsUrl(key, it) }
+    else -> null
 }
