@@ -50,13 +50,13 @@ private fun formStateSaver(schema: FormSchema): Saver<FormState, String> = Saver
 )
 
 @Composable
-internal fun rememberFormState(schema: FormSchema): FormState {
+internal fun rememberFormState(schema: FormSchema, initialValues: Map<String, FormValue> = emptyMap()): FormState {
     return rememberSaveable(schema, saver = formStateSaver(schema)) {
         FormState(
             schema = schema,
             initialValues = schema.fields.mapNotNull { field ->
                 field.initialValue()?.let { field.key to it }
-            }.toMap(),
+            }.toMap() + initialValues,
             initialTouched = emptySet(),
         )
     }

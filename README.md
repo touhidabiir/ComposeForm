@@ -137,6 +137,7 @@ A single-select group of options.
 | `options` | array of [`FormOption`](#formoption) (required) | — | The choices. |
 | `orientation` | `"vertical"` \| `"horizontal"` | `"vertical"` | Layout direction. Horizontal options are distributed with equal width. |
 | `appearance` | `"dot"` \| `"check"` \| `"toggle"` | `"dot"` | `dot` = standard Material radio button; `check` = checkmark-in-circle list item; `toggle` = equal-width pill/chip. |
+| `optionsUrl` | string, nullable | `null` | See [Dynamic options (`optionsUrl`)](#dynamic-options-optionsurl) below. |
 
 ### `dropdown`
 
@@ -146,6 +147,7 @@ A single-select dropdown menu.
 |---|---|---|---|
 | `required` | Boolean | `false` | Must have a selection to pass validation. |
 | `options` | array of [`FormOption`](#formoption) (required) | — | The choices. |
+| `optionsUrl` | string, nullable | `null` | See [Dynamic options (`optionsUrl`)](#dynamic-options-optionsurl) below. |
 
 ### `checkboxGroup`
 
@@ -156,6 +158,7 @@ A multi-select group of checkboxes.
 | `required` | Boolean | `false` | Must have at least one selection to pass validation. |
 | `options` | array of [`FormOption`](#formoption) (required) | — | The choices. |
 | `orientation` | `"vertical"` \| `"horizontal"` | `"vertical"` | Layout direction. |
+| `optionsUrl` | string, nullable | `null` | See [Dynamic options (`optionsUrl`)](#dynamic-options-optionsurl) below. |
 
 ### `submit`
 
@@ -208,6 +211,28 @@ Because the picker's schema is nested directly in the same JSON document (rather
   }
 }
 ```
+
+## Dynamic options (`optionsUrl`)
+
+`radio`, `checkboxGroup`, and `dropdown` fields also accept an `optionsUrl: String?`. Like `nextFormUrl`/`submitUrl` on a page response, this is **inert metadata that `:formbuilder` never reads or acts on** — `FormRenderer` simply renders whatever `options` list the field already has, exactly as if `optionsUrl` weren't there. It exists purely for the hosting app to interpret: read the URL, fetch the options from wherever they really live (a backend, in the demo app's case a stub), and merge them into the schema *before* handing that schema to `FormRenderer`.
+
+This works the same whether the field sits at the top level of a page's schema or is nested inside a `pickerScreen` — e.g. a `spot_code`/`bmcc_code` radio group inside a `pickerScreen`, shipped with `"options": []` because the JSON author doesn't know the values yet, or a plain top-level `gender` radio on the main page whose choices should be extended from a backend:
+
+```json
+{
+  "type": "radio", "key": "location_type", "required": true,
+  "optionsUrl": "demo://options/location-types",
+  "options": [
+    { "id": "inside_market", "value": "Inside the market" }
+  ]
+}
+```
+
+The app's demo flow (`app/src/main/java/com/touhid/composeform/flow/DemoFormApi.kt`, `FormFlowViewModel.kt`, `MainActivity.kt`) shows the full round trip:
+
+- `FormSchemaOptions.kt` (`:formbuilder`) provides two pure, non-networking helpers: `FormSchema.fieldsWithOptionsUrl()` returns every field key + `optionsUrl` pair among that schema's **immediate** fields only (it does not descend into a nested `pickerScreen` — each schema level is its own independent, lazily-resolved fetch scope); `FormSchema.withOptions(key, options)` returns a copy of the schema with `options` **appended** (not replaced) on the matching field, recursing into `pickerScreen` so it can find a match at any depth.
+- `DemoFormApi.fetchOptions(url)` is a stand-in fetch (`delay(...)` + canned data, no real networking) mirroring how `fetchPage`/`submit` stand in for `nextFormUrl`/`submitUrl`.
+- Two call sites perform the identical fetch → `withOptions` merge, each scoped to its own schema level: `FormFlowViewModel.loadPage()` for fields on the main page (merged in before the page's `Loading` state resolves to `Page`, reusing the same `Loading`/`Error` states and Retry button already used for `fetchPage` failures), and `MainActivity`'s picker destination for fields inside whichever `pickerScreen` was just opened (its own local "Loading options…" text and Retry button). Both are lazy — resolved right when that schema is about to render — and both re-fetch every time, since revisiting either recomputes/recomposes fresh state.
 
 ## Conditional visibility (`visibleWhen`)
 
