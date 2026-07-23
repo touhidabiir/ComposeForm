@@ -12,4 +12,7 @@ sealed interface FormValue {
 
     @Serializable
     data class Options(val selected: List<Option>) : FormValue
+
+    @Serializable
+    data class Image(val url: String, val localPath: String? = null) : FormValue
 }

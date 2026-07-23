@@ -126,6 +126,26 @@ class FormStateTest {
     }
 
     @Test
+    fun `hiding an imagePicker field clears its captured image from state`() {
+        val gender = FormField.Radio(key = "gender", label = "Gender", options = genderOptions)
+        val idPhoto = FormField.ImagePicker(
+            key = "idPhoto",
+            label = "ID Photo",
+            uploadUrl = "demo://upload",
+            visibleWhen = FormVisibilityCondition("gender", FormVisibilityOperator.NotEquals, listOf("male")),
+        )
+        val schema = schemaOf(gender, idPhoto)
+        val state = FormState(schema, emptyMap(), emptySet())
+
+        state.update("gender", FormValue.Option("female", "Female"))
+        state.update("idPhoto", FormValue.Image("demo://uploads/x.jpg"))
+        assertTrue("idPhoto" in state.values)
+
+        state.update("gender", FormValue.Option("male", "Male"))
+        assertFalse("idPhoto" in state.values)
+    }
+
+    @Test
     fun `initial values seeded from defaults are already filtered by visibility`() {
         val gender = FormField.Radio(key = "gender", label = "Gender", options = genderOptions.map { it.copy(default = it.id == "male") })
         val newsletter = newsletterField()

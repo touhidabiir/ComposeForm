@@ -84,6 +84,13 @@ class FormFieldVisibilityTest {
     }
 
     @Test
+    fun `equals matches Image value by url`() {
+        val field = field(FormVisibilityOperator.Equals, listOf("demo://uploads/x.jpg"))
+        assertTrue(field.isVisible(mapOf("gender" to FormValue.Image("demo://uploads/x.jpg"))))
+        assertFalse(field.isVisible(mapOf("gender" to FormValue.Image("demo://uploads/y.jpg"))))
+    }
+
+    @Test
     fun `empty Options selection is treated as absent`() {
         val notEquals = field(FormVisibilityOperator.NotEquals, listOf("music"), triggerKey = "interests")
         assertFalse(notEquals.isVisible(mapOf("interests" to FormValue.Options(emptyList()))))

@@ -30,6 +30,14 @@ object DemoFormApi {
         Log.d("FormFlow", "submit($url) -> $data")
     }
 
+    // Stands in for a real multipart upload endpoint - the imagePicker field's uploadUrl points
+    // here conceptually, but this demo never performs real networking, same as submit()/fetchPage().
+    suspend fun uploadImage(uploadUrl: String, filePath: String): String {
+        delay(1200)
+        Log.d("FormFlow", "uploadImage($uploadUrl) -> $filePath")
+        return "demo://uploads/${filePath.substringAfterLast('/')}"
+    }
+
     // Stands in for a real backend call to fetch options for a field whose choices aren't known
     // upfront - referenced by a field's optionsUrl, exactly like fetchPage/submit stand in for
     // nextFormUrl/submitUrl. FormRenderer never calls this; only the app's picker flow does.
@@ -107,6 +115,16 @@ private val PAGE_1_JSON = """
             { "type": "submit", "key": "submit", "label": "Confirm" }
           ]
         }
+      },
+      {
+        "type": "imagePicker", "key": "businessIdPhoto", "label": "ব্যবসার প্রমাণপত্রের ছবি", "required": true,
+        "uploadUrl": "demo://upload/business-id-photo",
+        "screenTitle": "ব্যবসার প্রমাণপত্র",
+        "instructionsHtml": "<b>স্পষ্ট ছবি তুলুন</b><p>ভালো ছবি পেতে নিচের নির্দেশনা অনুসরণ করুন:</p><ul><li>কাগজটি সমতল জায়গায় রাখুন</li><li>পর্যাপ্ত আলোতে ছবি তুলুন</li><li>পুরো কাগজটি ফ্রেমের ভেতরে রাখুন</li></ul>",
+        "takePhotoLabel": "📷 ছবি তুলুন",
+        "nextStepLabel": "পরবর্তী ধাপ",
+        "uploadingMessage": "অবস্থান নিশ্চিত করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন",
+        "margin": { "top": 16, "bottom": 8 }
       },
       {
         "type": "submit", "key": "submit", "label": "Next",

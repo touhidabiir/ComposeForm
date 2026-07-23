@@ -129,6 +129,28 @@ sealed interface FormField {
     ) : FormField
 
     @Serializable
+    data class ImagePicker(
+        override val key: String,
+        override val label: String = "",
+        override val margin: FormInsets = FormInsets(),
+        override val padding: FormInsets = FormInsets(),
+        override val style: FormTextStyle? = null,
+        override val size: FormSize = FormSize(),
+        override val border: FormBorder? = null,
+        override val visibleWhen: FormVisibilityCondition? = null,
+        val required: Boolean = false,
+        val errorMessage: String? = null,
+        val uploadUrl: String,
+        val screenTitle: String = "",
+        val instructionsHtml: String = "",
+        val demoImageUrl: String? = null,
+        val takePhotoLabel: String = "Take Photo",
+        val nextStepLabel: String = "Next step",
+        val progressText: String? = null,
+        val uploadingMessage: String = "Uploading, please wait",
+    ) : FormField
+
+    @Serializable
     data class Submit(
         override val key: String,
         override val label: String = "",
@@ -155,6 +177,7 @@ object FormFieldSerializer : JsonContentPolymorphicSerializer<FormField>(FormFie
             "radio" -> FormField.Radio.serializer()
             "switch" -> FormField.Switch.serializer()
             "dropdown" -> FormField.Dropdown.serializer()
+            "imagePicker" -> FormField.ImagePicker.serializer()
             "submit" -> FormField.Submit.serializer()
             else -> error("Unknown form field type: $type")
         }

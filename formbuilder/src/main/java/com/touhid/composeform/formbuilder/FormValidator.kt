@@ -53,4 +53,9 @@ private fun validateField(field: FormField, value: FormValue?): String? = when (
         val selected = (value as? FormValue.Options)?.selected.orEmpty()
         if (field.required && selected.isEmpty()) "Please select at least one option" else null
     }
+
+    is FormField.ImagePicker -> {
+        val image = value as? FormValue.Image
+        if (field.required && image == null) field.errorMessage ?: "Please take a photo" else null
+    }
 }
