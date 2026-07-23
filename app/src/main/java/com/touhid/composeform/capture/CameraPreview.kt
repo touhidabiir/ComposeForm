@@ -22,25 +22,33 @@ import kotlin.coroutines.resume
 internal fun CameraPreview(
     modifier: Modifier = Modifier,
     onImageCaptureReady: (ImageCapture) -> Unit,
+    onError: (Exception) -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember { PreviewView(context) }
 
     LaunchedEffect(previewView, lifecycleOwner) {
-        val cameraProvider = context.awaitCameraProvider()
-        val preview = Preview.Builder().build().apply {
-            surfaceProvider = previewView.surfaceProvider
+        try {
+            val cameraProvider = context.awaitCameraProvider()
+            val preview = Preview.Builder().build().apply {
+                surfaceProvider = previewView.surfaceProvider
+            }
+            val imageCapture = ImageCapture.Builder().build()
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                CameraSelector.DEFAULT_BACK_CAMERA,
+                preview,
+                imageCapture,
+            )
+            onImageCaptureReady(imageCapture)
+        } catch (e: Exception) {
+            // ProcessCameraProvider.getInstance().get() and bindToLifecycle() can both fail (no
+            // camera available, already bound elsewhere, unsupported CameraSelector) - surface it
+            // instead of crashing the capture screen.
+            onError(e)
         }
-        val imageCapture = ImageCapture.Builder().build()
-        cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(
-            lifecycleOwner,
-            CameraSelector.DEFAULT_BACK_CAMERA,
-            preview,
-            imageCapture,
-        )
-        onImageCaptureReady(imageCapture)
     }
 
     AndroidView(factory = { previewView }, modifier = modifier.fillMaxSize())

@@ -10,12 +10,16 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 
 internal sealed interface CameraPermissionState {
     data object Granted : CameraPermissionState
@@ -50,6 +54,20 @@ internal fun rememberCameraPermissionController(): CameraPermissionController {
             else -> CameraPermissionState.Denied
         }
     }
+
+    // Catches permission grants/revokes made from the system Settings screen while this screen
+    // was backgrounded - the remembered state above would otherwise go stale until re-requested.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && isCameraPermissionGranted(context)) {
+                state = CameraPermissionState.Granted
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
     return remember(launcher, state) {
         CameraPermissionController(state = state, request = { launcher.launch(Manifest.permission.CAMERA) })
     }

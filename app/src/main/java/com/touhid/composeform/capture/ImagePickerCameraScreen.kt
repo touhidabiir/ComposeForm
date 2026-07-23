@@ -1,6 +1,7 @@
 package com.touhid.composeform.capture
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -19,11 +20,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -33,9 +36,16 @@ import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppShutterButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
+import com.touhid.composeform.designsystem.components.surface.AppLoadingOverlay
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import java.io.File
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+// Downsamples decoded bitmaps against this target so a multi-megapixel camera JPEG isn't fully
+// decoded at native resolution just to fill a phone-sized preview slot.
+private const val MaxDecodedDimensionPx = 1080
 
 @Composable
 internal fun ImagePickerCameraScreen(
@@ -49,6 +59,9 @@ internal fun ImagePickerCameraScreen(
     val permission = rememberCameraPermissionController()
     var imageCapture by remember { mutableStateOf<ImageCapture?>(null) }
     var capturedFile by remember { mutableStateOf<File?>(null) }
+    var cameraError by remember { mutableStateOf<String?>(null) }
+    var captureError by remember { mutableStateOf<String?>(null) }
+    var deleteError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(permission.state) {
         if (permission.state is CameraPermissionState.NotRequested) permission.request()
@@ -60,44 +73,92 @@ internal fun ImagePickerCameraScreen(
                 CameraPermissionState.Granted -> {
                     val file = capturedFile
                     if (file == null) {
-                        CameraPreview(modifier = Modifier.fillMaxSize(), onImageCaptureReady = { imageCapture = it })
-                        AppShutterButton(
-                            onClick = {
-                                imageCapture?.let { capture ->
-                                    takePicture(context, capture, onSaved = { capturedFile = it }, onError = {})
-                                }
-                            },
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = AppSpacing.Large),
-                        )
-                    } else {
-                        val bitmap = remember(file) { BitmapFactory.decodeFile(file.path)?.asImageBitmap() }
-                        bitmap?.let {
-                            Image(
-                                bitmap = it,
-                                contentDescription = null,
+                        if (cameraError == null) {
+                            CameraPreview(
                                 modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop,
+                                onImageCaptureReady = { imageCapture = it },
+                                onError = { cameraError = it.message ?: "Could not start the camera" },
                             )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = AppSpacing.Large)
-                                .size(48.dp)
-                                .background(Color.Black.copy(alpha = 0.45f), CircleShape),
-                            contentAlignment = Alignment.Center,
-                        ) {
-                            AppIconButton(
-                                icon = Icons.Filled.Delete,
-                                contentDescription = "Delete photo",
-                                tint = Color.White,
+                            AppShutterButton(
+                                contentDescription = "Take photo",
                                 onClick = {
-                                    file.delete()
-                                    capturedFile = null
+                                    imageCapture?.let { capture ->
+                                        captureError = null
+                                        takePicture(
+                                            context = context,
+                                            imageCapture = capture,
+                                            onSaved = { capturedFile = it },
+                                            onError = { captureError = it.message ?: "Could not capture the photo, try again" },
+                                        )
+                                    }
                                 },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = AppSpacing.Large),
                             )
+                            captureError?.let { message ->
+                                Box(modifier = Modifier.align(Alignment.TopCenter).padding(AppSpacing.Medium)) {
+                                    AppText(text = message, color = Color.White)
+                                }
+                            }
+                        } else {
+                            PermissionRationale(message = cameraError.orEmpty(), actionLabel = "Retry", onAction = { cameraError = null })
+                        }
+                    } else {
+                        val imageState = rememberCapturedImageState(file)
+                        when (imageState) {
+                            CapturedImageState.Loading -> {
+                                AppLoadingOverlay(message = "Loading photo…")
+                            }
+
+                            is CapturedImageState.Success -> {
+                                Image(
+                                    bitmap = imageState.bitmap,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop,
+                                )
+                            }
+
+                            CapturedImageState.Error -> {
+                                PermissionRationale(
+                                    message = "Could not load the photo you just took.",
+                                    actionLabel = "Retake",
+                                    onAction = {
+                                        file.delete()
+                                        capturedFile = null
+                                    },
+                                )
+                            }
+                        }
+                        if (imageState != CapturedImageState.Error) {
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = AppSpacing.Large)
+                                    .size(48.dp)
+                                    .background(Color.Black.copy(alpha = 0.45f), CircleShape),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                AppIconButton(
+                                    icon = Icons.Filled.Delete,
+                                    contentDescription = "Delete photo",
+                                    tint = Color.White,
+                                    onClick = {
+                                        if (file.delete()) {
+                                            capturedFile = null
+                                            deleteError = null
+                                        } else {
+                                            deleteError = "Could not delete the photo, please try again"
+                                        }
+                                    },
+                                )
+                            }
+                            deleteError?.let { message ->
+                                Box(modifier = Modifier.align(Alignment.TopCenter).padding(AppSpacing.Medium)) {
+                                    AppText(text = message, color = Color.White)
+                                }
+                            }
                         }
                     }
                 }
@@ -142,6 +203,37 @@ private fun PermissionRationale(message: String, actionLabel: String, onAction: 
         AppText(text = message, modifier = Modifier.padding(bottom = AppSpacing.Medium))
         AppButton(text = actionLabel, onClick = onAction)
     }
+}
+
+private sealed interface CapturedImageState {
+    data object Loading : CapturedImageState
+    data class Success(val bitmap: ImageBitmap) : CapturedImageState
+    data object Error : CapturedImageState
+}
+
+// Decoding a full-resolution camera JPEG is expensive enough to jank the UI thread, so this runs
+// on Dispatchers.IO and downsamples to MaxDecodedDimensionPx before ever allocating the full bitmap.
+@Composable
+private fun rememberCapturedImageState(file: File): CapturedImageState =
+    produceState<CapturedImageState>(initialValue = CapturedImageState.Loading, file) {
+        value = withContext(Dispatchers.IO) {
+            decodeSampledBitmap(file.path, MaxDecodedDimensionPx)
+                ?.let { CapturedImageState.Success(it.asImageBitmap()) }
+                ?: CapturedImageState.Error
+        }
+    }.value
+
+private fun decodeSampledBitmap(path: String, maxDimensionPx: Int): Bitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(path, bounds)
+    if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
+
+    var sampleSize = 1
+    while (bounds.outWidth / (sampleSize * 2) >= maxDimensionPx || bounds.outHeight / (sampleSize * 2) >= maxDimensionPx) {
+        sampleSize *= 2
+    }
+    val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+    return BitmapFactory.decodeFile(path, options)
 }
 
 private fun takePicture(

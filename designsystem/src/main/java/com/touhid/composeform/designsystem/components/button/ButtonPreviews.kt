@@ -25,7 +25,7 @@ private fun ButtonPreview() {
                 AppOutlinedButton(text = "Secondary Action", onClick = {})
                 AppStepperButton(label = "Next step", onClick = {}, progressText = "১/১০")
                 AppStepperButton(label = "Next step", onClick = {})
-                AppShutterButton(onClick = {})
+                AppShutterButton(contentDescription = "Take photo", onClick = {})
             }
         }
     }

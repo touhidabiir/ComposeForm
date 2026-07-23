@@ -10,10 +10,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun AppShutterButton(
+    contentDescription: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
@@ -21,7 +24,9 @@ fun AppShutterButton(
     Surface(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.size(72.dp),
+        modifier = modifier
+            .size(72.dp)
+            .semantics { this.contentDescription = contentDescription },
         shape = CircleShape,
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(4.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)),
