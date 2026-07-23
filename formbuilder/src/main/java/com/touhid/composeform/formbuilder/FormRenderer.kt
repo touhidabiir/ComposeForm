@@ -40,7 +40,9 @@ fun FormRenderer(
     modifier: Modifier = Modifier,
     initialValues: Map<String, FormValue> = emptyMap(),
     pendingResult: FormFieldResult? = null,
+    pendingImagePickerResult: FormImagePickerResult? = null,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit = { _, _ -> },
+    onImagePickerFieldClick: (key: String, field: FormField.ImagePicker) -> Unit = { _, _ -> },
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val state = rememberFormState(schema, initialValues)
@@ -49,6 +51,10 @@ fun FormRenderer(
 
     LaunchedEffect(pendingResult) {
         pendingResult?.let { state.update(it.key, FormValue.Text(it.value)) }
+    }
+
+    LaunchedEffect(pendingImagePickerResult) {
+        pendingImagePickerResult?.let { state.update(it.key, it.value) }
     }
 
     val (stickyFields, scrollableFields) = schema.fields.partition { it is FormField.Submit && it.sticky }
@@ -67,6 +73,7 @@ fun FormRenderer(
                         errors = errors,
                         questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
                         onPickerFieldClick = onPickerFieldClick,
+                        onImagePickerFieldClick = onImagePickerFieldClick,
                         onSubmit = onSubmit,
                     )
                 }
@@ -78,6 +85,7 @@ fun FormRenderer(
                     errors = errors,
                     questionNumberText = questionNumbers[field.key]?.toLocalizedDigits(schema.language),
                     onPickerFieldClick = onPickerFieldClick,
+                    onImagePickerFieldClick = onImagePickerFieldClick,
                     onSubmit = onSubmit,
                 )
             }
@@ -116,6 +124,7 @@ private fun RenderFieldWithInsets(
     errors: Map<String, String>,
     questionNumberText: String?,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
+    onImagePickerFieldClick: (key: String, field: FormField.ImagePicker) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     if (!field.isVisible(state.values)) return
@@ -128,6 +137,7 @@ private fun RenderFieldWithInsets(
                     errors = errors,
                     questionNumberText = questionNumberText,
                     onPickerFieldClick = onPickerFieldClick,
+                    onImagePickerFieldClick = onImagePickerFieldClick,
                     onSubmit = onSubmit,
                 )
             }
@@ -142,6 +152,7 @@ private fun RenderField(
     errors: Map<String, String>,
     questionNumberText: String?,
     onPickerFieldClick: (key: String, pickerSchema: FormSchema) -> Unit,
+    onImagePickerFieldClick: (key: String, field: FormField.ImagePicker) -> Unit,
     onSubmit: (Map<String, FormValue>) -> Unit,
 ) {
     val sizeModifier = field.size.toModifier()
@@ -281,6 +292,22 @@ private fun RenderField(
                     }
                 }
             }
+        }
+
+        is FormField.ImagePicker -> {
+            val image = state.values[field.key] as? FormValue.Image
+            val showError = field.key in state.touched && errors[field.key] != null
+            AppTextField(
+                value = if (image != null) "Photo added" else "",
+                onValueChange = {},
+                label = displayLabel,
+                placeholder = "Tap to take a photo",
+                isError = showError,
+                supportingText = if (showError) errors[field.key] else null,
+                readOnly = true,
+                modifier = sizeModifier,
+                onTrailingActionClick = { onImagePickerFieldClick(field.key, field) },
+            )
         }
 
         is FormField.Submit -> {

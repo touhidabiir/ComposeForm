@@ -67,7 +67,7 @@ formbuilder/src/main/java/com/touhid/composeform/formbuilder/
 └── FormRendererPreviews.kt
 ```
 
-Schema model: `FormSchema` is just `{ fields: [...] }` — **everything is a field**, including the form's title (`type: "text"`, non-interactive display) and the submit button (`type: "submit"`), positioned wherever they appear in the list. There's no separate top-level "title"/"submit" property. The 8 `type` discriminator values are `text`, `inputBox`, `checkbox`, `checkboxGroup`, `radio`, `switch`, `dropdown`, `submit`, dispatched by a `JsonContentPolymorphicSerializer` in `FormField.kt` (decode-only; `FormValue`, the submitted-data type, is separately `@Serializable` for `FormState`'s Saver round-trip, not for parsing).
+Schema model: `FormSchema` is just `{ fields: [...] }` — **everything is a field**, including the form's title (`type: "text"`, non-interactive display) and the submit button (`type: "submit"`), positioned wherever they appear in the list. There's no separate top-level "title"/"submit" property. The 9 `type` discriminator values are `text`, `inputBox`, `checkbox`, `checkboxGroup`, `radio`, `switch`, `dropdown`, `imagePicker`, `submit`, dispatched by a `JsonContentPolymorphicSerializer` in `FormField.kt` (decode-only; `FormValue`, the submitted-data type, is separately `@Serializable` for `FormState`'s Saver round-trip, not for parsing).
 
 Key conventions if extending the schema:
 - Every field has both `margin` (space outside its bounds, separating it from neighbors) and `padding` (space inside its bounds, around its content) — distinct concepts, both `FormInsets` (`top`/`bottom`/`left`/`right` dp), both present on every field type for uniformity.

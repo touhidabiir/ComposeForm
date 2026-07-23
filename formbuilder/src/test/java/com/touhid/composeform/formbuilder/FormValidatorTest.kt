@@ -172,6 +172,41 @@ class FormValidatorTest {
     }
 
     @Test
+    fun `required imagePicker with no photo fails with default message`() {
+        val field = FormField.ImagePicker(key = "idPhoto", label = "ID Photo", required = true, uploadUrl = "demo://upload")
+        val schema = schemaOf(field)
+        assertEquals("Please take a photo", validate(schema, emptyMap())["idPhoto"])
+    }
+
+    @Test
+    fun `required imagePicker with custom errorMessage uses it`() {
+        val field = FormField.ImagePicker(
+            key = "idPhoto",
+            label = "ID Photo",
+            required = true,
+            uploadUrl = "demo://upload",
+            errorMessage = "A photo is required",
+        )
+        val schema = schemaOf(field)
+        assertEquals("A photo is required", validate(schema, emptyMap())["idPhoto"])
+    }
+
+    @Test
+    fun `required imagePicker with a photo passes`() {
+        val field = FormField.ImagePicker(key = "idPhoto", label = "ID Photo", required = true, uploadUrl = "demo://upload")
+        val schema = schemaOf(field)
+        val errors = validate(schema, mapOf("idPhoto" to FormValue.Image("demo://uploads/x.jpg")))
+        assertNull(errors["idPhoto"])
+    }
+
+    @Test
+    fun `optional imagePicker with no photo passes`() {
+        val field = FormField.ImagePicker(key = "idPhoto", label = "ID Photo", required = false, uploadUrl = "demo://upload")
+        val schema = schemaOf(field)
+        assertNull(validate(schema, emptyMap())["idPhoto"])
+    }
+
+    @Test
     fun `hidden required field produces no error even when empty`() {
         val gender = FormField.Radio(key = "gender", label = "Gender", options = listOf(FormOption("male", "Male")))
         val newsletter = FormField.Radio(

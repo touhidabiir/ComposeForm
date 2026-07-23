@@ -21,6 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.touhid.composeform.capture.ImageCaptureScreen
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
@@ -30,8 +31,10 @@ import com.touhid.composeform.flow.DemoFormApi
 import com.touhid.composeform.flow.FormFlowState
 import com.touhid.composeform.flow.FormFlowViewModel
 import com.touhid.composeform.formbuilder.FormFieldResult
+import com.touhid.composeform.formbuilder.FormImagePickerResult
 import com.touhid.composeform.formbuilder.FormRenderer
 import com.touhid.composeform.formbuilder.fieldsWithOptionsUrl
+import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.formbuilder.withOptions
@@ -54,6 +57,9 @@ class MainActivity : ComponentActivity() {
                 var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
                 var activePickerSchema by remember { mutableStateOf<FormSchema?>(null) }
                 var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
+                var activeImagePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
+                var activeImagePickerField by remember { mutableStateOf<FormField.ImagePicker?>(null) }
+                var pendingImagePickerResult by remember { mutableStateOf<FormImagePickerResult?>(null) }
 
                 NavHost(navController = navController, startDestination = "form") {
                     composable("form") {
@@ -64,6 +70,14 @@ class MainActivity : ComponentActivity() {
                             if (pendingResult != null) {
                                 activePickerKey = null
                                 pendingResult = null
+                            }
+                        }
+
+                        LaunchedEffect(pendingImagePickerResult) {
+                            if (pendingImagePickerResult != null) {
+                                activeImagePickerKey = null
+                                activeImagePickerField = null
+                                pendingImagePickerResult = null
                             }
                         }
 
@@ -95,10 +109,16 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(16.dp),
                                         initialValues = flowState.initialValues,
                                         pendingResult = pendingResult,
+                                        pendingImagePickerResult = pendingImagePickerResult,
                                         onPickerFieldClick = { key, pickerSchema ->
                                             activePickerKey = key
                                             activePickerSchema = pickerSchema
                                             navController.navigate("picker")
+                                        },
+                                        onImagePickerFieldClick = { key, field ->
+                                            activeImagePickerKey = key
+                                            activeImagePickerField = field
+                                            navController.navigate("imageCapture")
                                         },
                                         onSubmit = viewModel::onPageSubmit,
                                     )
@@ -167,6 +187,24 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             }
+                        }
+                    }
+
+                    composable("imageCapture") {
+                        val imageField = activeImagePickerField
+                        if (imageField == null) {
+                            LaunchedEffect(Unit) { navController.popBackStack() }
+                        } else {
+                            ImageCaptureScreen(
+                                field = imageField,
+                                onResult = { image ->
+                                    activeImagePickerKey?.let { key ->
+                                        pendingImagePickerResult = FormImagePickerResult(key, image)
+                                    }
+                                    navController.popBackStack()
+                                },
+                                onCancel = { navController.popBackStack() },
+                            )
                         }
                     }
                 }

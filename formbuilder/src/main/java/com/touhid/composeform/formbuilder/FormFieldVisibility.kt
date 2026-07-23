@@ -26,6 +26,7 @@ private fun FormValue?.toComparableTokens(): List<String> = when (this) {
     is FormValue.Text -> listOf(value)
     is FormValue.Option -> listOf(id)
     is FormValue.Options -> selected.map { it.id }
+    is FormValue.Image -> listOf(url)
 }
 
 /**

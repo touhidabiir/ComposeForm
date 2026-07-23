@@ -428,6 +428,21 @@ val JSON_FORM = """
       }
     },
     {
+      "type": "imagePicker",
+      "key": "idPhoto",
+      "label": "ID Photo",
+      "required": true,
+      "uploadUrl": "demo://upload/id-photo",
+      "screenTitle": "Take a photo of your ID",
+      "instructionsHtml": "<b>Take a clear photo</b><p>Follow these tips for a good photo:</p><ul><li>Place the document on a flat surface</li><li>Shoot in good lighting</li><li>Keep the whole document inside the frame</li></ul>",
+      "margin": {
+        "top": 8,
+        "bottom": 8,
+        "left": 0,
+        "right": 0
+      }
+    },
+    {
       "type": "submit",
       "key": "submit",
       "label": "Submit",

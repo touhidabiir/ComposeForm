@@ -47,6 +47,10 @@ class FormSchemaParserTest {
               "options": [ { "id": "bd", "value": "Bangladesh" }, { "id": "in", "value": "India" } ]
             },
             {
+              "type": "imagePicker", "key": "idPhoto", "label": "ID Photo", "required": true,
+              "uploadUrl": "demo://upload/id-photo", "instructionsHtml": "<b>Take a clear photo</b>"
+            },
+            {
               "type": "submit", "key": "submit", "label": "Submit",
               "margin": { "top": 16, "bottom": 16, "left": 16, "right": 16 }
             },
@@ -62,7 +66,7 @@ class FormSchemaParserTest {
     @Test
     fun `parses all field types with correct discriminator dispatch`() {
         val schema = parseFormSchema(sampleJson)
-        assertEquals(10, schema.fields.size)
+        assertEquals(11, schema.fields.size)
         assertTrue(schema.fields[0] is FormField.Text)
         assertTrue(schema.fields[1] is FormField.InputBox)
         assertTrue(schema.fields[3] is FormField.Checkbox)
@@ -70,8 +74,23 @@ class FormSchemaParserTest {
         assertTrue(schema.fields[5] is FormField.Radio)
         assertTrue(schema.fields[6] is FormField.Switch)
         assertTrue(schema.fields[7] is FormField.Dropdown)
-        assertTrue(schema.fields[8] is FormField.Submit)
-        assertTrue(schema.fields[9] is FormField.Radio)
+        assertTrue(schema.fields[8] is FormField.ImagePicker)
+        assertTrue(schema.fields[9] is FormField.Submit)
+        assertTrue(schema.fields[10] is FormField.Radio)
+    }
+
+    @Test
+    fun `parses imagePicker uploadUrl and instructionsHtml`() {
+        val idPhoto = parseFormSchema(sampleJson).fields[8] as FormField.ImagePicker
+        assertEquals("demo://upload/id-photo", idPhoto.uploadUrl)
+        assertEquals("<b>Take a clear photo</b>", idPhoto.instructionsHtml)
+    }
+
+    @Test
+    fun `parses imagePicker required, progressText defaults to null`() {
+        val idPhoto = parseFormSchema(sampleJson).fields[8] as FormField.ImagePicker
+        assertTrue(idPhoto.required)
+        assertNull(idPhoto.progressText)
     }
 
     @Test
@@ -105,7 +124,7 @@ class FormSchemaParserTest {
 
     @Test
     fun `parses submit margin`() {
-        val submit = parseFormSchema(sampleJson).fields[8] as FormField.Submit
+        val submit = parseFormSchema(sampleJson).fields[9] as FormField.Submit
         assertEquals(16, submit.margin.top)
         assertEquals(16, submit.margin.left)
     }
@@ -170,7 +189,7 @@ class FormSchemaParserTest {
 
     @Test
     fun `field with visibleWhen parses key, operator, and values`() {
-        val newsletter = parseFormSchema(sampleJson).fields[9] as FormField.Radio
+        val newsletter = parseFormSchema(sampleJson).fields[10] as FormField.Radio
         val condition = newsletter.visibleWhen
         assertEquals("gender", condition?.key)
         assertEquals(FormVisibilityOperator.NotEquals, condition?.operator)
