@@ -32,6 +32,9 @@ fun AppTextField(
     readOnly: Boolean = false,
     type: AppTextFieldType = AppTextFieldType.Text,
     onTrailingActionClick: (() -> Unit)? = null,
+    trailingIcon: @Composable (onClick: () -> Unit) -> Unit = { onClick ->
+        AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick, enabled = enabled)
+    },
 ) {
     val keyboardType = when (type) {
         AppTextFieldType.Text -> KeyboardType.Text
@@ -65,7 +68,7 @@ fun AppTextField(
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         visualTransformation = visualTransformation,
         trailingIcon = onTrailingActionClick?.let { onClick ->
-            { AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick, enabled = enabled) }
+            { trailingIcon(onClick) }
         },
         colors = if (wholeFieldOpensPicker) {
             // Material3 resolves disabled colors before error colors, so forcing enabled=false
