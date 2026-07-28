@@ -48,17 +48,17 @@ fun AppTextField(
         VisualTransformation.None
     }
 
-    val wholeFieldOpensPicker = readOnly && enabled && onTrailingActionClick != null
+    val wholeFieldTriggersAction = readOnly && enabled && onTrailingActionClick != null
 
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        modifier = if (wholeFieldOpensPicker) {
+        modifier = if (wholeFieldTriggersAction) {
             modifier.clickable(onClick = onTrailingActionClick!!)
         } else {
             modifier
         },
-        enabled = if (wholeFieldOpensPicker) false else enabled,
+        enabled = if (wholeFieldTriggersAction) false else enabled,
         readOnly = readOnly,
         label = label?.let { { Text(it) } },
         placeholder = placeholder?.let { { Text(it) } },
@@ -70,7 +70,7 @@ fun AppTextField(
         trailingIcon = onTrailingActionClick?.let { onClick ->
             { trailingIcon(onClick) }
         },
-        colors = if (wholeFieldOpensPicker) {
+        colors = if (wholeFieldTriggersAction) {
             // Material3 resolves disabled colors before error colors, so forcing enabled=false
             // above would otherwise silently hide error styling on a required, read-only field.
             val textColor = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
