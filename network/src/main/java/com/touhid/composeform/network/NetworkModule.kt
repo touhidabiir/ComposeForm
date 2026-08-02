@@ -45,7 +45,7 @@ internal object NetworkModule {
     @Singleton
     fun provideRetrofit(okHttpClient: OkHttpClient, @BaseUrl baseUrl: String): Retrofit =
         Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl(if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/")
             .client(okHttpClient)
             .addConverterFactory(ScalarsConverterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
