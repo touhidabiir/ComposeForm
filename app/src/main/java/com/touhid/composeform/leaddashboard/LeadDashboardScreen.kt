@@ -48,35 +48,44 @@ import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusInfo
+import com.touhid.composeform.designsystem.theme.StatusNeutral
 
 private val RowIconSize = 16.dp
+private val MonthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
-private fun LeadStatus.toBadgeTone(): AppStatusTone = when (this) {
-    LeadStatus.Pending -> AppStatusTone.Warning
-    LeadStatus.Approved -> AppStatusTone.Success
-    LeadStatus.EKycSubmitted -> AppStatusTone.Info
-    LeadStatus.Cancelled -> AppStatusTone.Error
+private val LeadListItem.isEkycSubmitted: Boolean get() = ekycSubmitter != null
+
+private fun LeadListItem.toFilter(): LeadStatusFilter = when {
+    status == LeadStatus.Approved && isEkycSubmitted -> LeadStatusFilter.EKyc
+    status == LeadStatus.Approved -> LeadStatusFilter.Approved
+    status == LeadStatus.Pending -> LeadStatusFilter.Pending
+    status == LeadStatus.Rejected -> LeadStatusFilter.Rejected
+    else -> LeadStatusFilter.Pending
 }
 
-private fun LeadStatus.toFilter(): LeadStatusFilter = when (this) {
-    LeadStatus.Pending -> LeadStatusFilter.Pending
-    LeadStatus.Approved -> LeadStatusFilter.Approved
-    LeadStatus.EKycSubmitted -> LeadStatusFilter.EKyc
-    LeadStatus.Cancelled -> LeadStatusFilter.Cancelled
+// "2026-07-15T10:30:00+06:00" -> "15 Jul 2026" without pulling in java.time (minSdk 24 has no
+// desugaring configured here) or a Locale-sensitive formatter for what's just a display label.
+private fun formatLeadDate(isoDateTime: String): String {
+    val datePart = isoDateTime.substringBefore('T')
+    val parts = datePart.split("-")
+    if (parts.size != 3) return datePart
+    val (year, month, day) = parts
+    val monthName = month.toIntOrNull()?.let { MonthNames.getOrNull(it - 1) } ?: month
+    return "$day $monthName $year"
 }
 
 @Composable
 fun LeadDashboardScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    leads: List<LeadCard> = remember { sampleLeadCards() },
+    leads: List<LeadListItem> = remember { sampleLeadDashboardResults() },
 ) {
     var selectedFilter by rememberSaveable { mutableStateOf(LeadStatusFilter.Pending) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
     val visibleLeads = leads.filter { lead ->
-        lead.status.toFilter() == selectedFilter &&
-            (searchQuery.isBlank() || lead.merchantName.contains(searchQuery, ignoreCase = true) || lead.phoneNumber.contains(searchQuery))
+        lead.toFilter() == selectedFilter &&
+            (searchQuery.isBlank() || lead.shopName.contains(searchQuery, ignoreCase = true) || lead.walletNumber.contains(searchQuery))
     }
 
     AppScaffold(
@@ -95,8 +104,6 @@ fun LeadDashboardScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(AppSpacing.Medium)) {
-                AppText(text = "সর্বশেষ আপডেট: 12 May 2023, 1:13 PM", style = AppTextStyle.Label)
-                Spacer(modifier = Modifier.height(AppSpacing.Small))
                 AppTextField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
@@ -126,7 +133,7 @@ fun LeadDashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
             ) {
                 items(items = visibleLeads, key = { it.id }) { lead ->
-                    LeadListItem(lead = lead)
+                    LeadListCard(lead = lead)
                 }
             }
         }
@@ -143,11 +150,17 @@ private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
 }
 
 @Composable
-private fun LeadListItem(lead: LeadCard) {
+private fun LeadListCard(lead: LeadListItem) {
     val iconModifier = Modifier.size(RowIconSize)
+    val (badgeLabel, badgeTone) = when {
+        lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> "ই-কেওয়াইসি জমা হয়েছে" to AppStatusTone.Info
+        lead.status == LeadStatus.Approved -> "অনুমোদিত" to AppStatusTone.Success
+        lead.status == LeadStatus.Pending -> "পেন্ডিং" to AppStatusTone.Warning
+        else -> "বাতিল" to AppStatusTone.Error
+    }
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
-        lead.cancellationReason?.let { reason ->
+        lead.rejection?.let { rejection ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -156,20 +169,23 @@ private fun LeadListItem(lead: LeadCard) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     AppText(text = "বাতিল করার কারণ", style = AppTextStyle.Label, override = AppTextOverride(color = StatusError))
-                    AppText(text = reason, style = AppTextStyle.BodyMedium)
+                    AppText(text = rejection.reason, style = AppTextStyle.BodyMedium)
                 }
                 AppIcon(icon = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
             }
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            AppText(text = lead.merchantName, style = AppTextStyle.TitleMedium)
-            AppStatusBadge(text = lead.status.badgeLabel, tone = lead.status.toBadgeTone())
+            Column {
+                AppText(text = lead.shopName, style = AppTextStyle.TitleMedium)
+                AppText(text = lead.displayId, style = AppTextStyle.Label, override = AppTextOverride(color = StatusNeutral))
+            }
+            AppStatusBadge(text = badgeLabel, tone = badgeTone)
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppLabeledValue(
-            value = lead.phoneNumber,
+            value = lead.walletNumber,
             icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier) },
         )
 
@@ -183,28 +199,34 @@ private fun LeadListItem(lead: LeadCard) {
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppLabeledValue(
             label = "লিড অফিসার",
-            value = lead.leadOfficer.name,
+            value = "${lead.leadCloser.name} (${lead.leadCloser.employeeId})",
             icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier) },
             valueOverride = AppTextOverride(color = StatusInfo),
         )
 
-        lead.approver?.let { approver ->
+        lead.reviewer?.let { reviewer ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
             AppLabeledValue(
                 label = "অনুমোদনকারী",
-                value = approver.name,
+                value = "${reviewer.name} (${reviewer.designation})",
                 icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier) },
                 valueOverride = AppTextOverride(color = StatusInfo),
             )
         }
 
-        lead.eKycDoneBy?.let { doneBy ->
+        lead.ekycSubmitter?.let { submitter ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
-            AppLabeledValue(label = "ই-কেওয়াইসি করেছেন", value = doneBy)
+            AppLabeledValue(label = "ই-কেওয়াইসি করেছেন", value = submitter.name)
         }
 
-        when (lead.status) {
-            LeadStatus.Pending -> {
+        Spacer(modifier = Modifier.height(AppSpacing.Small))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            AppLabeledValue(label = "স্কোর", value = lead.premiumnessScore.toString())
+            AppLabeledValue(label = "তৈরি হয়েছে", value = formatLeadDate(lead.createdAt))
+        }
+
+        when {
+            lead.status == LeadStatus.Pending -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 AppButton(
                     text = "লিড লক করুন",
@@ -213,11 +235,10 @@ private fun LeadListItem(lead: LeadCard) {
                     leadingIcon = { AppIcon(icon = Icons.Filled.Lock, contentDescription = null, modifier = iconModifier) },
                 )
             }
-            LeadStatus.Approved -> {
+            lead.status == LeadStatus.Approved && lead.canSubmitEkyc && !lead.isEkycSubmitted -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = {}, modifier = Modifier.fillMaxWidth())
             }
-            LeadStatus.EKycSubmitted, LeadStatus.Cancelled -> Unit
         }
     }
 }
