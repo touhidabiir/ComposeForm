@@ -23,9 +23,9 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideLoggingInterceptor(@DebugMode isDebug: Boolean): HttpLoggingInterceptor =
+    fun provideLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor().apply {
-            level = if (isDebug) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+            level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
 
     @Provides
