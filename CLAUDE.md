@@ -38,7 +38,8 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
 │                            # Type.kt, Spacing.kt (AppSpacing)
 └── components/
     ├── text/               # AppText + AppTextStyle enum + AppTextOverride (size/weight/color override),
-    │                        # AppLabeledValue (icon + value, or label caption stacked above value)
+    │                        # AppIconLabelValue (icon + value, or label caption stacked above value;
+    │                        # AppIconPosition: Start/End/Top/Bottom decides which side the icon sits on)
     ├── button/             # AppButton, AppOutlinedButton (+ AppButtonTone: Primary/Success/Danger,
     │                        # both with an optional leadingIcon slot), AppStepperButton
     ├── layout/             # AppScaffold (topBar + optional bottomBar slot + content)
@@ -62,7 +63,7 @@ Conventions established by existing components:
 - Every component that renders text accepts an optional `AppTextOverride` (`fontSize`/`fontWeight`/`color`, all no-op by default) — `AppText`'s `override`, `AppButton`/`AppOutlinedButton`'s `textOverride`, `AppCheckbox`/`AppRadioButton`/`AppSwitch`/`AppDropdown`'s `labelOverride`. This is how callers (like `:formbuilder`) apply per-instance styling without the design system losing its opinionated defaults.
 - Spacing between elements inside a component uses `AppSpacing` (`theme/Spacing.kt`) tokens, not hardcoded `dp` values.
 - Each category subpackage has its own `*Previews.kt` file (not one global previews file) with a private composable carrying stacked `@Preview(name = "Light", ...)` / `@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, ...)` annotations, wrapped in `ComposeFormTheme`.
-- Modules outside `:designsystem` (e.g. `:app`) can reference `ImageVector` constants from `androidx.compose.material:material-icons-core` directly (it's a separate artifact with no Material3 dependency) and pass them into a designsystem component (`AppIcon`, `AppIconButton`, `AppTopBarAction`, `AppButton`'s `leadingIcon` slot, etc.) — but any `@Composable` slot lambda a caller *writes* (e.g. `AppLabeledValue`'s `icon` param) still compiles as part of that caller's own module, so its body must only call designsystem-exposed composables (`AppIcon`, not raw Material3 `Icon`), never Material3 directly.
+- Modules outside `:designsystem` (e.g. `:app`) can reference `ImageVector` constants from `androidx.compose.material:material-icons-core` directly (it's a separate artifact with no Material3 dependency) and pass them into a designsystem component (`AppIcon`, `AppIconButton`, `AppTopBarAction`, `AppButton`'s `leadingIcon` slot, etc.) — but any `@Composable` slot lambda a caller *writes* (e.g. `AppIconLabelValue`'s `icon` param) still compiles as part of that caller's own module, so its body must only call designsystem-exposed composables (`AppIcon`, not raw Material3 `Icon`), never Material3 directly.
 
 **Not yet built**: `components/surface/AppDialog`, `AppChip` (a general-purpose chip; `AppStatusBadge` only covers the status-pill case). Follow the same wrapping conventions above when implementing these.
 

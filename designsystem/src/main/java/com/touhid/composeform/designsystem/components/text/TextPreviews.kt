@@ -35,15 +35,26 @@ private fun TextPreview() {
                 AppText("Body Large", style = AppTextStyle.BodyLarge)
                 AppText("Body Medium", style = AppTextStyle.BodyMedium)
                 AppText("Label", style = AppTextStyle.Label)
-                AppLabeledValue(
+                AppIconLabelValue(
                     value = "01208-567890",
                     icon = { Icon(Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(16.dp)) },
                 )
-                AppLabeledValue(label = "Detailed address", value = "2 No Road, Block-B, Bakalia")
-                AppLabeledValue(
+                AppIconLabelValue(label = "Detailed address", value = "2 No Road, Block-B, Bakalia")
+                AppIconLabelValue(
                     label = "Custom label color",
                     value = "2 No Road, Block-B, Bakalia",
                     labelOverride = AppTextOverride(color = Color(0xFFD32F2F)),
+                )
+                AppIconLabelValue(
+                    value = "Icon at the end",
+                    icon = { Icon(Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                    iconPosition = AppIconPosition.End,
+                )
+                AppIconLabelValue(
+                    label = "Icon on top",
+                    value = "Stacked above the label/value",
+                    icon = { Icon(Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(16.dp)) },
+                    iconPosition = AppIconPosition.Top,
                 )
             }
         }

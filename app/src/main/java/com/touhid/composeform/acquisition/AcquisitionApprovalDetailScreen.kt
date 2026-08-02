@@ -35,7 +35,7 @@ import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
 import com.touhid.composeform.designsystem.components.surface.AppDivider
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
-import com.touhid.composeform.designsystem.components.text.AppLabeledValue
+import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
@@ -85,7 +85,7 @@ fun AcquisitionApprovalDetailScreen(
                 .padding(AppSpacing.Medium),
             verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
         ) {
-            AppLabeledValue(
+            AppIconLabelValue(
                 value = detail.phoneNumber,
                 icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
             )
@@ -105,16 +105,16 @@ fun AcquisitionApprovalDetailScreen(
             AppCard(modifier = Modifier.fillMaxWidth()) {
                 AppText(text = "Owner & Contact Person Details", style = AppTextStyle.TitleMedium)
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppLabeledValue(label = "Shop Owner Info", value = detail.shopOwner.name)
+                AppIconLabelValue(label = "Shop Owner Info", value = detail.shopOwner.name)
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
-                AppLabeledValue(
+                AppIconLabelValue(
                     value = detail.shopOwner.idOrPhone,
                     icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
                 )
                 AppDivider(modifier = Modifier.padding(vertical = AppSpacing.Medium))
-                AppLabeledValue(label = "Shop Operator Info", value = detail.shopOperator.name)
+                AppIconLabelValue(label = "Shop Operator Info", value = detail.shopOperator.name)
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
-                AppLabeledValue(
+                AppIconLabelValue(
                     value = detail.shopOperator.idOrPhone,
                     icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
                 )
@@ -148,7 +148,7 @@ private fun LabeledPairCard(title: String, pairs: List<LabeledPair>) {
         AppText(text = title, style = AppTextStyle.TitleMedium)
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
         pairs.forEachIndexed { index, pair ->
-            AppLabeledValue(label = pair.label, value = pair.value)
+            AppIconLabelValue(label = pair.label, value = pair.value)
             if (index != pairs.lastIndex) {
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
             }

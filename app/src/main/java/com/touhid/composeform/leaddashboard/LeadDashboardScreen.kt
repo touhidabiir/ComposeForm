@@ -41,7 +41,7 @@ import com.touhid.composeform.designsystem.components.surface.AppStatusBadge
 import com.touhid.composeform.designsystem.components.surface.AppStatusTone
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.surface.AppTopBarAction
-import com.touhid.composeform.designsystem.components.text.AppLabeledValue
+import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
@@ -184,20 +184,20 @@ private fun LeadListCard(lead: LeadListItem) {
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppLabeledValue(
+        AppIconLabelValue(
             value = lead.walletNumber,
             icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier) },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppLabeledValue(
+        AppIconLabelValue(
             label = "বিস্তারিত ঠিকানা",
             value = lead.address,
             icon = { AppIcon(icon = Icons.Filled.LocationOn, contentDescription = null, modifier = iconModifier) },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppLabeledValue(
+        AppIconLabelValue(
             label = "লিড অফিসার",
             value = "${lead.leadCloser.name} (${lead.leadCloser.employeeId})",
             icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier) },
@@ -206,7 +206,7 @@ private fun LeadListCard(lead: LeadListItem) {
 
         lead.reviewer?.let { reviewer ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
-            AppLabeledValue(
+            AppIconLabelValue(
                 label = "অনুমোদনকারী",
                 value = "${reviewer.name} (${reviewer.designation})",
                 icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier) },
@@ -216,13 +216,13 @@ private fun LeadListCard(lead: LeadListItem) {
 
         lead.ekycSubmitter?.let { submitter ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
-            AppLabeledValue(label = "ই-কেওয়াইসি করেছেন", value = submitter.name)
+            AppIconLabelValue(label = "ই-কেওয়াইসি করেছেন", value = submitter.name)
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            AppLabeledValue(label = "স্কোর", value = lead.premiumnessScore.toString())
-            AppLabeledValue(label = "তৈরি হয়েছে", value = formatLeadDate(lead.createdAt))
+            AppIconLabelValue(label = "স্কোর", value = lead.premiumnessScore.toString())
+            AppIconLabelValue(label = "তৈরি হয়েছে", value = formatLeadDate(lead.createdAt))
         }
 
         when {

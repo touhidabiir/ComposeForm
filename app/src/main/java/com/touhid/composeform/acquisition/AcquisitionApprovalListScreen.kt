@@ -28,7 +28,7 @@ import com.touhid.composeform.designsystem.components.surface.AppStatusBadge
 import com.touhid.composeform.designsystem.components.surface.AppStatusTone
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.surface.AppTopBarAction
-import com.touhid.composeform.designsystem.components.text.AppLabeledValue
+import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
@@ -81,19 +81,19 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppLabeledValue(
+        AppIconLabelValue(
             value = item.phoneNumber,
             icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier) },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppLabeledValue(
+        AppIconLabelValue(
             value = item.address,
             icon = { AppIcon(icon = Icons.Filled.LocationOn, contentDescription = null, modifier = iconModifier) },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppLabeledValue(
+        AppIconLabelValue(
             label = "লিড অফিসার",
             value = item.leadOfficer.name,
             icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier) },
