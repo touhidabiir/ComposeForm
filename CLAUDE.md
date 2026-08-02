@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 - Build everything: `./gradlew build`
-- Build/check a single module: `./gradlew :app:assembleDebug`, `./gradlew :designsystem:build`, `./gradlew :formbuilder:build`
+- Build/check a single module: `./gradlew :app:assembleDebug`, `./gradlew :designsystem:build`, `./gradlew :formbuilder:build`, `./gradlew :network:build`
 - Run unit tests: `./gradlew test` (single module: `./gradlew :formbuilder:testDebugUnitTest`, single test: `./gradlew :formbuilder:testDebugUnitTest --tests "com.touhid.composeform.formbuilder.FormValidatorTest"`)
 - Run instrumented tests (needs a device/emulator): `./gradlew :app:connectedDebugAndroidTest`
 - Lint: `./gradlew lint` (per-module: `./gradlew :app:lintDebug`)
@@ -17,11 +17,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Architecture
 
-Three-module Gradle project, no `build-logic`/convention-plugin infrastructure — each module's `build.gradle.kts` is configured directly (this is intentional; see below).
+Four-module Gradle project, no `build-logic`/convention-plugin infrastructure — each module's `build.gradle.kts` is configured directly (this is intentional; see below).
 
-- **`:app`** — the application shell. Contains only `MainActivity.kt`. It hosts Compose content and is **not permitted to depend on Material3 or Foundation directly** — see "Design system boundary" below.
+- **`:app`** — the application shell. Contains only `MainActivity.kt` and the `flow` package (the demo server-driven form flow, backed by `DemoFormApi`'s in-memory mock — not real network calls). It hosts Compose content and is **not permitted to depend on Material3 or Foundation directly** — see "Design system boundary" below — and is **not permitted to depend on Square's networking libraries directly** — see "Network boundary" below.
 - **`:designsystem`** — an Android library module (namespace `com.touhid.composeform.designsystem`) owning all Material3-based UI. `:app` depends on it via `implementation(project(":designsystem"))`.
 - **`:formbuilder`** — an Android library module (namespace `com.touhid.composeform.formbuilder`) that parses a JSON form schema (`kotlinx.serialization`) and renders it using `:designsystem`'s components. Also subject to the Material3-free boundary — it depends on `:designsystem` only, never Material3 directly.
+- **`:network`** — an Android library module (namespace `com.touhid.composeform.network`) owning OkHttp/Retrofit and all API/network-related work. `:app` depends on it via `implementation(project(":network"))`.
 
 ### Design system boundary (important, easy to violate accidentally)
 
@@ -51,6 +52,16 @@ Conventions established by existing components:
 - Each category subpackage has its own `*Previews.kt` file (not one global previews file) with a private composable carrying stacked `@Preview(name = "Light", ...)` / `@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, ...)` annotations, wrapped in `ComposeFormTheme`.
 
 **Not yet built** (planned next phase): `components/surface/` — `AppCard`, `AppDialog`, `AppChip`, `AppDivider`, `AppTopBar`. Follow the same wrapping conventions above when implementing these.
+
+### Network boundary (same pattern as the design system boundary)
+
+`:network` depends on `okio`, `okhttp` (+ `logging-interceptor`), and `retrofit2` (+ `converter-scalars`, `converter-gson`, `adapter-rxjava2`) as `implementation` (not `api`). `:app` does not declare any of these itself, so `okhttp3.*`/`retrofit2.*`/`okio.*` are not on its compile classpath — importing them there fails to compile. All API/network work (Retrofit service interfaces, request/response handling) belongs inside `:network`; `:app` only consumes what `:network` exposes publicly:
+
+- `NetworkClient` (`network/.../NetworkClient.kt`) — `create(service: Class<T>): T`, a thin wrapper around `Retrofit.create` that's the only way to obtain a Retrofit service instance from outside the module.
+- `@BaseUrl` (`network/.../BaseUrl.kt`) — a Hilt qualifier a consuming module's own Hilt module binds to a `String` (e.g. `@Provides @BaseUrl fun provideBaseUrl(): String = "..."`) so `:network` never hardcodes an environment's base URL.
+- `NetworkModule` (`network/.../NetworkModule.kt`) — `internal`, wires the `OkHttpClient`/`Retrofit` singletons; not visible outside the module.
+
+`:network` depends on `hilt-android`/`kapt(hilt-compiler)` for its own `@Module`, but does **not** apply the Hilt Gradle plugin (`com.google.dagger.hilt.android`) — per Hilt's multi-module guidance, only `:app` (the module with the eventual `@HiltAndroidApp` entry point) applies that plugin; library modules just contribute `@Module`s via the compiler dependency.
 
 ### `:formbuilder` — JSON-driven dynamic forms
 
