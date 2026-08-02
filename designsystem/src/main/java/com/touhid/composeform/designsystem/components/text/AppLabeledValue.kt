@@ -18,6 +18,7 @@ fun AppLabeledValue(
     modifier: Modifier = Modifier,
     label: String? = null,
     icon: (@Composable () -> Unit)? = null,
+    labelOverride: AppTextOverride = AppTextOverride(),
     valueOverride: AppTextOverride = AppTextOverride(),
 ) {
     Row(
@@ -28,7 +29,12 @@ fun AppLabeledValue(
         icon?.invoke()
         Column {
             label?.let {
-                AppText(text = it, style = AppTextStyle.Label, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                AppText(
+                    text = it,
+                    style = AppTextStyle.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    override = labelOverride,
+                )
             }
             AppText(text = value, style = AppTextStyle.BodyMedium, override = valueOverride)
         }

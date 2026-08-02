@@ -11,6 +11,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.theme.AppSpacing
@@ -20,7 +21,10 @@ import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 @Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
 private fun TextPreview() {
-    ComposeFormTheme {
+    // dynamicColor = false: pins these to the app's own Light/DarkColorScheme so the preview
+    // renders deterministically - dynamic color samples the device wallpaper, which the preview
+    // renderer has no real one for, and resolves inconsistently there.
+    ComposeFormTheme(dynamicColor = false) {
         Surface {
             Column(
                 modifier = Modifier.padding(AppSpacing.Medium),
@@ -36,6 +40,11 @@ private fun TextPreview() {
                     icon = { Icon(Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(16.dp)) },
                 )
                 AppLabeledValue(label = "Detailed address", value = "2 No Road, Block-B, Bakalia")
+                AppLabeledValue(
+                    label = "Custom label color",
+                    value = "2 No Road, Block-B, Bakalia",
+                    labelOverride = AppTextOverride(color = Color(0xFFD32F2F)),
+                )
             }
         }
     }
