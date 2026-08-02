@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.kapt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -31,6 +31,6 @@ dependencies {
     implementation(libs.squareup.retrofit.adapter.rxjava2)
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.kotlinx.coroutines.core)
-    kapt(libs.google.dagger.hilt.compiler)
+    ksp(libs.google.dagger.hilt.compiler)
     testImplementation(libs.junit)
 }
