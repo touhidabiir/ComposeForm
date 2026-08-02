@@ -14,7 +14,7 @@ okio = "2.4.3"
 okhttp = "4.12.0"
 retrofit = "3.0.0"
 retrofitAdapterRxjava2 = "2.5.0"
-hilt = "2.55"
+hilt = "2.60.1"
 kotlinxCoroutines = "1.10.2"
 ksp = "2.2.10-2.0.2"
 
