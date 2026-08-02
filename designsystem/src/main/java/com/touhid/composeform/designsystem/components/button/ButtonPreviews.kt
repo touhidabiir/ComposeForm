@@ -22,7 +22,9 @@ private fun ButtonPreview() {
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.Small),
             ) {
                 AppButton(text = "Primary Action", onClick = {})
+                AppButton(text = "Approve", onClick = {}, tone = AppButtonTone.Success)
                 AppOutlinedButton(text = "Secondary Action", onClick = {})
+                AppOutlinedButton(text = "Reject", onClick = {}, tone = AppButtonTone.Danger)
                 AppStepperButton(label = "Next step", onClick = {}, progressText = "১/১০")
                 AppStepperButton(label = "Next step", onClick = {})
             }

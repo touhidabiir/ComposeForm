@@ -1,0 +1,27 @@
+package com.touhid.composeform.designsystem.components.indicator
+
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
+
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun IndicatorPreview() {
+    ComposeFormTheme {
+        Column(
+            modifier = Modifier.padding(AppSpacing.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+        ) {
+            AppScoreGauge(score = 89, maxScore = 100)
+            AppGradientRangeIndicator(value = 0.89f, modifier = Modifier.fillMaxWidth())
+        }
+    }
+}

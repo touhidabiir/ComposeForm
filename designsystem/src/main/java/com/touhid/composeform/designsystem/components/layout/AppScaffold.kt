@@ -16,12 +16,14 @@ import com.touhid.composeform.designsystem.components.surface.AppTopBarScrollBeh
 fun AppScaffold(
     modifier: Modifier = Modifier.fillMaxSize(),
     topBar: @Composable (AppTopBarScrollBehavior) -> Unit = {},
+    bottomBar: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { topBar(AppTopBarScrollBehavior(scrollBehavior)) },
+        bottomBar = bottomBar,
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()

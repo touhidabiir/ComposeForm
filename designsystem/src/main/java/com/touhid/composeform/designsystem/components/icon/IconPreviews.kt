@@ -26,6 +26,7 @@ private fun IconButtonPreview() {
             ) {
                 AppIconButton(icon = Icons.Filled.Menu, contentDescription = "Menu", onClick = {})
                 AppIconButton(icon = Icons.Filled.Settings, contentDescription = "Settings", onClick = {}, enabled = false)
+                AppIcon(icon = Icons.Filled.Settings, contentDescription = null)
             }
         }
     }

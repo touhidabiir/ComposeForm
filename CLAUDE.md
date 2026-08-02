@@ -34,24 +34,37 @@ When a module needs a new Material3 primitive it doesn't have a wrapper for yet,
 
 ```
 designsystem/src/main/java/com/touhid/composeform/designsystem/
-├── theme/                  # Color.kt, Theme.kt (ComposeFormTheme), Type.kt, Spacing.kt (AppSpacing)
+├── theme/                  # Color.kt (incl. semantic Status*/Status*Container tones), Theme.kt (ComposeFormTheme),
+│                            # Type.kt, Spacing.kt (AppSpacing)
 └── components/
-    ├── text/               # AppText + AppTextStyle enum + AppTextOverride (size/weight/color override)
-    ├── button/             # AppButton, AppOutlinedButton
-    ├── layout/             # AppScaffold
-    └── input/              # AppTextField (+ AppTextFieldType: Text/Number/Email/Password), AppCheckbox,
-                             # AppRadioButton, AppSwitch, AppDropdown (+ AppDropdownOption)
+    ├── text/               # AppText + AppTextStyle enum + AppTextOverride (size/weight/color override),
+    │                        # AppLabeledValue (icon + value, or label caption stacked above value)
+    ├── button/             # AppButton, AppOutlinedButton (+ AppButtonTone: Primary/Success/Danger,
+    │                        # both with an optional leadingIcon slot), AppStepperButton
+    ├── layout/             # AppScaffold (topBar + optional bottomBar slot + content)
+    ├── input/              # AppTextField (+ AppTextFieldType: Text/Number/Email/Password), AppCheckbox,
+    │                        # AppRadioButton, AppSwitch, AppDropdown (+ AppDropdownOption),
+    │                        # AppRadioToggleChip, AppRadioCheckCircle
+    ├── icon/                # AppIcon (non-interactive), AppIconButton (clickable)
+    ├── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard, AppDivider,
+    │                        # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral),
+    │                        # AppBottomActionBar (flat elevated bar for a screen's pinned bottom actions)
+    ├── indicator/           # AppScoreGauge (circular score-out-of-max), AppGradientRangeIndicator
+    │                        # (red/yellow/green scale with a position pointer)
+    └── media/               # AppImageCarousel (+ AppCarouselPage) — swipeable, captioned pages; takes a
+                             # content slot per page rather than an image loader
 ```
 
-Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit `text`/`button`/`layout`/`input`.
+Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit an existing one.
 
 Conventions established by existing components:
 - Each component wraps a Material3 equivalent with a narrowed, opinionated API (e.g. `AppTextStyle` enum instead of raw `TextStyle` passthrough) — don't leak Material3/Foundation types (like `PaddingValues`) through a component's public signature if avoidable (see `AppScaffold`: it absorbs `innerPadding` internally via a `Box` rather than exposing it).
 - Every component that renders text accepts an optional `AppTextOverride` (`fontSize`/`fontWeight`/`color`, all no-op by default) — `AppText`'s `override`, `AppButton`/`AppOutlinedButton`'s `textOverride`, `AppCheckbox`/`AppRadioButton`/`AppSwitch`/`AppDropdown`'s `labelOverride`. This is how callers (like `:formbuilder`) apply per-instance styling without the design system losing its opinionated defaults.
 - Spacing between elements inside a component uses `AppSpacing` (`theme/Spacing.kt`) tokens, not hardcoded `dp` values.
 - Each category subpackage has its own `*Previews.kt` file (not one global previews file) with a private composable carrying stacked `@Preview(name = "Light", ...)` / `@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, ...)` annotations, wrapped in `ComposeFormTheme`.
+- Modules outside `:designsystem` (e.g. `:app`) can reference `ImageVector` constants from `androidx.compose.material:material-icons-core` directly (it's a separate artifact with no Material3 dependency) and pass them into a designsystem component (`AppIcon`, `AppIconButton`, `AppTopBarAction`, `AppButton`'s `leadingIcon` slot, etc.) — but any `@Composable` slot lambda a caller *writes* (e.g. `AppLabeledValue`'s `icon` param) still compiles as part of that caller's own module, so its body must only call designsystem-exposed composables (`AppIcon`, not raw Material3 `Icon`), never Material3 directly.
 
-**Not yet built** (planned next phase): `components/surface/` — `AppCard`, `AppDialog`, `AppChip`, `AppDivider`, `AppTopBar`. Follow the same wrapping conventions above when implementing these.
+**Not yet built**: `components/surface/AppDialog`, `AppChip` (a general-purpose chip; `AppStatusBadge` only covers the status-pill case). Follow the same wrapping conventions above when implementing these.
 
 ### Network boundary (same pattern as the design system boundary)
 
