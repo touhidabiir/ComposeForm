@@ -58,10 +58,12 @@ Conventions established by existing components:
 `:network` depends on `okio`, `okhttp` (+ `logging-interceptor`), and `retrofit2` (+ `converter-scalars`, `converter-gson`, `adapter-rxjava2`) as `implementation` (not `api`). `:app` does not declare any of these itself, so `okhttp3.*`/`retrofit2.*`/`okio.*` are not on its compile classpath — importing them there fails to compile. All API/network work (Retrofit service interfaces, request/response handling) belongs inside `:network`; `:app` only consumes what `:network` exposes publicly:
 
 - `NetworkClient` (`network/.../NetworkClient.kt`) — `create(service: Class<T>): T`, a thin wrapper around `Retrofit.create` that's the only way to obtain a Retrofit service instance from outside the module.
-- `@BaseUrl` (`network/.../BaseUrl.kt`) — a Hilt qualifier a consuming module's own Hilt module binds to a `String` (e.g. `@Provides @BaseUrl fun provideBaseUrl(): String = "..."`) so `:network` never hardcodes an environment's base URL.
-- `NetworkModule` (`network/.../NetworkModule.kt`) — `internal`, wires the `OkHttpClient`/`Retrofit` singletons; not visible outside the module.
+- `@BaseUrl` (`network/.../BaseUrl.kt`) — a Hilt qualifier a consuming module's own Hilt module binds to a `String` (e.g. `@Provides @BaseUrl fun provideBaseUrl(): String = "..."`) so `:network` never hardcodes an environment's base URL. `:app` supplies the (currently dummy) value via `di/AppNetworkModule.kt`.
+- `AppApiService` (`network/.../api/AppApiService.kt`) — the Retrofit service interface (`login`, `getManagerList`, `getAdminList`, `getAdminDetails`); also bound directly as a Hilt-injectable singleton in `NetworkModule`, so consumers can `@Inject` it instead of going through `NetworkClient.create`.
+- `network/.../model/` — the plain (Gson-reflected, no serialization annotations needed) request/response data classes: `LoginRequest`/`LoginResponse`, `ManagerSummary`, `AdminSummary`, `AdminDetails`.
+- `NetworkModule` (`network/.../NetworkModule.kt`) — `internal`, wires the `OkHttpClient`/`Retrofit`/`AppApiService` singletons; not visible outside the module.
 
-`:network` depends on `hilt-android`/`kapt(hilt-compiler)` for its own `@Module`, but does **not** apply the Hilt Gradle plugin (`com.google.dagger.hilt.android`) — per Hilt's multi-module guidance, only `:app` (the module with the eventual `@HiltAndroidApp` entry point) applies that plugin; library modules just contribute `@Module`s via the compiler dependency.
+`:network` depends on `hilt-android`/`kapt(hilt-compiler)` for its own `@Module`, but does **not** apply the Hilt Gradle plugin (`com.google.dagger.hilt.android`) — per Hilt's multi-module guidance, only `:app` (the module with the eventual `@HiltAndroidApp` entry point) applies that plugin; library modules just contribute `@Module`s via the compiler dependency. Note `:app` has no `@HiltAndroidApp` `Application` class yet, so none of this DI graph is actually triggered/validated at runtime until one is added.
 
 ### `:formbuilder` — JSON-driven dynamic forms
 

@@ -1,5 +1,6 @@
 package com.touhid.composeform.network
 
+import com.touhid.composeform.network.api.AppApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,4 +38,8 @@ internal object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()
+
+    @Provides
+    @Singleton
+    fun provideAppApiService(retrofit: Retrofit): AppApiService = retrofit.create(AppApiService::class.java)
 }
