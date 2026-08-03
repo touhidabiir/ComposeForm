@@ -30,7 +30,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
@@ -240,5 +242,16 @@ private fun LeadListCard(lead: LeadListItem) {
                 AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = {}, modifier = Modifier.fillMaxWidth())
             }
         }
+    }
+}
+
+// Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
+// system setting - that's how this screen actually renders in the real app, so a "Dark" tile
+// here would show something the app never does.
+@Preview(name = "Lead Dashboard", showBackground = true)
+@Composable
+private fun LeadDashboardScreenPreview() {
+    ComposeFormAppTheme {
+        LeadDashboardScreen(onBack = {})
     }
 }
