@@ -7,5 +7,4 @@ import kotlinx.serialization.Serializable
 enum class FormVisibilityOperator {
     @SerialName("equals") Equals,
     @SerialName("notEquals") NotEquals,
-    @SerialName("in") In,
 }

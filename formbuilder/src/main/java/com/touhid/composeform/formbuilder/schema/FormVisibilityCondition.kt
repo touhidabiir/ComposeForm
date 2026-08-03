@@ -7,9 +7,11 @@ import kotlinx.serialization.Serializable
  * visible only when the field identified by [key] currently holds a value matching
  * [operator]/[values].
  *
- * For [FormVisibilityOperator.Equals] and [FormVisibilityOperator.NotEquals], only
- * `values.firstOrNull()` is consulted; additional entries are ignored. For
- * [FormVisibilityOperator.In], the full list is the acceptable set.
+ * [values] is always used as a full set, for both operators: [FormVisibilityOperator.Equals] is
+ * satisfied when the trigger field's value(s) overlap with any entry in [values]; deliberately
+ * one operator whether [values] has one entry or many, rather than one shape that behaves
+ * differently depending on how many entries it happens to have. [FormVisibilityOperator.NotEquals]
+ * is satisfied when there is no such overlap.
  *
  * If the field identified by [key] has no value at all (untouched with no default, or cleared
  * because it is itself currently hidden), the condition evaluates to not-satisfied for every

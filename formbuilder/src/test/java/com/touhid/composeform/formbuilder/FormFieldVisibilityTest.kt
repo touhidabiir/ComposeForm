@@ -38,46 +38,41 @@ class FormFieldVisibilityTest {
     }
 
     @Test
-    fun `in matches any acceptable value, empty list never matches`() {
-        val field = field(FormVisibilityOperator.In, listOf("male", "others"))
+    fun `equals matches any value in the list, empty list never matches`() {
+        val field = field(FormVisibilityOperator.Equals, listOf("male", "others"))
         assertTrue(field.isVisible(mapOf("gender" to FormValue.Option("male", "Male"))))
         assertTrue(field.isVisible(mapOf("gender" to FormValue.Option("others", "Others"))))
         assertFalse(field.isVisible(mapOf("gender" to FormValue.Option("female", "Female"))))
 
-        val neverMatches = field(FormVisibilityOperator.In, emptyList())
+        val neverMatches = field(FormVisibilityOperator.Equals, emptyList())
         assertFalse(neverMatches.isVisible(mapOf("gender" to FormValue.Option("male", "Male"))))
+    }
+
+    @Test
+    fun `notEquals excludes every value in the list`() {
+        val field = field(FormVisibilityOperator.NotEquals, listOf("male", "others"))
+        assertFalse(field.isVisible(mapOf("gender" to FormValue.Option("male", "Male"))))
+        assertFalse(field.isVisible(mapOf("gender" to FormValue.Option("others", "Others"))))
+        assertTrue(field.isVisible(mapOf("gender" to FormValue.Option("female", "Female"))))
     }
 
     @Test
     fun `absent trigger value hides field for every operator, including notEquals`() {
         val equals = field(FormVisibilityOperator.Equals, listOf("male"))
         val notEquals = field(FormVisibilityOperator.NotEquals, listOf("male"))
-        val inOp = field(FormVisibilityOperator.In, listOf("male"))
 
         assertFalse(equals.isVisible(emptyMap()))
         assertFalse(notEquals.isVisible(emptyMap()))
-        assertFalse(inOp.isVisible(emptyMap()))
     }
 
     @Test
-    fun `values beyond index 0 are ignored for equals and notEquals`() {
-        val equals = field(FormVisibilityOperator.Equals, listOf("male", "female"))
-        assertTrue(equals.isVisible(mapOf("gender" to FormValue.Option("male", "Male"))))
-        assertFalse(equals.isVisible(mapOf("gender" to FormValue.Option("female", "Female"))))
-
-        val notEquals = field(FormVisibilityOperator.NotEquals, listOf("male", "female"))
-        assertFalse(notEquals.isVisible(mapOf("gender" to FormValue.Option("male", "Male"))))
-        assertTrue(notEquals.isVisible(mapOf("gender" to FormValue.Option("female", "Female"))))
-    }
-
-    @Test
-    fun `Options trigger with multiple selections - equals requires exactly one match, in matches any`() {
+    fun `Options trigger with multiple selections matches on any overlap`() {
         val equals = field(FormVisibilityOperator.Equals, listOf("music"), triggerKey = "interests")
-        val inOp = field(FormVisibilityOperator.In, listOf("music", "books"), triggerKey = "interests")
+        val equalsMulti = field(FormVisibilityOperator.Equals, listOf("music", "books"), triggerKey = "interests")
 
         val multiSelected = FormValue.Options(listOf(FormValue.Option("music", "Music"), FormValue.Option("books", "Books")))
-        assertFalse(equals.isVisible(mapOf("interests" to multiSelected)))
-        assertTrue(inOp.isVisible(mapOf("interests" to multiSelected)))
+        assertTrue(equals.isVisible(mapOf("interests" to multiSelected)))
+        assertTrue(equalsMulti.isVisible(mapOf("interests" to multiSelected)))
 
         val singleSelected = FormValue.Options(listOf(FormValue.Option("music", "Music")))
         assertTrue(equals.isVisible(mapOf("interests" to singleSelected)))
