@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
@@ -32,6 +33,12 @@ private fun InputPreview() {
                     placeholder = "Search by location...",
                     leadingIcon = { Icon(imageVector = Icons.Filled.LocationOn, contentDescription = null) },
                 )
+                AppSearchField(
+                    value = "Bakalia",
+                    onValueChange = {},
+                    trailingIcon = { Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear") },
+                )
+                AppSearchField(value = "No icons at all", onValueChange = {}, leadingIcon = null)
                 AppTextField(
                     value = "Jane Doe",
                     onValueChange = {},
