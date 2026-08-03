@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -26,7 +27,13 @@ private fun InputPreview() {
                 modifier = Modifier.padding(AppSpacing.Medium),
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
             ) {
-                AppSearchField(value = "", onValueChange = {}, placeholder = "Search...")
+                AppSearchField(value = "", onValueChange = {}, placeholder = "No icons at all")
+                AppSearchField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = "Search...",
+                    leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = null) },
+                )
                 AppSearchField(
                     value = "",
                     onValueChange = {},
@@ -38,7 +45,6 @@ private fun InputPreview() {
                     onValueChange = {},
                     trailingIcon = { Icon(imageVector = Icons.Filled.Clear, contentDescription = "Clear") },
                 )
-                AppSearchField(value = "No icons at all", onValueChange = {}, leadingIcon = null)
                 AppTextField(
                     value = "Jane Doe",
                     onValueChange = {},

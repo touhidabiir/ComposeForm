@@ -45,8 +45,8 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     ├── layout/             # AppScaffold (topBar + optional bottomBar slot + content)
     ├── input/              # AppTextField (+ AppTextFieldType: Text/Number/Email/Password), AppSearchField
     │                        # (pill-shaped filled search bar - distinct from AppTextField; leadingIcon
-    │                        # defaults to a search icon, trailingIcon defaults to none, both nullable
-    │                        # composable slots so either/both can be omitted entirely), AppCheckbox,
+    │                        # defaults to none, trailingIcon defaults to none, both nullable composable
+    │                        # slots so either/both can be omitted entirely), AppCheckbox,
     │                        # AppRadioButton, AppSwitch, AppDropdown (+ AppDropdownOption),
     │                        # AppRadioToggleChip, AppRadioCheckCircle
     ├── icon/                # AppIcon (non-interactive), AppIconButton (clickable)

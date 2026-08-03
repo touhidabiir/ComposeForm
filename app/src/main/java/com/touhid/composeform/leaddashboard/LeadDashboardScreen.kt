@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -111,6 +112,7 @@ fun LeadDashboardScreen(
                     onValueChange = { searchQuery = it },
                     placeholder = "লিড বেইজ সার্চ করুন...",
                     modifier = Modifier.fillMaxWidth(),
+                    leadingIcon = { AppIcon(icon = Icons.Filled.Search, contentDescription = null) },
                 )
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 Row(
