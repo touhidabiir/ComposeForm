@@ -27,7 +27,6 @@ import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppText
-import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.flow.DemoFormApi
 import com.touhid.composeform.flow.FormFlowState
 import com.touhid.composeform.flow.FormFlowViewModel
@@ -53,10 +52,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // Force light theme for now, regardless of system dark mode / dynamic color -
-            // dynamicColor = false also keeps colors on the app's own fixed LightColorScheme
-            // rather than a device-wallpaper-derived one.
-            ComposeFormTheme(darkTheme = false, dynamicColor = false) {
+            ComposeFormAppTheme {
                 val navController = rememberNavController()
                 var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
                 var activePickerSchema by remember { mutableStateOf<FormSchema?>(null) }
