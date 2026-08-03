@@ -20,8 +20,8 @@ private fun IndicatorPreview() {
             modifier = Modifier.padding(AppSpacing.Medium),
             verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
         ) {
-            AppScoreGauge(score = 89, maxScore = 100)
-            AppGradientRangeIndicator(value = 0.89f, modifier = Modifier.fillMaxWidth())
+            AppScoreBadge(score = 89, maxScore = 100)
+            AppSegmentedRangeIndicator(value = 0.89f, modifier = Modifier.fillMaxWidth())
         }
     }
 }

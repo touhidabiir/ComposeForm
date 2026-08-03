@@ -50,8 +50,10 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     ├── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard, AppDivider,
     │                        # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral),
     │                        # AppBottomActionBar (flat elevated bar for a screen's pinned bottom actions)
-    └── indicator/           # AppScoreGauge (circular score-out-of-max), AppGradientRangeIndicator
-                             # (red/yellow/green scale with a position pointer)
+    └── indicator/           # AppScoreBadge (solid-colored circle with a score centered on it -
+                             # the color is a fixed tone the caller picks, not a proportional
+                             # fill), AppSegmentedRangeIndicator (red/green scale as discrete
+                             # blocks, the active one taller rather than a separate pointer)
 ```
 
 Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit an existing one.

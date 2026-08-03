@@ -30,8 +30,8 @@ import com.touhid.composeform.designsystem.components.button.AppButtonTone
 import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
-import com.touhid.composeform.designsystem.components.indicator.AppGradientRangeIndicator
-import com.touhid.composeform.designsystem.components.indicator.AppScoreGauge
+import com.touhid.composeform.designsystem.components.indicator.AppScoreBadge
+import com.touhid.composeform.designsystem.components.indicator.AppSegmentedRangeIndicator
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
@@ -41,6 +41,9 @@ import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.StatusError
+import com.touhid.composeform.designsystem.theme.StatusSuccess
+import com.touhid.composeform.designsystem.theme.StatusWarning
 
 private val RowIconSize = 16.dp
 private val PhotoPlaceholderColors = listOf(Color(0xFFB0BEC5), Color(0xFF90A4AE), Color(0xFFCFD8DC))
@@ -128,16 +131,19 @@ fun AcquisitionApprovalDetailScreen(
 
 @Composable
 private fun ScoreSection(score: Int, maxScore: Int) {
+    val ratio = if (maxScore > 0) score.toFloat() / maxScore.toFloat() else 0f
+    val tierColor = when {
+        ratio >= 0.7f -> StatusSuccess
+        ratio >= 0.4f -> StatusWarning
+        else -> StatusError
+    }
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
     ) {
-        AppScoreGauge(score = score, maxScore = maxScore)
-        AppGradientRangeIndicator(
-            value = if (maxScore > 0) score.toFloat() / maxScore.toFloat() else 0f,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        AppScoreBadge(score = score, maxScore = maxScore, color = tierColor, contentColor = Color.White)
+        AppSegmentedRangeIndicator(value = ratio, modifier = Modifier.fillMaxWidth())
         AppStepperButton(label = "বিস্তারিত দেখুন", onClick = {}, modifier = Modifier.fillMaxWidth())
     }
 }
