@@ -1,7 +1,9 @@
 package com.touhid.composeform.acquisition
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -24,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonTone
@@ -31,7 +35,6 @@ import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.indicator.AppScoreBadge
-import com.touhid.composeform.designsystem.components.indicator.AppSegmentedRangeIndicator
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
@@ -129,22 +132,67 @@ fun AcquisitionApprovalDetailScreen(
     }
 }
 
+// The score bands (label, color, and how many there are) are acquisition-scoring business
+// data, not a generic design-system concept - kept here rather than baked into a designsystem
+// component, built entirely from already-exposed pieces (AppText, AppIcon) plus Foundation
+// layout, so there's no Material3-wrapping reason for it to live anywhere else.
+private data class ScoreBand(val label: String, val color: Color)
+
+private val ScoreBands = listOf(
+    ScoreBand("খুব ঝুঁকিপূর্ণ", StatusError),
+    ScoreBand("ঝুঁকিপূর্ণ", Color(0xFFFF8F00)),
+    ScoreBand("মাঝারি", StatusWarning),
+    ScoreBand("ভালো", Color(0xFFAEEA00)),
+    ScoreBand("খুব ভালো", StatusSuccess),
+)
+
 @Composable
 private fun ScoreSection(score: Int, maxScore: Int) {
     val ratio = if (maxScore > 0) score.toFloat() / maxScore.toFloat() else 0f
-    val tierColor = when {
-        ratio >= 0.7f -> StatusSuccess
-        ratio >= 0.4f -> StatusWarning
-        else -> StatusError
-    }
+    val activeIndex = (ratio.coerceIn(0f, 1f) * ScoreBands.size).toInt().coerceIn(0, ScoreBands.size - 1)
+    val tierColor = ScoreBands[activeIndex].color
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
     ) {
-        AppScoreBadge(score = score, maxScore = maxScore, color = tierColor, contentColor = Color.White)
-        AppSegmentedRangeIndicator(value = ratio, modifier = Modifier.fillMaxWidth())
+        AppScoreBadge(score = score, maxScore = maxScore, color = tierColor)
+        ScoreBandIndicator(activeIndex = activeIndex, modifier = Modifier.fillMaxWidth())
         AppStepperButton(label = "বিস্তারিত দেখুন", onClick = {}, modifier = Modifier.fillMaxWidth())
+    }
+}
+
+@Composable
+private fun ScoreBandIndicator(activeIndex: Int, modifier: Modifier = Modifier, bands: List<ScoreBand> = ScoreBands) {
+    Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
+        bands.forEachIndexed { index, band ->
+            val isActive = index == activeIndex
+            Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                if (isActive) {
+                    AppIcon(
+                        icon = Icons.Filled.KeyboardArrowDown,
+                        contentDescription = null,
+                        tint = band.color,
+                        modifier = Modifier.size(RowIconSize),
+                    )
+                } else {
+                    Spacer(modifier = Modifier.size(RowIconSize))
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(if (isActive) 16.dp else 8.dp)
+                        .background(color = band.color, shape = RoundedCornerShape(percent = 50)),
+                )
+                Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+                AppText(
+                    text = band.label,
+                    style = AppTextStyle.Label,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
     }
 }
 

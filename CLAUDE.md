@@ -50,10 +50,8 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     ├── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard, AppDivider,
     │                        # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral),
     │                        # AppBottomActionBar (flat elevated bar for a screen's pinned bottom actions)
-    └── indicator/           # AppScoreBadge (solid-colored circle with a score centered on it -
-                             # the color is a fixed tone the caller picks, not a proportional
-                             # fill), AppSegmentedRangeIndicator (red/green scale as discrete
-                             # blocks, the active one taller rather than a separate pointer)
+    └── indicator/           # AppScoreBadge (circle outlined in a caller-chosen color, with a
+                             # score centered on it - not a proportional arc fill)
 ```
 
 Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit an existing one.
@@ -64,6 +62,7 @@ Conventions established by existing components:
 - Spacing between elements inside a component uses `AppSpacing` (`theme/Spacing.kt`) tokens, not hardcoded `dp` values.
 - Each category subpackage has its own `*Previews.kt` file (not one global previews file) with a private composable carrying stacked `@Preview(name = "Light", ...)` / `@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, ...)` annotations, wrapped in `ComposeFormTheme`.
 - Modules outside `:designsystem` (e.g. `:app`) can reference `ImageVector` constants from `androidx.compose.material:material-icons-core` directly (it's a separate artifact with no Material3 dependency) and pass them into a designsystem component (`AppIcon`, `AppIconButton`, `AppTopBarAction`, `AppButton`'s `leadingIcon` slot, etc.) — but any `@Composable` slot lambda a caller *writes* (e.g. `AppIconLabelValue`'s `icon` param) still compiles as part of that caller's own module, so its body must only call designsystem-exposed composables (`AppIcon`, not raw Material3 `Icon`), never Material3 directly.
+- Not everything a screen renders belongs in `:designsystem`, even when it's visually involved. The boundary's purpose is specifically wrapping Material3 access `:app`/`:formbuilder` can't otherwise reach — a composition that's already buildable from exposed primitives (`AppText`, `AppIcon`, Foundation `Row`/`Column`/`Box`) has no Material3-wrapping reason to move. A good test: does the *data* (labels, colors, thresholds, how many of something there are) belong to one specific feature's business logic, or is it a generic, caller-supplied shape any screen could reuse? `AcquisitionApprovalDetailScreen`'s score-band step indicator (dynamic per-band label/color, acquisition-risk-specific) stays in `:app`, built from `AppText`/`AppIcon`; `AppScoreBadge` (just a score number + a caller-chosen color, no domain logic baked in) is generic enough to stay in `:designsystem`.
 
 **Not yet built**: `components/surface/AppDialog`, `AppChip` (a general-purpose chip; `AppStatusBadge` only covers the status-pill case). Follow the same wrapping conventions above when implementing these.
 
