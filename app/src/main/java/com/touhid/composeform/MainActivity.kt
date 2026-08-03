@@ -53,7 +53,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ComposeFormTheme {
+            // Force light theme for now, regardless of system dark mode / dynamic color -
+            // dynamicColor = false also keeps colors on the app's own fixed LightColorScheme
+            // rather than a device-wallpaper-derived one.
+            ComposeFormTheme(darkTheme = false, dynamicColor = false) {
                 val navController = rememberNavController()
                 var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
                 var activePickerSchema by remember { mutableStateOf<FormSchema?>(null) }
