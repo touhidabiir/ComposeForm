@@ -1,8 +1,7 @@
 package com.touhid.composeform.leaddashboard
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 
 // The dashboard's filter tabs - "e-KYC" isn't a raw LeadStatus, it's approved leads that already
 // have an ekycSubmitter, so this stays a UI-only concept distinct from the wire model below.
@@ -14,74 +13,68 @@ enum class LeadStatusFilter(val label: String) {
 }
 
 // Mirrors the backend's lead list response shape 1:1 - field names/nesting match the API's JSON
-// exactly (via @SerialName for its snake_case keys) rather than a UI-shaped model, the same
-// pattern flow/FormPageResponse.kt uses for the form-builder demo.
-@Serializable
+// exactly (via @SerializedName for its snake_case keys), Gson-reflected the same way :network's
+// own request/response models are (see CLAUDE.md's Network boundary section) rather than
+// kotlinx.serialization's fail-fast @Serializable approach.
 data class LeadDashboardResponse(
     val data: LeadDashboardPage,
 )
 
-@Serializable
 data class LeadDashboardPage(
     val count: Int,
-    @SerialName("page_no") val pageNo: Int,
-    @SerialName("page_size") val pageSize: Int,
-    @SerialName("total_pages") val totalPages: Int,
+    @SerializedName("page_no") val pageNo: Int,
+    @SerializedName("page_size") val pageSize: Int,
+    @SerializedName("total_pages") val totalPages: Int,
     val results: List<LeadListItem>,
 )
 
-@Serializable
 enum class LeadStatus {
-    @SerialName("pending") Pending,
-    @SerialName("approved") Approved,
-    @SerialName("rejected") Rejected,
+    @SerializedName("pending") Pending,
+    @SerializedName("approved") Approved,
+    @SerializedName("rejected") Rejected,
 }
 
-@Serializable
 data class LeadCloser(
     val name: String,
-    @SerialName("employee_id") val employeeId: String,
-    @SerialName("whitelisting_number") val whitelistingNumber: String,
-    @SerialName("serving_ma") val servingMa: String,
+    @SerializedName("employee_id") val employeeId: String,
+    @SerializedName("whitelisting_number") val whitelistingNumber: String,
+    @SerializedName("serving_ma") val servingMa: String,
 )
 
-@Serializable
 data class Reviewer(
     val name: String,
     val designation: String,
     val territory: String,
 )
 
-@Serializable
 data class EkycSubmitter(
     val name: String,
 )
 
-@Serializable
 data class Rejection(
     val reason: String,
 )
 
-@Serializable
 data class LeadListItem(
     val id: Long,
-    @SerialName("display_id") val displayId: String,
-    @SerialName("shop_name") val shopName: String,
-    @SerialName("wallet_number") val walletNumber: String,
+    @SerializedName("display_id") val displayId: String,
+    @SerializedName("shop_name") val shopName: String,
+    @SerializedName("wallet_number") val walletNumber: String,
     val address: String,
     val status: LeadStatus,
-    @SerialName("premiumness_score") val premiumnessScore: Double,
-    @SerialName("can_submit_ekyc") val canSubmitEkyc: Boolean,
-    @SerialName("lead_closer") val leadCloser: LeadCloser,
+    @SerializedName("premiumness_score") val premiumnessScore: Double,
+    @SerializedName("can_submit_ekyc") val canSubmitEkyc: Boolean,
+    @SerializedName("lead_closer") val leadCloser: LeadCloser,
     val reviewer: Reviewer? = null,
-    @SerialName("ekyc_submitter") val ekycSubmitter: EkycSubmitter? = null,
+    @SerializedName("ekyc_submitter") val ekycSubmitter: EkycSubmitter? = null,
     val rejection: Rejection? = null,
-    @SerialName("created_at") val createdAt: String,
+    @SerializedName("created_at") val createdAt: String,
 )
 
-private val json = Json { ignoreUnknownKeys = true }
+private val gson = Gson()
 
-fun parseLeadDashboardResponse(jsonString: String): LeadDashboardResponse = json.decodeFromString(jsonString)
+fun parseLeadDashboardResponse(jsonString: String): LeadDashboardResponse =
+    gson.fromJson(jsonString, LeadDashboardResponse::class.java)
 
 // Stands in for a real backend call, same spirit as DemoFormApi - a JSON string round-tripped
 // through the real response model rather than Kotlin objects built by hand.
