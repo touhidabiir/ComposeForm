@@ -1,7 +1,9 @@
 package com.touhid.composeform.acquisition
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -27,6 +30,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.button.AppButton
@@ -34,7 +38,6 @@ import com.touhid.composeform.designsystem.components.button.AppButtonTone
 import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
-import com.touhid.composeform.designsystem.components.indicator.AppScoreBadge
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
@@ -42,9 +45,11 @@ import com.touhid.composeform.designsystem.components.surface.AppDivider
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.StatusError
+import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusSuccess
 import com.touhid.composeform.designsystem.theme.StatusWarning
 
@@ -156,9 +161,38 @@ private fun ScoreSection(score: Int, maxScore: Int) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
     ) {
-        AppScoreBadge(score = score, maxScore = maxScore, color = tierColor)
+        ScoreCircle(title = "স্কোর", score = score, maxScore = maxScore, color = tierColor)
         ScoreBandIndicator(activeIndex = activeIndex, modifier = Modifier.fillMaxWidth())
         AppStepperButton(label = "বিস্তারিত দেখুন", onClick = {}, modifier = Modifier.fillMaxWidth())
+    }
+}
+
+// A one-off view for this screen only - no Material3-derived default color to justify a
+// :designsystem home (unlike AppStatusBadge, this has exactly one caller and always receives an
+// explicit color), so it's built directly here from plain Foundation border()/CircleShape.
+@Composable
+private fun ScoreCircle(title: String, score: Int, maxScore: Int, color: Color, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .size(120.dp)
+            .border(border = BorderStroke(width = 6.dp, color = color), shape = CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            AppText(text = title, style = AppTextStyle.Label, override = AppTextOverride(color = StatusNeutral))
+            Row(verticalAlignment = Alignment.Bottom) {
+                AppText(
+                    text = "$score",
+                    style = AppTextStyle.TitleLarge,
+                    override = AppTextOverride(color = color, fontWeight = FontWeight.Bold),
+                )
+                AppText(
+                    text = "/$maxScore",
+                    style = AppTextStyle.BodyMedium,
+                    override = AppTextOverride(color = StatusNeutral),
+                )
+            }
+        }
     }
 }
 
