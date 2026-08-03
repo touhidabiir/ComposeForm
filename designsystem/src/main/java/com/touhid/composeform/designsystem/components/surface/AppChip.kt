@@ -1,0 +1,38 @@
+package com.touhid.composeform.designsystem.components.surface
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.components.text.AppTextStyle
+import com.touhid.composeform.designsystem.theme.AppSpacing
+
+// A selectable pill - filled/accented when selected, neutral otherwise - for filter tabs and
+// similar choice selections. Distinct from AppStatusBadge: that one always shows a status dot
+// and communicates state (approved/pending/etc.), this one has no dot and communicates
+// selection (this is the currently active choice among several).
+@Composable
+fun AppChip(
+    text: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+    val contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+    Surface(
+        onClick = onClick,
+        modifier = modifier,
+        shape = RoundedCornerShape(percent = 50),
+        color = containerColor,
+        contentColor = contentColor,
+    ) {
+        Box(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
+            AppText(text = text, style = AppTextStyle.Label, color = contentColor)
+        }
+    }
+}

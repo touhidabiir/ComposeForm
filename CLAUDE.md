@@ -43,13 +43,16 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     ├── button/             # AppButton, AppOutlinedButton (+ AppButtonTone: Primary/Success/Danger,
     │                        # both with an optional leadingIcon slot), AppStepperButton
     ├── layout/             # AppScaffold (topBar + optional bottomBar slot + content)
-    ├── input/              # AppTextField (+ AppTextFieldType: Text/Number/Email/Password), AppCheckbox,
+    ├── input/              # AppTextField (+ AppTextFieldType: Text/Number/Email/Password), AppSearchField
+    │                        # (pill-shaped filled search bar - distinct from AppTextField), AppCheckbox,
     │                        # AppRadioButton, AppSwitch, AppDropdown (+ AppDropdownOption),
     │                        # AppRadioToggleChip, AppRadioCheckCircle
     ├── icon/                # AppIcon (non-interactive), AppIconButton (clickable)
     └── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard, AppDivider,
-                             # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral),
-                             # AppBottomActionBar (flat elevated bar for a screen's pinned bottom actions)
+                             # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral - always
+                             # shows a status dot), AppChip (selectable pill for filter tabs - no dot,
+                             # communicates selection rather than state), AppBottomActionBar (flat elevated
+                             # bar for a screen's pinned bottom actions)
 ```
 
 Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit an existing one.
@@ -62,7 +65,7 @@ Conventions established by existing components:
 - Modules outside `:designsystem` (e.g. `:app`) can reference `ImageVector` constants from `androidx.compose.material:material-icons-core` directly (it's a separate artifact with no Material3 dependency) and pass them into a designsystem component (`AppIcon`, `AppIconButton`, `AppTopBarAction`, `AppButton`'s `leadingIcon` slot, etc.) — but any `@Composable` slot lambda a caller *writes* (e.g. `AppIconLabelValue`'s `icon` param) still compiles as part of that caller's own module, so its body must only call designsystem-exposed composables (`AppIcon`, not raw Material3 `Icon`), never Material3 directly.
 - Not everything a screen renders belongs in `:designsystem`, even when it's visually involved and looks reusable in principle. The boundary's purpose is specifically wrapping Material3 access `:app`/`:formbuilder` can't otherwise reach — a composition already buildable from exposed primitives (`AppText`, `AppIcon`, Foundation `Row`/`Column`/`Box`/`border`/`background`) has no Material3-wrapping reason to move, and "some other screen might want this shape someday" isn't a reason either - that's the same speculative-reuse trap the rest of this doc argues against for ordinary code. Ask two concrete questions instead of a hypothetical one: (1) does it have an *actual* second caller today, not an imagined future one? (2) does it use a Material3-derived default (`MaterialTheme.colorScheme...`) that its real caller(s) actually rely on, rather than always overriding? `AcquisitionApprovalDetailScreen`'s score-band step indicator and its score circle both answer no to both - one caller, always-explicit colors - so both live in `:app`, built from `AppText`/`AppIcon`/`AppTextOverride` plus plain Foundation shapes.
 
-**Not yet built**: `components/surface/AppDialog`, `AppChip` (a general-purpose chip; `AppStatusBadge` only covers the status-pill case). Follow the same wrapping conventions above when implementing these.
+**Not yet built**: `components/surface/AppDialog`. Follow the same wrapping conventions above when implementing it.
 
 ### Network boundary (same pattern as the design system boundary)
 

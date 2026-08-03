@@ -1,6 +1,5 @@
 package com.touhid.composeform.leaddashboard
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,9 +35,10 @@ import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
-import com.touhid.composeform.designsystem.components.input.AppTextField
+import com.touhid.composeform.designsystem.components.input.AppSearchField
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppCard
+import com.touhid.composeform.designsystem.components.surface.AppChip
 import com.touhid.composeform.designsystem.components.surface.AppStatusBadge
 import com.touhid.composeform.designsystem.components.surface.AppStatusTone
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
@@ -106,7 +106,7 @@ fun LeadDashboardScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(AppSpacing.Medium)) {
-                AppTextField(
+                AppSearchField(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     placeholder = "লিড বেইজ সার্চ করুন...",
@@ -120,8 +120,8 @@ fun LeadDashboardScreen(
                     horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
                 ) {
                     LeadStatusFilter.entries.forEach { filter ->
-                        FilterChip(
-                            label = filter.label,
+                        AppChip(
+                            text = filter.label,
                             selected = filter == selectedFilter,
                             onClick = { selectedFilter = filter },
                         )
@@ -140,15 +140,6 @@ fun LeadDashboardScreen(
             }
         }
     }
-}
-
-@Composable
-private fun FilterChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    AppStatusBadge(
-        text = label,
-        tone = if (selected) AppStatusTone.Info else AppStatusTone.Neutral,
-        modifier = Modifier.clickable(onClick = onClick),
-    )
 }
 
 @Composable

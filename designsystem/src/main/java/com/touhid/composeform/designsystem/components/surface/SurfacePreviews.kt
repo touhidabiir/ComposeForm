@@ -3,6 +3,7 @@ package com.touhid.composeform.designsystem.components.surface
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -54,6 +55,11 @@ private fun CardDividerBadgePreview() {
             AppStatusBadge(text = "Cancelled", tone = AppStatusTone.Error)
             AppStatusBadge(text = "e-KYC submitted", tone = AppStatusTone.Info)
             AppStatusBadge(text = "Neutral", tone = AppStatusTone.Neutral)
+            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                AppChip(text = "All", selected = true, onClick = {})
+                AppChip(text = "Pending", selected = false, onClick = {})
+                AppChip(text = "Approved", selected = false, onClick = {})
+            }
             AppCard {
                 AppText(text = "Card title")
                 AppDivider(modifier = Modifier.padding(vertical = AppSpacing.Small))

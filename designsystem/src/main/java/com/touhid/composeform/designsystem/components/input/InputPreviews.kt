@@ -22,6 +22,7 @@ private fun InputPreview() {
                 modifier = Modifier.padding(AppSpacing.Medium),
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
             ) {
+                AppSearchField(value = "", onValueChange = {}, placeholder = "Search...")
                 AppTextField(
                     value = "Jane Doe",
                     onValueChange = {},
