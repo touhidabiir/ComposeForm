@@ -15,7 +15,9 @@ enum class AppIconPosition { Start, End, Top, Bottom }
 // when it's set - covers both the compact rows in a list card and the label/value pairs in a
 // detail screen with one component, rather than two near-identical ones. [iconPosition] decides
 // which side of the label/value block [icon] sits on - Start/End keep it a Row (like a leading/
-// trailing compound drawable), Top/Bottom switch the outer container to a Column.
+// trailing compound drawable), Top/Bottom switch the outer container to a Column. [subValue], when
+// set, adds a second, smaller/muted caption below the value - e.g. a secondary identifier that
+// belongs to the same value but doesn't deserve equal visual weight.
 @Composable
 fun AppIconLabelValue(
     value: String,
@@ -25,6 +27,8 @@ fun AppIconLabelValue(
     iconPosition: AppIconPosition = AppIconPosition.Start,
     labelOverride: AppTextOverride = AppTextOverride(),
     valueOverride: AppTextOverride = AppTextOverride(),
+    subValue: String? = null,
+    subValueOverride: AppTextOverride = AppTextOverride(),
 ) {
     val textBlock: @Composable () -> Unit = {
         Column {
@@ -37,6 +41,14 @@ fun AppIconLabelValue(
                 )
             }
             AppText(text = value, style = AppTextStyle.BodyMedium, override = valueOverride)
+            subValue?.let {
+                AppText(
+                    text = it,
+                    style = AppTextStyle.Label,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    override = subValueOverride,
+                )
+            }
         }
     }
 

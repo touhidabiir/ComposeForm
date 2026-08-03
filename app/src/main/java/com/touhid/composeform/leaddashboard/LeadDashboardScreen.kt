@@ -1,7 +1,9 @@
 package com.touhid.composeform.leaddashboard
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -29,7 +32,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.ComposeFormAppTheme
@@ -49,12 +55,18 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
-import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusInfo
+import com.touhid.composeform.designsystem.theme.StatusInfoContainer
 import com.touhid.composeform.designsystem.theme.StatusNeutral
+import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 
 private val RowIconSize = 16.dp
-private val MonthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+// The brand's secondary accent (search icon, contact icons, assigned-person names) - distinct from
+// StatusInfo, the brand's primary pink used for the app bar/CTA/selected chip/rejection banner.
+// One caller (this screen) with an always-explicit value, so it stays local rather than moving
+// into :designsystem's theme.
+private val AccentIndigo = Color(0xFF675C92)
 
 private val LeadListItem.isEkycSubmitted: Boolean get() = ekycSubmitter != null
 
@@ -64,17 +76,6 @@ private fun LeadListItem.toFilter(): LeadStatusFilter = when {
     status == LeadStatus.Pending -> LeadStatusFilter.Pending
     status == LeadStatus.Rejected -> LeadStatusFilter.Rejected
     else -> LeadStatusFilter.Pending
-}
-
-// "2026-07-15T10:30:00+06:00" -> "15 Jul 2026" without pulling in java.time (minSdk 24 has no
-// desugaring configured here) or a Locale-sensitive formatter for what's just a display label.
-private fun formatLeadDate(isoDateTime: String): String {
-    val datePart = isoDateTime.substringBefore('T')
-    val parts = datePart.split("-")
-    if (parts.size != 3) return datePart
-    val (year, month, day) = parts
-    val monthName = month.toIntOrNull()?.let { MonthNames.getOrNull(it - 1) } ?: month
-    return "$day $monthName $year"
 }
 
 @Composable
@@ -112,7 +113,7 @@ fun LeadDashboardScreen(
                     onValueChange = { searchQuery = it },
                     placeholder = "লিড বেইজ সার্চ করুন...",
                     modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = { AppIcon(icon = Icons.Filled.Search, contentDescription = null) },
+                    trailingIcon = { AppIcon(icon = Icons.Filled.Search, contentDescription = null, tint = AccentIndigo) },
                 )
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 Row(
@@ -148,7 +149,7 @@ fun LeadDashboardScreen(
 private fun LeadListCard(lead: LeadListItem) {
     val iconModifier = Modifier.size(RowIconSize)
     val (badgeLabel, badgeTone) = when {
-        lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> "ই-কেওয়াইসি জমা হয়েছে" to AppStatusTone.Info
+        lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> "ই-কেওয়াইসি জমা হয়েছে" to AppStatusTone.Success
         lead.status == LeadStatus.Approved -> "অনুমোদিত" to AppStatusTone.Success
         lead.status == LeadStatus.Pending -> "পেন্ডিং" to AppStatusTone.Warning
         else -> "বাতিল" to AppStatusTone.Error
@@ -156,18 +157,7 @@ private fun LeadListCard(lead: LeadListItem) {
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
         lead.rejection?.let { rejection ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = AppSpacing.Small),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    AppText(text = "বাতিল করার কারণ", style = AppTextStyle.Label, override = AppTextOverride(color = StatusError))
-                    AppText(text = rejection.reason, style = AppTextStyle.BodyMedium)
-                }
-                AppIcon(icon = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
-            }
+            RejectionBanner(reason = rejection.reason, modifier = Modifier.padding(bottom = AppSpacing.Small))
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -180,8 +170,9 @@ private fun LeadListCard(lead: LeadListItem) {
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
+            label = "ওয়ালেট নম্বর",
             value = lead.walletNumber,
-            icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier) },
+            icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
@@ -193,10 +184,10 @@ private fun LeadListCard(lead: LeadListItem) {
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "লিড অফিসার",
+            label = "লিড ক্লোজার এ. টি. ও.",
             value = "${lead.leadCloser.name} (${lead.leadCloser.employeeId})",
-            icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier) },
-            valueOverride = AppTextOverride(color = StatusInfo),
+            icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
+            subValue = "এম. এ.- ${lead.leadCloser.servingMa}",
         )
 
         lead.reviewer?.let { reviewer ->
@@ -204,20 +195,19 @@ private fun LeadListCard(lead: LeadListItem) {
             AppIconLabelValue(
                 label = "অনুমোদনকারী",
                 value = "${reviewer.name} (${reviewer.designation})",
-                icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier) },
-                valueOverride = AppTextOverride(color = StatusInfo),
+                icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
+                valueOverride = AppTextOverride(color = AccentIndigo),
+                subValue = "টেরিটরি- ${reviewer.territory}",
             )
         }
 
         lead.ekycSubmitter?.let { submitter ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
-            AppIconLabelValue(label = "ই-কেওয়াইসি করেছেন", value = submitter.name)
-        }
-
-        Spacer(modifier = Modifier.height(AppSpacing.Small))
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            AppIconLabelValue(label = "স্কোর", value = lead.premiumnessScore.toString())
-            AppIconLabelValue(label = "তৈরি হয়েছে", value = formatLeadDate(lead.createdAt))
+            AppIconLabelValue(
+                label = "ই-কেওয়াইসি করেছেন",
+                value = submitter.name,
+                valueOverride = AppTextOverride(color = AccentIndigo),
+            )
         }
 
         when {
@@ -227,13 +217,49 @@ private fun LeadListCard(lead: LeadListItem) {
                     text = "লিড লক করুন",
                     onClick = {},
                     modifier = Modifier.fillMaxWidth(),
-                    leadingIcon = { AppIcon(icon = Icons.Filled.Lock, contentDescription = null, modifier = iconModifier) },
+                    containerColor = StatusNeutralContainer,
+                    contentColor = StatusNeutral,
+                    leadingIcon = { AppIcon(icon = Icons.Filled.Lock, contentDescription = null, modifier = iconModifier, tint = StatusNeutral) },
                 )
             }
             lead.status == LeadStatus.Approved && lead.canSubmitEkyc && !lead.isEkycSubmitted -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = {}, modifier = Modifier.fillMaxWidth())
             }
+        }
+    }
+}
+
+// The rejection-reason callout at the top of a rejected lead's card - a pale pink banner holding a
+// solid pink "reason" pill plus a single-line, truncated reason with a trailing chevron. Built from
+// Foundation background()/RoundedCornerShape + AppText/AppIcon, one caller, no Material3-derived
+// default - stays in :app rather than :designsystem per the feature-specificity test in CLAUDE.md.
+@Composable
+private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(StatusInfoContainer, RoundedCornerShape(AppSpacing.Small))
+            .padding(AppSpacing.Small),
+    ) {
+        Box(
+            modifier = Modifier
+                .background(StatusInfo, RoundedCornerShape(percent = 50))
+                .padding(horizontal = AppSpacing.Small, vertical = 2.dp),
+        ) {
+            AppText(text = "বাতিল করার কারণ", style = AppTextStyle.Label, color = Color.White)
+        }
+        Spacer(modifier = Modifier.height(AppSpacing.Small))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AppText(
+                text = reason,
+                style = AppTextStyle.BodyMedium,
+                color = AccentIndigo,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            AppIcon(icon = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = StatusInfo)
         }
     }
 }

@@ -39,7 +39,8 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
 └── components/
     ├── text/               # AppText + AppTextStyle enum + AppTextOverride (size/weight/color override),
     │                        # AppIconLabelValue (icon + value, or label caption stacked above value;
-    │                        # AppIconPosition: Start/End/Top/Bottom decides which side the icon sits on)
+    │                        # AppIconPosition: Start/End/Top/Bottom decides which side the icon sits on;
+    │                        # optional subValue renders a second, smaller/muted caption below the value)
     ├── button/             # AppButton, AppOutlinedButton (+ AppButtonTone: Primary/Success/Danger,
     │                        # both with an optional leadingIcon slot), AppStepperButton
     ├── layout/             # AppScaffold (topBar + optional bottomBar slot + content)
