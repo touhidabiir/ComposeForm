@@ -21,13 +21,14 @@ fun AppSearchField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String? = null,
+    leadingIcon: @Composable () -> Unit = { Icon(imageVector = Icons.Filled.Search, contentDescription = null) },
 ) {
     TextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier,
         placeholder = placeholder?.let { { Text(it) } },
-        leadingIcon = { Icon(imageVector = Icons.Filled.Search, contentDescription = null) },
+        leadingIcon = leadingIcon,
         singleLine = true,
         shape = RoundedCornerShape(percent = 50),
         colors = TextFieldDefaults.colors(

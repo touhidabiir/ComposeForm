@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -23,6 +26,12 @@ private fun InputPreview() {
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
             ) {
                 AppSearchField(value = "", onValueChange = {}, placeholder = "Search...")
+                AppSearchField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = "Search by location...",
+                    leadingIcon = { Icon(imageVector = Icons.Filled.LocationOn, contentDescription = null) },
+                )
                 AppTextField(
                     value = "Jane Doe",
                     onValueChange = {},
