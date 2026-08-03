@@ -26,7 +26,7 @@ Four-module Gradle project, no `build-logic`/convention-plugin infrastructure �
 
 ### Design system boundary (important, easy to violate accidentally)
 
-`:designsystem` depends on `androidx.compose.material3` and `androidx.compose.foundation` as `implementation` (not `api`). Neither `:app` nor `:formbuilder` declare either dependency themselves. This means Material3/Foundation classes are not on their compile classpaths at all — any `import androidx.compose.material3.*` added there will fail to compile. This is deliberate, compiler-enforced encapsulation: all UI must go through `:designsystem`'s wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.), never the raw Material3 APIs. (Foundation layout primitives — `Column`/`Row`/`Box`/`Modifier.padding` — are fine for any module to use directly; only Material3 is restricted.)
+`:designsystem` depends on `androidx.compose.material3` and `androidx.compose.foundation` as `implementation` (not `api`). Neither `:app` nor `:formbuilder` declare either dependency themselves. This means Material3/Foundation classes are not on their compile classpaths at all — any `import androidx.compose.material3.*` added there will fail to compile. This is deliberate, compiler-enforced encapsulation: all UI must go through `:designsystem`'s wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.), never the raw Material3 APIs. (Foundation layout primitives — `Column`/`Row`/`Box`/`Modifier.padding` — are fine for any module to use directly; only Material3 is restricted. This includes `Image` — `androidx.compose.foundation.Image` (and Coil's `AsyncImage`, if/when added) is Foundation, not Material3, so `:app` can call it directly with no `AppImage` wrapper needed; `Icon` is the one that's Material3-gated and needs `AppIcon`.)
 
 When a module needs a new Material3 primitive it doesn't have a wrapper for yet, add the wrapper to `:designsystem` rather than adding a direct dependency elsewhere.
 
@@ -50,10 +50,8 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     ├── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard, AppDivider,
     │                        # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral),
     │                        # AppBottomActionBar (flat elevated bar for a screen's pinned bottom actions)
-    ├── indicator/           # AppScoreGauge (circular score-out-of-max), AppGradientRangeIndicator
-    │                        # (red/yellow/green scale with a position pointer)
-    └── media/               # AppImageCarousel (+ AppCarouselPage) — swipeable, captioned pages; takes a
-                             # content slot per page rather than an image loader
+    └── indicator/           # AppScoreGauge (circular score-out-of-max), AppGradientRangeIndicator
+                             # (red/yellow/green scale with a position pointer)
 ```
 
 Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit an existing one.
