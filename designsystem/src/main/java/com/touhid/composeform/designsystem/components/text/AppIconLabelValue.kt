@@ -63,7 +63,11 @@ fun AppIconLabelValue(
                     override = labelOverride.withDefaultFontSize(14.sp),
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
+            Row(
+                modifier = Modifier.padding(top = if (label != null) AppSpacing.ExtraSmall else 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall),
+            ) {
                 AppText(text = value, style = AppTextStyle.BodyMedium, override = valueOverride.withDefaultFontSize(16.sp))
                 trailingIcon?.invoke()
             }
@@ -73,6 +77,7 @@ fun AppIconLabelValue(
                     style = AppTextStyle.Label,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     override = subValueOverride.withDefaultFontSize(14.sp),
+                    modifier = Modifier.padding(top = AppSpacing.ExtraSmall),
                 )
             }
         }
