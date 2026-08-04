@@ -162,9 +162,12 @@ private fun LeadListCard(lead: LeadListItem) {
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
         lead.rejection?.let { rejection ->
+            // Negative start/end/top padding bleeds the banner out through AppCard's own content
+            // padding so its top corners land flush with the card's edges - AppCard's Card clips
+            // to its RoundedCornerShape at the surface level, so the bleed gets rounded to match.
             RejectionBanner(
                 reason = rejection.reason,
-                modifier = Modifier.padding(horizontal = AppSpacing.Small, vertical = AppSpacing.Small),
+                modifier = Modifier.padding(start = -AppSpacing.Medium, end = -AppSpacing.Medium, top = -AppSpacing.Medium, bottom = AppSpacing.Small),
             )
         }
 
@@ -264,8 +267,8 @@ private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(RejectionBannerBackground, RoundedCornerShape(AppSpacing.Small))
-            .padding(AppSpacing.Small),
+            .background(RejectionBannerBackground, RoundedCornerShape(topStart = AppSpacing.Medium, topEnd = AppSpacing.Medium))
+            .padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
     ) {
         Box(
             modifier = Modifier
