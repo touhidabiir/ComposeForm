@@ -20,7 +20,11 @@ private val LabelColor = Color(0xFF000E3D)
 // Fills in this component's default text size only when the caller didn't already ask for a
 // specific one - callers overriding fontSize (e.g. a detail screen wanting a bigger value) still win.
 private fun AppTextOverride.withDefaultFontSize(default: TextUnit): AppTextOverride =
-    if (fontSize.isUnspecified) copy(fontSize = default) else this
+    if (fontSize.isUnspecified) {
+        AppTextOverride(fontSize = default, fontWeight = fontWeight, color = color)
+    } else {
+        this
+    }
 
 // A value on its own (icon + value) when [label] is null, or a caption stacked above the value
 // when it's set - covers both the compact rows in a list card and the label/value pairs in a
