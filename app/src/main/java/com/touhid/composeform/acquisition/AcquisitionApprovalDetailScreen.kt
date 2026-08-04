@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -49,7 +48,6 @@ import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
-import com.touhid.composeform.designsystem.components.surface.AppHorizontalDivider
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
@@ -138,7 +136,9 @@ fun AcquisitionApprovalDetailScreen(
         ) {
             ShopIdentityCard(shopName = detail.shopName, walletNumber = detail.walletNumber)
 
-            ScoreSection(score = detail.premiumnessScore, band = detail.premiumnessBand)
+            AppCard(modifier = Modifier.fillMaxWidth()) {
+                ScoreSection(score = detail.premiumnessScore, band = detail.premiumnessBand)
+            }
 
             // detail.images.shopImageOutside/shopImageInside/businessProofImage hold the real
             // URLs - still rendered as color placeholders since no image-loading library
@@ -158,10 +158,9 @@ fun AcquisitionApprovalDetailScreen(
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
                 AppIconLabelValue(
                     value = detail.contactInfo.outletOwner.phoneNumber,
-                    icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
                     trailingIcon = copyIcon,
                 )
-                AppHorizontalDivider(modifier = Modifier.padding(vertical = AppSpacing.Medium))
+                Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 AppIconLabelValue(
                     label = "Shop Operator Info (if different)",
                     value = detail.contactInfo.contactPerson.name,
@@ -170,7 +169,6 @@ fun AcquisitionApprovalDetailScreen(
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
                 AppIconLabelValue(
                     value = detail.contactInfo.contactPerson.phoneNumber,
-                    icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
                     trailingIcon = copyIcon,
                 )
             }
@@ -298,11 +296,14 @@ private fun ScoreSection(score: Double, band: String) {
 private fun ScoreCircle(title: String, score: Double, maxScore: Int, ringColor: Color, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
-            .size(120.dp)
-            .border(border = BorderStroke(width = 6.dp, color = ringColor), shape = CircleShape),
+            .size(160.dp)
+            .border(border = BorderStroke(width = 16.dp, color = ringColor), shape = CircleShape),
         contentAlignment = Alignment.Center,
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.padding(AppSpacing.Small),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
             AppText(text = title, style = AppTextStyle.Label, override = AppTextOverride(color = StatusNeutral))
             Row(verticalAlignment = Alignment.Bottom) {
                 AppText(
@@ -320,6 +321,8 @@ private fun ScoreCircle(title: String, score: Double, maxScore: Int, ringColor: 
     }
 }
 
+private val ScoreBandBarHeight = 16.dp
+
 @Composable
 private fun ScoreBandIndicator(activeIndex: Int, modifier: Modifier = Modifier, bands: List<ScoreBand> = ScoreBands) {
     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
@@ -336,15 +339,23 @@ private fun ScoreBandIndicator(activeIndex: Int, modifier: Modifier = Modifier, 
                 } else {
                     Spacer(modifier = Modifier.size(RowIconSize))
                 }
+                // A fixed-height box with the bar bottom-aligned inside it, so the active band's
+                // taller bar grows upward instead of pushing the label below it further down -
+                // every column's bar bottom (and the label beneath it) lines up at the same y.
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(if (isActive) 16.dp else 8.dp)
-                        .background(color = band.color, shape = RoundedCornerShape(percent = 50)),
-                )
+                    modifier = Modifier.fillMaxWidth().height(ScoreBandBarHeight),
+                    contentAlignment = Alignment.BottomCenter,
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(if (isActive) ScoreBandBarHeight else 8.dp)
+                            .background(color = band.color, shape = RoundedCornerShape(percent = 50)),
+                    )
+                }
                 Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
                 AppText(
-                    text = band.label,
+                    text = band.range.toBengaliDigits(),
                     style = AppTextStyle.Label,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
