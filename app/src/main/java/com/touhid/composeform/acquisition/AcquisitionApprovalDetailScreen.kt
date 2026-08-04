@@ -42,14 +42,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
-import com.touhid.composeform.designsystem.components.button.AppButtonTone
+import com.touhid.composeform.designsystem.components.button.AppButtonStyle
 import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
-import com.touhid.composeform.designsystem.components.surface.AppDivider
+import com.touhid.composeform.designsystem.components.surface.AppHorizontalDivider
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
@@ -117,13 +117,13 @@ fun AcquisitionApprovalDetailScreen(
                 AppOutlinedButton(
                     text = "Reject",
                     onClick = onReject,
-                    tone = AppButtonTone.Danger,
+                    buttonType = AppButtonStyle.Danger,
                     modifier = Modifier.weight(1f),
                 )
                 AppButton(
                     text = "Approve",
                     onClick = onApprove,
-                    tone = AppButtonTone.Success,
+                    buttonType = AppButtonStyle.Success,
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -161,7 +161,7 @@ fun AcquisitionApprovalDetailScreen(
                     icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
                     trailingIcon = copyIcon,
                 )
-                AppDivider(modifier = Modifier.padding(vertical = AppSpacing.Medium))
+                AppHorizontalDivider(modifier = Modifier.padding(vertical = AppSpacing.Medium))
                 AppIconLabelValue(
                     label = "Shop Operator Info (if different)",
                     value = detail.contactInfo.contactPerson.name,
@@ -378,8 +378,10 @@ private fun PhotoBlock(caption: String, counter: String, color: Color) {
 
 // Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
 // system setting - that's how this screen actually renders in the real app, so a "Dark" tile
-// here would show something the app never does.
-@Preview(name = "Acquisition Approval Detail", showBackground = true)
+// here would show something the app never does. heightDp is tall enough to lay out the whole
+// scrollable column (score section + 3 photos + all info cards) without clipping, since a
+// default-height preview canvas would otherwise just show the top of the screen.
+@Preview(name = "Acquisition Approval Detail", showBackground = true, heightDp = 2000)
 @Composable
 private fun AcquisitionApprovalDetailScreenPreview() {
     ComposeFormAppTheme {

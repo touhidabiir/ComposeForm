@@ -42,7 +42,7 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     │                        # AppIconPosition: Start/End/Top/Bottom decides which side the icon sits on;
     │                        # optional subValue renders a second, smaller/muted caption below the value;
     │                        # optional trailingIcon sits next to the value itself, e.g. a copy glyph)
-    ├── button/             # AppButton, AppOutlinedButton (+ AppButtonTone: Primary/Success/Danger,
+    ├── button/             # AppButton, AppOutlinedButton (+ AppButtonStyle: Primary/Success/Danger,
     │                        # both with an optional leadingIcon slot), AppStepperButton
     ├── layout/             # AppScaffold (topBar + optional bottomBar slot + content)
     ├── input/              # AppTextField (+ AppTextFieldType: Text/Number/Email/Password), AppSearchField
@@ -54,7 +54,7 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     ├── icon/                # AppIcon (non-interactive), AppIconButton (clickable)
     └── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard (optional
                              # topContent slot renders before the padded content column, flush with the
-                             # card's own bounds/corners - for a full-bleed banner), AppDivider,
+                             # card's own bounds/corners - for a full-bleed banner), AppHorizontalDivider,
                              # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral - always
                              # shows a status dot), AppChip (selectable pill for filter tabs - no dot,
                              # communicates selection rather than state), AppBottomActionBar (flat elevated

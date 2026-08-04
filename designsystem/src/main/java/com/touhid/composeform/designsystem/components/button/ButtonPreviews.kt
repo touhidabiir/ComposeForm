@@ -23,9 +23,9 @@ private fun ButtonPreview() {
                 verticalArrangement = Arrangement.spacedBy(AppSpacing.Small),
             ) {
                 AppButton(text = "Primary Action", onClick = {})
-                AppButton(text = "Approve", onClick = {}, tone = AppButtonTone.Success)
+                AppButton(text = "Approve", onClick = {}, buttonType = AppButtonStyle.Success)
                 AppOutlinedButton(text = "Secondary Action", onClick = {})
-                AppOutlinedButton(text = "Reject", onClick = {}, tone = AppButtonTone.Danger)
+                AppOutlinedButton(text = "Reject", onClick = {}, buttonType = AppButtonStyle.Danger)
                 AppButton(text = "Custom dark brand color", onClick = {}, containerColor = Color(0xFF1A237E))
                 AppButton(
                     text = "Custom light brand color",

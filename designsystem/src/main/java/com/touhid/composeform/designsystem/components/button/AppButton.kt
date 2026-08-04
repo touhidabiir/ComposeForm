@@ -36,7 +36,7 @@ import com.touhid.composeform.designsystem.theme.StatusSuccess
 
 // Lets callers ask for a semantically-colored action (e.g. Approve/Reject) without leaking raw
 // Material3 ButtonColors through the public signature.
-enum class AppButtonTone { Primary, Success, Danger }
+enum class AppButtonStyle { Primary, Success, Danger }
 
 @Composable
 fun AppButton(
@@ -44,24 +44,24 @@ fun AppButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    tone: AppButtonTone = AppButtonTone.Primary,
-    // Escape hatch for a one-off brand color that doesn't warrant its own AppButtonTone case -
-    // no-op (falls back to tone) when left unspecified, same convention as AppTextOverride.
+    buttonType: AppButtonStyle = AppButtonStyle.Primary,
+    // Escape hatch for a one-off brand color that doesn't warrant its own AppButtonStyle case -
+    // no-op (falls back to buttonType) when left unspecified, same convention as AppTextOverride.
     containerColor: Color = Color.Unspecified,
     contentColor: Color = Color.Unspecified,
     leadingIcon: (@Composable () -> Unit)? = null,
     textOverride: AppTextOverride = AppTextOverride(),
 ) {
-    val toneColors = when (tone) {
-        AppButtonTone.Primary -> ButtonDefaults.buttonColors()
-        AppButtonTone.Success -> ButtonDefaults.buttonColors(containerColor = StatusSuccess, contentColor = Color.White)
-        AppButtonTone.Danger -> ButtonDefaults.buttonColors(containerColor = StatusError, contentColor = Color.White)
+    val styleColors = when (buttonType) {
+        AppButtonStyle.Primary -> ButtonDefaults.buttonColors()
+        AppButtonStyle.Success -> ButtonDefaults.buttonColors(containerColor = StatusSuccess, contentColor = Color.White)
+        AppButtonStyle.Danger -> ButtonDefaults.buttonColors(containerColor = StatusError, contentColor = Color.White)
     }
     // Defaults content to white when only a custom containerColor is given - a colored fill
     // almost always wants light text, and the caller can still pass contentColor to override that.
     val colors = ButtonDefaults.buttonColors(
-        containerColor = containerColor.takeOrElse { toneColors.containerColor },
-        contentColor = contentColor.takeOrElse { if (containerColor.isSpecified) Color.White else toneColors.contentColor },
+        containerColor = containerColor.takeOrElse { styleColors.containerColor },
+        contentColor = contentColor.takeOrElse { if (containerColor.isSpecified) Color.White else styleColors.contentColor },
     )
     Button(onClick = onClick, modifier = modifier, enabled = enabled, colors = colors) {
         leadingIcon?.let {
@@ -78,19 +78,19 @@ fun AppOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    tone: AppButtonTone = AppButtonTone.Primary,
+    buttonType: AppButtonStyle = AppButtonStyle.Primary,
     // Same escape hatch as AppButton's containerColor/contentColor - no fill here, so one color
     // covers both the text and the border.
     contentColor: Color = Color.Unspecified,
     leadingIcon: (@Composable () -> Unit)? = null,
     textOverride: AppTextOverride = AppTextOverride(),
 ) {
-    val toneColor = when (tone) {
-        AppButtonTone.Primary -> MaterialTheme.colorScheme.primary
-        AppButtonTone.Success -> StatusSuccess
-        AppButtonTone.Danger -> StatusError
+    val styleColor = when (buttonType) {
+        AppButtonStyle.Primary -> MaterialTheme.colorScheme.primary
+        AppButtonStyle.Success -> StatusSuccess
+        AppButtonStyle.Danger -> StatusError
     }
-    val resolvedColor = contentColor.takeOrElse { toneColor }
+    val resolvedColor = contentColor.takeOrElse { styleColor }
     val borderColor = if (enabled) resolvedColor else resolvedColor.copy(alpha = 0.38f)
     OutlinedButton(
         onClick = onClick,

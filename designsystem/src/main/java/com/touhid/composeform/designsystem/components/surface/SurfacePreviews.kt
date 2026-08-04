@@ -62,7 +62,7 @@ private fun CardDividerBadgePreview() {
             }
             AppCard {
                 AppText(text = "Card title")
-                AppDivider(modifier = Modifier.padding(vertical = AppSpacing.Small))
+                AppHorizontalDivider(modifier = Modifier.padding(vertical = AppSpacing.Small))
                 AppText(text = "Card body content")
             }
         }
