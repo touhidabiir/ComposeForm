@@ -89,8 +89,6 @@ private val SAMPLE_ACQUISITION_LIST_JSON = """
 }
 """.trimIndent()
 
-data class LabeledPair(val label: String, val value: String)
-
 // Mirrors the backend's acquisition detail response shape 1:1, same Gson-reflected pattern as
 // the list models above - "data" nests everything, "submitted_by" reuses the same LeadCloser
 // shape the list screen's "lead_closer" already models.
