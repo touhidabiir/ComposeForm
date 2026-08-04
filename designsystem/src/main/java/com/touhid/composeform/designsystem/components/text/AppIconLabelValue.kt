@@ -1,14 +1,18 @@
 package com.touhid.composeform.designsystem.components.text
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isUnspecified
 import androidx.compose.ui.unit.sp
 import com.touhid.composeform.designsystem.theme.AppSpacing
@@ -16,6 +20,7 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 enum class AppIconPosition { Start, End, Top, Bottom }
 
 private val LabelColor = Color(0xFF000E3D)
+private val IconSlotSize = 16.dp
 
 // Fills in this component's default text size only when the caller didn't already ask for a
 // specific one - callers overriding fontSize (e.g. a detail screen wanting a bigger value) still win.
@@ -75,14 +80,29 @@ fun AppIconLabelValue(
 
     when (iconPosition) {
         AppIconPosition.Start, AppIconPosition.End -> {
+            // A fixed-size slot reserved for the icon regardless of whether one is actually
+            // supplied, so a row without an icon still has its value start at the same x as a
+            // sibling row that has one, instead of collapsing flush left. When a label is
+            // present, the slot gets a little top margin so the icon doesn't sit flush against
+            // the row's top edge, above the label's own cap height.
+            val iconSlot: @Composable () -> Unit = {
+                Box(
+                    modifier = Modifier
+                        .padding(top = if (label != null) AppSpacing.ExtraSmall else 0.dp)
+                        .size(IconSlotSize),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    icon?.invoke()
+                }
+            }
             Row(
                 modifier = modifier,
                 verticalAlignment = if (label != null) Alignment.Top else Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
             ) {
-                if (iconPosition == AppIconPosition.Start) icon?.invoke()
+                if (iconPosition == AppIconPosition.Start) iconSlot()
                 textBlock()
-                if (iconPosition == AppIconPosition.End) icon?.invoke()
+                if (iconPosition == AppIconPosition.End) iconSlot()
             }
         }
         AppIconPosition.Top, AppIconPosition.Bottom -> {

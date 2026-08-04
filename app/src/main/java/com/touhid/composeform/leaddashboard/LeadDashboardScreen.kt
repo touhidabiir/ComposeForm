@@ -36,6 +36,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,7 @@ import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
+import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppSearchField
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppCard
@@ -61,7 +64,22 @@ import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 
 private val RowIconSize = 16.dp
-private val CopyIconSize = 14.dp
+
+// A copy-to-clipboard trailing icon for a specific piece of row text - a function (not a fixed
+// composable) since each row copies different text; reads LocalClipboardManager once per call so
+// the returned lambda's onClick can write straight to the system clipboard.
+@Composable
+private fun copyIconButton(text: String): @Composable () -> Unit {
+    val clipboardManager = LocalClipboardManager.current
+    return {
+        AppIconButton(
+            icon = Icons.Filled.ContentCopy,
+            contentDescription = "Copy",
+            onClick = { clipboardManager.setText(AnnotatedString(text)) },
+            tint = BrandPrimary,
+        )
+    }
+}
 
 // The brand's secondary accent (search icon, contact icons, assigned-person names) - distinct from
 // BrandPrimary, the brand's primary pink used for the app bar/CTA/selected chip/rejection banner.
@@ -174,14 +192,7 @@ private fun LeadListCard(lead: LeadListItem) {
             label = "ওয়ালেট নম্বর",
             value = lead.walletNumber,
             icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
-            trailingIcon = {
-                AppIcon(
-                    icon = Icons.Filled.ContentCopy,
-                    contentDescription = "Copy",
-                    modifier = Modifier.size(CopyIconSize),
-                    tint = BrandPrimary,
-                )
-            },
+            trailingIcon = copyIconButton(lead.walletNumber),
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
@@ -196,14 +207,7 @@ private fun LeadListCard(lead: LeadListItem) {
             label = "লিড ক্লোজার এ. টি. ও.",
             value = "${lead.leadCloser.name} (${lead.leadCloser.employeeId})",
             icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
-            trailingIcon = {
-                AppIcon(
-                    icon = Icons.Filled.ContentCopy,
-                    contentDescription = "Copy",
-                    modifier = Modifier.size(CopyIconSize),
-                    tint = BrandPrimary,
-                )
-            },
+            trailingIcon = copyIconButton(lead.leadCloser.employeeId),
             subValue = "এম. এ.- ${lead.leadCloser.servingMa}",
         )
 

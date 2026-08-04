@@ -35,6 +35,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -45,6 +47,7 @@ import com.touhid.composeform.designsystem.components.button.AppButtonStyle
 import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
+import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
@@ -59,7 +62,6 @@ import com.touhid.composeform.designsystem.theme.StatusInfoContainer
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 
 private val RowIconSize = 16.dp
-private val CopyIconSize = 14.dp
 private const val MaxPremiumnessScore = 100
 
 // Same brand secondary accent as the list screens - one caller here too, kept local rather than
@@ -69,13 +71,20 @@ private val AccentIndigo = Color(0xFF675C92)
 private val BengaliDigits = arrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
 private fun String.toBengaliDigits(): String = map { c -> if (c in '0'..'9') BengaliDigits[c - '0'] else c }.joinToString("")
 
-private val copyIcon: @Composable () -> Unit = {
-    AppIcon(
-        icon = Icons.Filled.ContentCopy,
-        contentDescription = "Copy",
-        modifier = Modifier.size(CopyIconSize),
-        tint = BrandPrimary,
-    )
+// A copy-to-clipboard trailing icon for a specific piece of row text - a function (not a fixed
+// composable) since each row copies different text; reads LocalClipboardManager once per call so
+// the returned lambda's onClick can write straight to the system clipboard.
+@Composable
+private fun copyIconButton(text: String): @Composable () -> Unit {
+    val clipboardManager = LocalClipboardManager.current
+    return {
+        AppIconButton(
+            icon = Icons.Filled.ContentCopy,
+            contentDescription = "Copy",
+            onClick = { clipboardManager.setText(AnnotatedString(text)) },
+            tint = BrandPrimary,
+        )
+    }
 }
 
 // The generic marker icon most Outlet/Wallet Information rows use in the design - only the
@@ -111,7 +120,7 @@ fun AcquisitionApprovalDetailScreen(
             )
         },
         bottomBar = {
-            AppBottomActionBar {
+            AppBottomActionBar(cornerRadius = AppSpacing.Medium) {
                 AppOutlinedButton(
                     text = "Reject",
                     onClick = onReject,
@@ -158,7 +167,7 @@ fun AcquisitionApprovalDetailScreen(
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
                 AppIconLabelValue(
                     value = detail.contactInfo.outletOwner.phoneNumber,
-                    trailingIcon = copyIcon,
+                    trailingIcon = copyIconButton(detail.contactInfo.outletOwner.phoneNumber),
                 )
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 AppIconLabelValue(
@@ -169,7 +178,7 @@ fun AcquisitionApprovalDetailScreen(
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
                 AppIconLabelValue(
                     value = detail.contactInfo.contactPerson.phoneNumber,
-                    trailingIcon = copyIcon,
+                    trailingIcon = copyIconButton(detail.contactInfo.contactPerson.phoneNumber),
                 )
             }
 
@@ -244,7 +253,7 @@ private fun WalletInformationCard(walletInfo: WalletInfo) {
             label = "Proposed Wallet Number",
             value = walletInfo.proposedWalletNumber,
             icon = genericRowIcon,
-            trailingIcon = copyIcon,
+            trailingIcon = copyIconButton(walletInfo.proposedWalletNumber),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(label = "SIM Stays At Outlet?", value = walletInfo.simStaysAtOutlet.toBengaliYesNo(), icon = genericRowIcon)
