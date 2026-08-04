@@ -17,7 +17,9 @@ enum class AppIconPosition { Start, End, Top, Bottom }
 // which side of the label/value block [icon] sits on - Start/End keep it a Row (like a leading/
 // trailing compound drawable), Top/Bottom switch the outer container to a Column. [subValue], when
 // set, adds a second, smaller/muted caption below the value - e.g. a secondary identifier that
-// belongs to the same value but doesn't deserve equal visual weight.
+// belongs to the same value but doesn't deserve equal visual weight. [trailingIcon] sits right
+// next to the value itself (not the whole label/value block) - e.g. a copy-to-clipboard glyph -
+// independent of [icon]/[iconPosition], which is the leading, decorative row icon.
 @Composable
 fun AppIconLabelValue(
     value: String,
@@ -29,6 +31,7 @@ fun AppIconLabelValue(
     valueOverride: AppTextOverride = AppTextOverride(),
     subValue: String? = null,
     subValueOverride: AppTextOverride = AppTextOverride(),
+    trailingIcon: (@Composable () -> Unit)? = null,
 ) {
     val textBlock: @Composable () -> Unit = {
         Column {
@@ -40,7 +43,10 @@ fun AppIconLabelValue(
                     override = labelOverride,
                 )
             }
-            AppText(text = value, style = AppTextStyle.BodyMedium, override = valueOverride)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
+                AppText(text = value, style = AppTextStyle.BodyMedium, override = valueOverride)
+                trailingIcon?.invoke()
+            }
             subValue?.let {
                 AppText(
                     text = it,

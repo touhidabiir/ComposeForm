@@ -10,14 +10,15 @@ import androidx.compose.ui.graphics.Color
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
-import com.touhid.composeform.designsystem.theme.StatusInfo
+import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusInfoContainer
 
 // A selectable pill - filled/accented when selected, neutral otherwise - for filter tabs and
 // similar choice selections. Distinct from AppStatusBadge: that one always shows a status dot
 // and communicates state (approved/pending/etc.), this one has no dot and communicates
 // selection (this is the currently active choice among several). Text/icon color stays the same
-// brand pink whether selected or not - only the pill's fill changes.
+// brand pink whether selected or not - only the pill's fill changes, and unselected is white
+// (not transparent) so it reads as a pill of its own rather than blending into the page.
 @Composable
 fun AppChip(
     text: String,
@@ -25,16 +26,16 @@ fun AppChip(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val containerColor = if (selected) StatusInfoContainer else Color.Transparent
+    val containerColor = if (selected) StatusInfoContainer else Color.White
     Surface(
         onClick = onClick,
         modifier = modifier,
         shape = RoundedCornerShape(percent = 50),
         color = containerColor,
-        contentColor = StatusInfo,
+        contentColor = BrandPrimary,
     ) {
         Box(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
-            AppText(text = text, style = AppTextStyle.Label, color = StatusInfo)
+            AppText(text = text, style = AppTextStyle.Label, color = BrandPrimary)
         }
     }
 }

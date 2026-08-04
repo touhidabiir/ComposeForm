@@ -20,16 +20,16 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Pink80
 )
 
-// primary is the app's actual brand pink (StatusInfo) rather than the Compose-template Purple40 -
+// primary is the app's actual brand pink (BrandPrimary) rather than the Compose-template Purple40 -
 // surface/background are pinned explicitly so cards render crisp white on a faint tinted page
 // background regardless of what primary's auto-derived tonal palette would otherwise produce.
 private val LightColorScheme = lightColorScheme(
-    primary = StatusInfo,
+    primary = BrandPrimary,
     onPrimary = Color.White,
     secondary = PurpleGrey40,
     tertiary = Pink40,
     surface = Color.White,
-    background = Color(0xFFF8F8FE),
+    background = Color(0xFFF8F8FF),
 )
 
 @Composable

@@ -10,6 +10,10 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+// The app's actual brand pink - drives colorScheme.primary (CTA buttons, selected chip text,
+// rejection banner pill) - distinct from StatusInfo below, which is a separate semantic tone.
+val BrandPrimary = Color(0xFFE2136E)
+
 // Semantic status tones, independent of the primary color scheme - used by components that
 // convey state (badges, tone-able buttons) regardless of which brand/dynamic colors are active.
 val StatusSuccess = Color(0xFF1E8E3E)

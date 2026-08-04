@@ -1,7 +1,6 @@
 package com.touhid.composeform.designsystem.components.input
 
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -36,8 +35,8 @@ fun AppSearchField(
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent,
             disabledIndicatorColor = Color.Transparent,
-            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+            focusedContainerColor = Color.White,
+            unfocusedContainerColor = Color.White,
         ),
     )
 }

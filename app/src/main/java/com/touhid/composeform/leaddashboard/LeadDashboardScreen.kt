@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -55,18 +56,22 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
-import com.touhid.composeform.designsystem.theme.StatusInfo
-import com.touhid.composeform.designsystem.theme.StatusInfoContainer
+import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 
 private val RowIconSize = 16.dp
+private val CopyIconSize = 14.dp
 
 // The brand's secondary accent (search icon, contact icons, assigned-person names) - distinct from
-// StatusInfo, the brand's primary pink used for the app bar/CTA/selected chip/rejection banner.
+// BrandPrimary, the brand's primary pink used for the app bar/CTA/selected chip/rejection banner.
 // One caller (this screen) with an always-explicit value, so it stays local rather than moving
 // into :designsystem's theme.
 private val AccentIndigo = Color(0xFF675C92)
+
+// The rejection banner's own background - close to but distinct from StatusInfoContainer, so it
+// stays a plain local constant rather than a shared designsystem token for a one-off shade.
+private val RejectionBannerBackground = Color(0xFFFFF8FB)
 
 private val LeadListItem.isEkycSubmitted: Boolean get() = ekycSubmitter != null
 
@@ -157,7 +162,10 @@ private fun LeadListCard(lead: LeadListItem) {
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
         lead.rejection?.let { rejection ->
-            RejectionBanner(reason = rejection.reason, modifier = Modifier.padding(bottom = AppSpacing.Small))
+            RejectionBanner(
+                reason = rejection.reason,
+                modifier = Modifier.padding(horizontal = AppSpacing.Small, vertical = AppSpacing.Small),
+            )
         }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -173,6 +181,14 @@ private fun LeadListCard(lead: LeadListItem) {
             label = "ওয়ালেট নম্বর",
             value = lead.walletNumber,
             icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
+            trailingIcon = {
+                AppIcon(
+                    icon = Icons.Filled.ContentCopy,
+                    contentDescription = "Copy",
+                    modifier = Modifier.size(CopyIconSize),
+                    tint = BrandPrimary,
+                )
+            },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
@@ -187,6 +203,14 @@ private fun LeadListCard(lead: LeadListItem) {
             label = "লিড ক্লোজার এ. টি. ও.",
             value = "${lead.leadCloser.name} (${lead.leadCloser.employeeId})",
             icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
+            trailingIcon = {
+                AppIcon(
+                    icon = Icons.Filled.ContentCopy,
+                    contentDescription = "Copy",
+                    modifier = Modifier.size(CopyIconSize),
+                    tint = BrandPrimary,
+                )
+            },
             subValue = "এম. এ.- ${lead.leadCloser.servingMa}",
         )
 
@@ -204,8 +228,9 @@ private fun LeadListCard(lead: LeadListItem) {
         lead.ekycSubmitter?.let { submitter ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
             AppIconLabelValue(
-                label = "ই-কেওয়াইসি করেছেন",
+                label = "ই-কেওয়াইসি জমাকারী এম. সি. ও.",
                 value = submitter.name,
+                icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
                 valueOverride = AppTextOverride(color = AccentIndigo),
             )
         }
@@ -239,12 +264,12 @@ private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(StatusInfoContainer, RoundedCornerShape(AppSpacing.Small))
+            .background(RejectionBannerBackground, RoundedCornerShape(AppSpacing.Small))
             .padding(AppSpacing.Small),
     ) {
         Box(
             modifier = Modifier
-                .background(StatusInfo, RoundedCornerShape(percent = 50))
+                .background(BrandPrimary, RoundedCornerShape(percent = 50))
                 .padding(horizontal = AppSpacing.Small, vertical = 2.dp),
         ) {
             AppText(text = "বাতিল করার কারণ", style = AppTextStyle.Label, color = Color.White)
@@ -259,7 +284,7 @@ private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f),
             )
-            AppIcon(icon = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = StatusInfo)
+            AppIcon(icon = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = BrandPrimary)
         }
     }
 }
