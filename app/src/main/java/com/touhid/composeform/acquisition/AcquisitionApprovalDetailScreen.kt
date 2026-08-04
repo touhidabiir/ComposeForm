@@ -20,7 +20,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -48,13 +52,30 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusSuccess
 import com.touhid.composeform.designsystem.theme.StatusWarning
 
 private val RowIconSize = 16.dp
-private val PhotoPlaceholderColors = listOf(Color(0xFFB0BEC5), Color(0xFF90A4AE), Color(0xFFCFD8DC))
+private val CopyIconSize = 14.dp
+private const val MaxPremiumnessScore = 100
+
+// Same brand secondary accent as the list screens - one caller here too, kept local rather than
+// promoted into :designsystem's theme (see LeadDashboardScreen.kt for the fuller rationale).
+private val AccentIndigo = Color(0xFF675C92)
+
+private val copyIcon: @Composable () -> Unit = {
+    AppIcon(
+        icon = Icons.Filled.ContentCopy,
+        contentDescription = "Copy",
+        modifier = Modifier.size(CopyIconSize),
+        tint = BrandPrimary,
+    )
+}
+
+private fun Boolean.toBengaliYesNo(): String = if (this) "হ্যাঁ" else "না"
 
 @Composable
 fun AcquisitionApprovalDetailScreen(
@@ -68,7 +89,7 @@ fun AcquisitionApprovalDetailScreen(
         modifier = modifier.fillMaxSize(),
         topBar = { scrollBehavior ->
             AppTopBar(
-                title = detail.merchantName,
+                title = detail.shopName,
                 navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = onBack,
                 scrollBehavior = scrollBehavior,
@@ -99,69 +120,114 @@ fun AcquisitionApprovalDetailScreen(
             verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
         ) {
             AppIconLabelValue(
-                value = detail.phoneNumber,
-                icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
+                label = "ওয়ালেট নম্বর",
+                value = detail.walletNumber,
+                icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = AccentIndigo) },
+                trailingIcon = copyIcon,
             )
 
-            ScoreSection(score = detail.score, maxScore = detail.maxScore)
+            ScoreSection(score = detail.premiumnessScore, band = detail.premiumnessBand)
 
-            detail.photoCaptions.forEachIndexed { index, caption ->
-                PhotoBlock(
-                    caption = caption,
-                    counter = "${index + 1}/${detail.photoCaptions.size}",
-                    color = PhotoPlaceholderColors[index % PhotoPlaceholderColors.size],
-                )
-            }
+            // detail.images.shopImageOutside/shopImageInside/businessProofImage hold the real
+            // URLs - still rendered as color placeholders since no image-loading library
+            // (e.g. Coil) is wired into :app yet; see CLAUDE.md's design system boundary notes.
+            PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3", color = PhotoPlaceholderColors[0])
+            PhotoBlock(caption = "আউটলেটের ভিতরের ছবি", counter = "2/3", color = PhotoPlaceholderColors[1])
+            PhotoBlock(caption = "ব্যবসার পরিচয়পত্রের ছবি", counter = "3/3", color = PhotoPlaceholderColors[2])
 
             AppCard(modifier = Modifier.fillMaxWidth()) {
                 AppText(text = "Owner & Contact Person Details", style = AppTextStyle.TitleMedium)
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppIconLabelValue(label = "Shop Owner Info", value = detail.shopOwner.name)
+                AppIconLabelValue(label = "Outlet Owner Info", value = detail.contactInfo.outletOwner.name)
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
                 AppIconLabelValue(
-                    value = detail.shopOwner.idOrPhone,
-                    icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
+                    value = detail.contactInfo.outletOwner.phoneNumber,
+                    icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = AccentIndigo) },
+                    trailingIcon = copyIcon,
                 )
                 AppDivider(modifier = Modifier.padding(vertical = AppSpacing.Medium))
-                AppIconLabelValue(label = "Shop Operator Info", value = detail.shopOperator.name)
+                AppIconLabelValue(
+                    label = "Contact Person Info",
+                    value = detail.contactInfo.contactPerson.designation?.let { "${detail.contactInfo.contactPerson.name} ($it)" }
+                        ?: detail.contactInfo.contactPerson.name,
+                )
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
                 AppIconLabelValue(
-                    value = detail.shopOperator.idOrPhone,
-                    icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
+                    value = detail.contactInfo.contactPerson.phoneNumber,
+                    icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = AccentIndigo) },
+                    trailingIcon = copyIcon,
                 )
             }
 
-            LabeledPairCard(title = "Outlet Information", pairs = detail.outletInfo)
-            LabeledPairCard(title = "Wallet Information", pairs = detail.walletInfo)
+            LabeledPairCard(title = "Outlet Information", pairs = detail.outletInfo.toLabeledPairs())
+            DigitalPaymentCard(digitalPayment = detail.digitalPayment)
+            LabeledPairCard(title = "Wallet Information", pairs = detail.walletInfo.toLabeledPairs())
+            LabeledPairCard(title = "Survey Responses", pairs = detail.surveyResponses.map { it.toLabeledPair() })
+
+            AppCard(modifier = Modifier.fillMaxWidth()) {
+                AppText(text = "Submission Info", style = AppTextStyle.TitleMedium)
+                Spacer(modifier = Modifier.height(AppSpacing.Medium))
+                AppIconLabelValue(
+                    label = "লিড ক্লোজার এ. টি. ও.",
+                    value = "${detail.audit.submittedBy.name} (${detail.audit.submittedBy.employeeId})",
+                    icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = AccentIndigo) },
+                    trailingIcon = copyIcon,
+                    subValue = "এম. এ.- ${detail.audit.submittedBy.servingMa}",
+                )
+            }
         }
     }
 }
 
-// The score bands (label, color, and how many there are) are acquisition-scoring business
-// data, not a generic design-system concept - kept here rather than baked into a designsystem
-// component, built entirely from already-exposed pieces (AppText, AppIcon) plus Foundation
-// layout, so there's no Material3-wrapping reason for it to live anywhere else.
-private data class ScoreBand(val label: String, val color: Color)
-
-private val ScoreBands = listOf(
-    ScoreBand("খুব ঝুঁকিপূর্ণ", StatusError),
-    ScoreBand("ঝুঁকিপূর্ণ", Color(0xFFFF8F00)),
-    ScoreBand("মাঝারি", StatusWarning),
-    ScoreBand("ভালো", Color(0xFFAEEA00)),
-    ScoreBand("খুব ভালো", StatusSuccess),
+private fun OutletInfo.toLabeledPairs(): List<LabeledPair> = listOf(
+    LabeledPair("Address", address),
+    LabeledPair("District", district),
+    LabeledPair("Thana", thana),
+    LabeledPair("Market Name", marketName),
+    LabeledPair("BMCC Code", bmccCode),
+    LabeledPair("BMCC Name", bmccName),
+    LabeledPair("Product Type", productType),
+    LabeledPair("Outlet Location Type", outletLocationType),
+    LabeledPair("Outlet Type", outletType),
 )
 
+private fun WalletInfo.toLabeledPairs(): List<LabeledPair> = listOf(
+    LabeledPair("Proposed Wallet Number", proposedWalletNumber),
+    LabeledPair("SIM Stays At Outlet?", simStaysAtOutlet.toBengaliYesNo()),
+    LabeledPair("SIM Used In Smartphone?", simUsedInSmartphone.toBengaliYesNo()),
+    LabeledPair("SIM Owned By Shop Owner?", simOwnedByShopOwner.toBengaliYesNo()),
+)
+
+private fun SurveyResponse.toLabeledPair(): LabeledPair =
+    LabeledPair(question, if (points != null) "$answer  •  $points pts" else answer)
+
+// The score bands (label, range, and color) are acquisition-scoring business data, not a generic
+// design-system concept - kept here rather than baked into a designsystem component, built
+// entirely from already-exposed pieces (AppText, AppIcon) plus Foundation layout, so there's no
+// Material3-wrapping reason for it to live anywhere else. The active band comes straight from the
+// API's own premiumness_band classification rather than being re-derived from score/ratio here.
+private data class ScoreBand(val label: String, val range: String, val color: Color)
+
+private val ScoreBands = listOf(
+    ScoreBand("খুব ঝুঁকিপূর্ণ", "0-24", StatusError),
+    ScoreBand("ঝুঁকিপূর্ণ", "25-49", Color(0xFFFF8F00)),
+    ScoreBand("মাঝারি", "50-74", StatusWarning),
+    ScoreBand("ভালো", "75-89", Color(0xFFAEEA00)),
+    ScoreBand("খুব ভালো", "90-100", StatusSuccess),
+)
+
+private val PhotoPlaceholderColors = listOf(Color(0xFFB0BEC5), Color(0xFF90A4AE), Color(0xFFCFD8DC))
+
 @Composable
-private fun ScoreSection(score: Int, maxScore: Int) {
-    val ratio = if (maxScore > 0) score.toFloat() / maxScore.toFloat() else 0f
-    val activeIndex = (ratio.coerceIn(0f, 1f) * ScoreBands.size).toInt().coerceIn(0, ScoreBands.size - 1)
+private fun ScoreSection(score: Double, band: String) {
+    val activeIndex = ScoreBands.indexOfFirst { it.range == band }.takeIf { it >= 0 } ?: ScoreBands.size / 2
     val tierColor = ScoreBands[activeIndex].color
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
     ) {
-        ScoreCircle(title = "স্কোর", score = score, maxScore = maxScore, color = tierColor)
+        ScoreCircle(title = "স্কোর", score = score, maxScore = MaxPremiumnessScore, color = tierColor)
         ScoreBandIndicator(activeIndex = activeIndex, modifier = Modifier.fillMaxWidth())
         AppStepperButton(label = "বিস্তারিত দেখুন", onClick = {}, modifier = Modifier.fillMaxWidth())
     }
@@ -171,7 +237,7 @@ private fun ScoreSection(score: Int, maxScore: Int) {
 // :designsystem home (unlike AppStatusBadge, this has exactly one caller and always receives an
 // explicit color), so it's built directly here from plain Foundation border()/CircleShape.
 @Composable
-private fun ScoreCircle(title: String, score: Int, maxScore: Int, color: Color, modifier: Modifier = Modifier) {
+private fun ScoreCircle(title: String, score: Double, maxScore: Int, color: Color, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .size(120.dp)
@@ -182,7 +248,7 @@ private fun ScoreCircle(title: String, score: Int, maxScore: Int, color: Color, 
             AppText(text = title, style = AppTextStyle.Label, override = AppTextOverride(color = StatusNeutral))
             Row(verticalAlignment = Alignment.Bottom) {
                 AppText(
-                    text = "$score",
+                    text = "%.1f".format(score),
                     style = AppTextStyle.TitleLarge,
                     override = AppTextOverride(color = color, fontWeight = FontWeight.Bold),
                 )
@@ -263,5 +329,41 @@ private fun LabeledPairCard(title: String, pairs: List<LabeledPair>) {
                 Spacer(modifier = Modifier.height(AppSpacing.Small))
             }
         }
+    }
+}
+
+@Composable
+private fun DigitalPaymentCard(digitalPayment: DigitalPayment) {
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        AppText(text = "Digital Payment", style = AppTextStyle.TitleMedium)
+        Spacer(modifier = Modifier.height(AppSpacing.Medium))
+        AppIconLabelValue(label = "Card Payment Available", value = digitalPayment.cardPaymentAvailable.toBengaliYesNo())
+        Spacer(modifier = Modifier.height(AppSpacing.Small))
+        AppIconLabelValue(label = "Other MFS Available", value = digitalPayment.otherMfsAvailable.toBengaliYesNo())
+        if (digitalPayment.facilities.isNotEmpty()) {
+            AppDivider(modifier = Modifier.padding(vertical = AppSpacing.Medium))
+            digitalPayment.facilities.forEachIndexed { index, facility ->
+                FacilityRow(facility = facility)
+                if (index != digitalPayment.facilities.lastIndex) {
+                    Spacer(modifier = Modifier.height(AppSpacing.Small))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FacilityRow(facility: Facility) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
+    ) {
+        AppIcon(
+            icon = if (facility.completed) Icons.Filled.CheckCircle else Icons.Filled.Cancel,
+            contentDescription = null,
+            modifier = Modifier.size(RowIconSize),
+            tint = if (facility.completed) StatusSuccess else StatusError,
+        )
+        AppText(text = facility.name, style = AppTextStyle.BodyMedium)
     }
 }
