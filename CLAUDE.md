@@ -52,7 +52,9 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
     │                        # AppRadioButton, AppSwitch, AppDropdown (+ AppDropdownOption),
     │                        # AppRadioToggleChip, AppRadioCheckCircle
     ├── icon/                # AppIcon (non-interactive), AppIconButton (clickable)
-    └── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard, AppDivider,
+    └── surface/             # AppTopBar (+ AppTopBarAction, AppTopBarScrollBehavior), AppCard (optional
+                             # topContent slot renders before the padded content column, flush with the
+                             # card's own bounds/corners - for a full-bleed banner), AppDivider,
                              # AppStatusBadge (+ AppStatusTone: Success/Warning/Error/Info/Neutral - always
                              # shows a status dot), AppChip (selectable pill for filter tabs - no dot,
                              # communicates selection rather than state), AppBottomActionBar (flat elevated
