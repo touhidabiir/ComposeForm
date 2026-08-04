@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocationOn
@@ -27,9 +28,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.input.AppSearchField
@@ -96,12 +100,25 @@ fun AcquisitionApprovalListScreen(
                         )
                     },
                 )
-                Spacer(modifier = Modifier.height(AppSpacing.Small))
-                AppText(
-                    text = "${visibleItems.size}টি ফলাফল পাওয়া গেছে",
-                    style = AppTextStyle.Label,
-                    override = AppTextOverride(color = StatusNeutral),
-                )
+                if (searchQuery.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(AppSpacing.Small))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall),
+                    ) {
+                        AppIcon(
+                            icon = Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(CopyIconSize),
+                            tint = StatusNeutral,
+                        )
+                        AppText(
+                            text = "${visibleItems.size}টি ফলাফল পাওয়া গেছে",
+                            style = AppTextStyle.Label,
+                            override = AppTextOverride(color = StatusNeutral),
+                        )
+                    }
+                }
             }
 
             LazyColumn(
@@ -131,10 +148,7 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Column {
-                AppText(text = item.shopName, style = AppTextStyle.TitleMedium)
-                AppText(text = item.displayId, style = AppTextStyle.Label, override = AppTextOverride(color = StatusNeutral))
-            }
+            AppText(text = item.shopName, style = AppTextStyle.TitleMedium)
             AppStatusBadge(text = "পেন্ডিং", tone = AppStatusTone.Warning)
         }
 
@@ -166,5 +180,16 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
             Spacer(modifier = Modifier.height(AppSpacing.Medium))
             AppStepperButton(label = "Review", onClick = onReview, modifier = Modifier.fillMaxWidth())
         }
+    }
+}
+
+// Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
+// system setting - that's how this screen actually renders in the real app, so a "Dark" tile
+// here would show something the app never does.
+@Preview(name = "Acquisition Approval List", showBackground = true)
+@Composable
+private fun AcquisitionApprovalListScreenPreview() {
+    ComposeFormAppTheme {
+        AcquisitionApprovalListScreen(onBack = {}, onReview = {})
     }
 }

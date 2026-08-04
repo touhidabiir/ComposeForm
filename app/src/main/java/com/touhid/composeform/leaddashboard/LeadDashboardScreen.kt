@@ -165,10 +165,7 @@ private fun LeadListCard(lead: LeadListItem) {
         topContent = lead.rejection?.let { rejection -> { RejectionBanner(reason = rejection.reason) } },
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Column {
-                AppText(text = lead.shopName, style = AppTextStyle.TitleMedium)
-                AppText(text = lead.displayId, style = AppTextStyle.Label, override = AppTextOverride(color = StatusNeutral))
-            }
+            AppText(text = lead.shopName, style = AppTextStyle.TitleMedium)
             AppStatusBadge(text = badgeLabel, tone = badgeTone)
         }
 
