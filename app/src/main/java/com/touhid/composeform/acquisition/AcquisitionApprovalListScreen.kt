@@ -11,11 +11,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
@@ -24,18 +24,19 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
+import com.touhid.composeform.common.OnEndOfListReached
+import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
@@ -53,6 +54,8 @@ import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusNeutral
+import com.touhid.composeform.network.model.AcquisitionListItem
+import com.touhid.composeform.network.model.LeadCloser
 
 private val RowIconSize = 16.dp
 private val CopyIconSize = 14.dp
@@ -82,13 +85,28 @@ fun AcquisitionApprovalListScreen(
     onBack: () -> Unit,
     onReview: (String) -> Unit,
     modifier: Modifier = Modifier,
-    listItems: List<AcquisitionListItem> = remember { sampleAcquisitionListItems() },
+    viewModel: AcquisitionApprovalListViewModel = hiltViewModel(),
 ) {
-    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    AcquisitionApprovalListContent(
+        state = state,
+        onBack = onBack,
+        onReview = onReview,
+        onAction = viewModel::onAction,
+        modifier = modifier,
+    )
+}
 
-    val visibleItems = listItems.filter { item ->
-        searchQuery.isBlank() || item.shopName.contains(searchQuery, ignoreCase = true) || item.walletNumber.contains(searchQuery)
-    }
+@Composable
+private fun AcquisitionApprovalListContent(
+    state: AcquisitionApprovalListState,
+    onBack: () -> Unit,
+    onReview: (String) -> Unit,
+    onAction: (AcquisitionApprovalListAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val listState = rememberLazyListState()
+    listState.OnEndOfListReached { onAction(AcquisitionApprovalListAction.OnLoadNextPage) }
 
     AppScaffold(
         modifier = modifier.fillMaxSize(),
@@ -99,7 +117,7 @@ fun AcquisitionApprovalListScreen(
                 onNavigationClick = onBack,
                 scrollBehavior = scrollBehavior,
                 actions = listOf(
-                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = "Refresh", onClick = {}),
+                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = "Refresh", onClick = { onAction(AcquisitionApprovalListAction.OnRefresh) }),
                 ),
             )
         },
@@ -107,19 +125,20 @@ fun AcquisitionApprovalListScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(AppSpacing.Medium)) {
                 AppSearchField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    value = state.searchQuery,
+                    onValueChange = { onAction(AcquisitionApprovalListAction.OnSearchQueryChanged(it)) },
                     placeholder = "মার্চেন্ট সার্চ করুন...",
                     modifier = Modifier.fillMaxWidth(),
                     trailingIcon = {
-                        AppIcon(
-                            icon = if (searchQuery.isBlank()) Icons.Filled.Search else Icons.Filled.Clear,
-                            contentDescription = if (searchQuery.isBlank()) null else "Clear",
+                        AppIconButton(
+                            icon = Icons.Filled.Search,
+                            contentDescription = "Search",
+                            onClick = { onAction(AcquisitionApprovalListAction.OnSearchSubmitted) },
                             tint = AccentIndigo,
                         )
                     },
                 )
-                if (searchQuery.isNotBlank()) {
+                if (state.activeSearchQuery != null) {
                     Spacer(modifier = Modifier.height(AppSpacing.Small))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -132,7 +151,7 @@ fun AcquisitionApprovalListScreen(
                             tint = StatusNeutral,
                         )
                         AppText(
-                            text = "${visibleItems.size}টি ফলাফল পাওয়া গেছে",
+                            text = "${state.items.size}টি ফলাফল পাওয়া গেছে",
                             style = AppTextStyle.Label,
                             override = AppTextOverride(color = StatusNeutral),
                         )
@@ -140,13 +159,42 @@ fun AcquisitionApprovalListScreen(
                 }
             }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
-                verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
-            ) {
-                items(items = visibleItems, key = { it.id }) { item ->
-                    AcquisitionListCard(item = item, onReview = { onReview(item.id.toString()) })
+            when {
+                state.isLoading -> {
+                    AppText(text = "Loading…", modifier = Modifier.padding(AppSpacing.Medium))
+                }
+
+                state.error != null -> {
+                    Column(modifier = Modifier.padding(AppSpacing.Medium)) {
+                        AppText(text = state.error)
+                        Spacer(modifier = Modifier.height(AppSpacing.Small))
+                        AppButton(text = "Retry", onClick = { onAction(AcquisitionApprovalListAction.OnRetry) })
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+                    ) {
+                        // Composite id+index key: MockDataInterceptor returns the same fixed set
+                        // of ids on every page, so a bare id key would collide once a second page
+                        // is appended.
+                        itemsIndexed(items = state.items, key = { index, item -> "${item.id}_$index" }) { _, item ->
+                            AcquisitionListCard(item = item, onReview = { onReview(item.id.toString()) })
+                        }
+                        if (state.isLoadingMore) {
+                            item {
+                                AppText(
+                                    text = "Loading more…",
+                                    modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -194,6 +242,19 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
     }
 }
 
+private val PreviewItems = listOf(
+    AcquisitionListItem(
+        id = 100238471,
+        displayId = "LEAD-2026-100238471",
+        shopName = "Romij Electric",
+        walletNumber = "01723456789",
+        address = "2 No. Road, Block-B, Syed Shah Road, Bakalia",
+        leadCloser = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "01930119876", servingMa = "01930198765"),
+        submittedAt = "2026-07-13T14:30:00+06:00",
+        canReview = true,
+    ),
+)
+
 // Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
 // system setting - that's how this screen actually renders in the real app, so a "Dark" tile
 // here would show something the app never does.
@@ -201,6 +262,11 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
 @Composable
 private fun AcquisitionApprovalListScreenPreview() {
     ComposeFormAppTheme {
-        AcquisitionApprovalListScreen(onBack = {}, onReview = {})
+        AcquisitionApprovalListContent(
+            state = AcquisitionApprovalListState(isLoading = false, items = PreviewItems),
+            onBack = {},
+            onReview = {},
+            onAction = {},
+        )
     }
 }
