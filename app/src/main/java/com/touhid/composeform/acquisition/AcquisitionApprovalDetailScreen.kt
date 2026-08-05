@@ -28,7 +28,7 @@ import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,6 +41,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
@@ -60,6 +62,16 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusInfoContainer
 import com.touhid.composeform.designsystem.theme.StatusNeutral
+import com.touhid.composeform.network.model.AcquisitionAudit
+import com.touhid.composeform.network.model.AcquisitionDetail
+import com.touhid.composeform.network.model.AcquisitionImages
+import com.touhid.composeform.network.model.ContactInfo
+import com.touhid.composeform.network.model.ContactPerson
+import com.touhid.composeform.network.model.DigitalPayment
+import com.touhid.composeform.network.model.Facility
+import com.touhid.composeform.network.model.LeadCloser
+import com.touhid.composeform.network.model.OutletInfo
+import com.touhid.composeform.network.model.WalletInfo
 
 private val RowIconSize = 16.dp
 private const val MaxPremiumnessScore = 100
@@ -107,7 +119,27 @@ fun AcquisitionApprovalDetailScreen(
     onApprove: () -> Unit,
     onReject: () -> Unit,
     modifier: Modifier = Modifier,
-    detail: AcquisitionDetail = remember { sampleAcquisitionDetail() },
+    viewModel: AcquisitionApprovalDetailViewModel = hiltViewModel(),
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    AcquisitionApprovalDetailContent(
+        state = state,
+        onBack = onBack,
+        onApprove = onApprove,
+        onReject = onReject,
+        onAction = viewModel::onAction,
+        modifier = modifier,
+    )
+}
+
+@Composable
+private fun AcquisitionApprovalDetailContent(
+    state: AcquisitionApprovalDetailState,
+    onBack: () -> Unit,
+    onApprove: () -> Unit,
+    onReject: () -> Unit,
+    onAction: (AcquisitionApprovalDetailAction) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     AppScaffold(
         modifier = modifier.fillMaxSize(),
@@ -120,71 +152,94 @@ fun AcquisitionApprovalDetailScreen(
             )
         },
         bottomBar = {
-            AppBottomActionBar(cornerRadius = AppSpacing.Medium) {
-                AppOutlinedButton(
-                    text = "Reject",
-                    onClick = onReject,
-                    buttonType = AppButtonStyle.Danger,
-                    modifier = Modifier.weight(1f),
-                )
-                AppButton(
-                    text = "Approve",
-                    onClick = onApprove,
-                    buttonType = AppButtonStyle.Success,
-                    modifier = Modifier.weight(1f),
-                )
+            if (state.detail != null) {
+                AppBottomActionBar(cornerRadius = AppSpacing.Medium) {
+                    AppOutlinedButton(
+                        text = "Reject",
+                        onClick = onReject,
+                        buttonType = AppButtonStyle.Danger,
+                        modifier = Modifier.weight(1f),
+                    )
+                    AppButton(
+                        text = "Approve",
+                        onClick = onApprove,
+                        buttonType = AppButtonStyle.Success,
+                        modifier = Modifier.weight(1f),
+                    )
+                }
             }
         },
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(AppSpacing.Medium),
-            verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
-        ) {
-            ShopIdentityCard(shopName = detail.shopName, walletNumber = detail.walletNumber)
-
-            AppCard(modifier = Modifier.fillMaxWidth()) {
-                ScoreSection(score = detail.premiumnessScore, band = detail.premiumnessBand)
+        when {
+            state.isLoading -> {
+                AppText(text = "Loading…", modifier = Modifier.padding(AppSpacing.Medium))
             }
 
-            // detail.images.shopImageOutside/shopImageInside/businessProofImage hold the real
-            // URLs - still rendered as color placeholders since no image-loading library
-            // (e.g. Coil) is wired into :app yet; see CLAUDE.md's design system boundary notes.
-            PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3".toBengaliDigits(), color = PhotoPlaceholderColors[0])
-            PhotoBlock(caption = "আউটলেটের ভিতরের ছবি", counter = "2/3".toBengaliDigits(), color = PhotoPlaceholderColors[1])
-            PhotoBlock(caption = "ব্যবসার পরিচয়পত্রের ছবি", counter = "3/3".toBengaliDigits(), color = PhotoPlaceholderColors[2])
-
-            AppCard(modifier = Modifier.fillMaxWidth()) {
-                AppText(text = "Owner & Contact Person Details", style = AppTextStyle.TitleMedium)
-                Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppIconLabelValue(
-                    label = "Shop Owner Info",
-                    value = detail.contactInfo.outletOwner.name,
-                    icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
-                )
-                Spacer(modifier = Modifier.height(AppSpacing.Small))
-                AppIconLabelValue(
-                    value = detail.contactInfo.outletOwner.phoneNumber,
-                    trailingIcon = copyIconButton(detail.contactInfo.outletOwner.phoneNumber),
-                )
-                Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppIconLabelValue(
-                    label = "Shop Operator Info (if different)",
-                    value = detail.contactInfo.contactPerson.name,
-                    icon = { AppIcon(icon = Icons.Filled.Groups, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
-                )
-                Spacer(modifier = Modifier.height(AppSpacing.Small))
-                AppIconLabelValue(
-                    value = detail.contactInfo.contactPerson.phoneNumber,
-                    trailingIcon = copyIconButton(detail.contactInfo.contactPerson.phoneNumber),
-                )
+            state.error != null -> {
+                Column(modifier = Modifier.padding(AppSpacing.Medium)) {
+                    AppText(text = state.error)
+                    Spacer(modifier = Modifier.height(AppSpacing.Small))
+                    AppButton(text = "Retry", onClick = { onAction(AcquisitionApprovalDetailAction.OnRetry) })
+                }
             }
 
-            OutletInformationCard(outletInfo = detail.outletInfo, digitalPayment = detail.digitalPayment)
-            WalletInformationCard(walletInfo = detail.walletInfo)
+            state.detail != null -> {
+                AcquisitionDetailBody(detail = state.detail)
+            }
         }
+    }
+}
+
+@Composable
+private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(AppSpacing.Medium),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+    ) {
+        ShopIdentityCard(shopName = detail.shopName, walletNumber = detail.walletNumber)
+
+        AppCard(modifier = Modifier.fillMaxWidth()) {
+            ScoreSection(score = detail.premiumnessScore, band = detail.premiumnessBand)
+        }
+
+        // detail.images.shopImageOutside/shopImageInside/businessProofImage hold the real
+        // URLs - still rendered as color placeholders since no image-loading library
+        // (e.g. Coil) is wired into :app yet; see CLAUDE.md's design system boundary notes.
+        PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3".toBengaliDigits(), color = PhotoPlaceholderColors[0])
+        PhotoBlock(caption = "আউটলেটের ভিতরের ছবি", counter = "2/3".toBengaliDigits(), color = PhotoPlaceholderColors[1])
+        PhotoBlock(caption = "ব্যবসার পরিচয়পত্রের ছবি", counter = "3/3".toBengaliDigits(), color = PhotoPlaceholderColors[2])
+
+        AppCard(modifier = Modifier.fillMaxWidth()) {
+            AppText(text = "Owner & Contact Person Details", style = AppTextStyle.TitleMedium)
+            Spacer(modifier = Modifier.height(AppSpacing.Medium))
+            AppIconLabelValue(
+                label = "Shop Owner Info",
+                value = detail.contactInfo.outletOwner.name,
+                icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
+            )
+            Spacer(modifier = Modifier.height(AppSpacing.Small))
+            AppIconLabelValue(
+                value = detail.contactInfo.outletOwner.phoneNumber,
+                trailingIcon = copyIconButton(detail.contactInfo.outletOwner.phoneNumber),
+            )
+            Spacer(modifier = Modifier.height(AppSpacing.Medium))
+            AppIconLabelValue(
+                label = "Shop Operator Info (if different)",
+                value = detail.contactInfo.contactPerson.name,
+                icon = { AppIcon(icon = Icons.Filled.Groups, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
+            )
+            Spacer(modifier = Modifier.height(AppSpacing.Small))
+            AppIconLabelValue(
+                value = detail.contactInfo.contactPerson.phoneNumber,
+                trailingIcon = copyIconButton(detail.contactInfo.contactPerson.phoneNumber),
+            )
+        }
+
+        OutletInformationCard(outletInfo = detail.outletInfo, digitalPayment = detail.digitalPayment)
+        WalletInformationCard(walletInfo = detail.walletInfo)
     }
 }
 
@@ -396,6 +451,53 @@ private fun PhotoBlock(caption: String, counter: String, color: Color) {
     }
 }
 
+private val PreviewDetail = AcquisitionDetail(
+    id = 100238471,
+    displayId = "LEAD-2026-100238471",
+    shopName = "Romij Electric",
+    walletNumber = "01723456789",
+    status = "submitted",
+    premiumnessScore = 72.4,
+    premiumnessBand = "50-74",
+    images = AcquisitionImages(
+        shopImageOutside = "https://storage.example.com/shop-outside.jpg",
+        shopImageInside = "https://storage.example.com/shop-inside.jpg",
+        businessProofImage = "https://storage.example.com/business-proof.jpg",
+    ),
+    outletInfo = OutletInfo(
+        address = "2 No. Road, Block-B, Syed Shah Road, Bakalia",
+        district = "Chattogram",
+        thana = "Bakalia",
+        marketName = "Avengers Tower",
+        bmccCode = "5002",
+        bmccName = "Hardware & Electronics",
+        productType = "Merchant Plus Lite A",
+        outletLocationType = "Roadside",
+        outletType = "Semi-permanent",
+    ),
+    digitalPayment = DigitalPayment(
+        cardPaymentAvailable = true,
+        otherMfsAvailable = false,
+        facilities = listOf(Facility(name = "Card payment", completed = true)),
+    ),
+    contactInfo = ContactInfo(
+        contactPerson = ContactPerson(name = "Kalam Bashir", phoneNumber = "01723456789", designation = "Manager"),
+        outletOwner = ContactPerson(name = "Raju Ahmed Shetu", phoneNumber = "01723456789"),
+    ),
+    walletInfo = WalletInfo(
+        proposedWalletNumber = "01723456789",
+        simStaysAtOutlet = true,
+        simUsedInSmartphone = true,
+        simOwnedByShopOwner = true,
+    ),
+    surveyResponses = emptyList(),
+    audit = AcquisitionAudit(
+        createdAt = "2026-07-15T10:30:00+06:00",
+        submittedAt = "2026-07-15T10:35:00+06:00",
+        submittedBy = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "1930119876", servingMa = "1930198765"),
+    ),
+)
+
 // Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
 // system setting - that's how this screen actually renders in the real app, so a "Dark" tile
 // here would show something the app never does. heightDp is tall enough to lay out the whole
@@ -405,7 +507,12 @@ private fun PhotoBlock(caption: String, counter: String, color: Color) {
 @Composable
 private fun AcquisitionApprovalDetailScreenPreview() {
     ComposeFormAppTheme {
-        AcquisitionApprovalDetailScreen(onBack = {}, onApprove = {}, onReject = {})
+        AcquisitionApprovalDetailContent(
+            state = AcquisitionApprovalDetailState(isLoading = false, detail = PreviewDetail),
+            onBack = {},
+            onApprove = {},
+            onReject = {},
+            onAction = {},
+        )
     }
 }
-
