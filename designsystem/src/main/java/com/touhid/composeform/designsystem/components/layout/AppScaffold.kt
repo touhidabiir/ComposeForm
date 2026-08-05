@@ -1,6 +1,7 @@
 package com.touhid.composeform.designsystem.components.layout
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -16,12 +17,14 @@ import com.touhid.composeform.designsystem.components.surface.AppTopBarScrollBeh
 fun AppScaffold(
     modifier: Modifier = Modifier.fillMaxSize(),
     topBar: @Composable (AppTopBarScrollBehavior) -> Unit = {},
-    content: @Composable () -> Unit,
+    bottomBar: @Composable () -> Unit = {},
+    content: @Composable BoxScope.() -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { topBar(AppTopBarScrollBehavior(scrollBehavior)) },
+        bottomBar = bottomBar,
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()

@@ -11,7 +11,11 @@ import com.touhid.composeform.network.model.ManagerSummary
 import com.touhid.composeform.network.safeApiCall
 import javax.inject.Inject
 
-class AppRepository @Inject constructor(
+// The constructor is internal (not the class) because AppApiService is internal to :network -
+// a public constructor can't expose an internal parameter type. Hilt still injects this into
+// :app fine: the generated factory that calls this constructor is compiled inside :network,
+// where internal is visible; :app only ever sees the AppRepository type itself.
+class AppRepository @Inject internal constructor(
     private val apiService: AppApiService,
     private val tokenProvider: TokenProvider,
 ) {

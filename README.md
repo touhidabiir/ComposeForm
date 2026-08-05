@@ -249,8 +249,8 @@ Any field can be shown only when another field's current value matches a rule:
 | Property | Type | Description |
 |---|---|---|
 | `key` | string (required) | The other field's `key` to read the current value from. |
-| `operator` | `"equals"` \| `"notEquals"` \| `"in"` | `equals`/`notEquals` compare against `values[0]` only (extra entries ignored); `in` checks membership across the whole list. |
-| `values` | array of strings (required) | Comparison value(s). For option-based fields (`radio`/`dropdown`/`checkboxGroup`), compare against the option `id`, not `value`. |
+| `operator` | `"equals"` \| `"notEquals"` | `equals` is satisfied when the trigger field's current value (or, for a multi-select trigger, *any* of its selected values) matches *any* entry in `values`. `notEquals` is satisfied when *none* of them do. Both use the full `values` list the same way, whether it has one entry or many — there's no `"in"` operator; put multiple entries under `equals`/`notEquals` directly to match/exclude a set. |
+| `values` | array of strings (required) | Comparison value(s) — one entry for a simple equality check, or several to match/exclude a set. For option-based fields (`radio`/`dropdown`/`checkboxGroup`), compare against the option `id`, not `value`. |
 
 If the referenced field has no current value at all (never touched, no default, or itself currently hidden), the condition is **not satisfied** for every operator — including `notEquals`. A field that becomes hidden has its value cleared from the submitted data immediately.
 

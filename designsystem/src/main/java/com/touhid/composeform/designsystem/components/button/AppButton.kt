@@ -1,16 +1,20 @@
 package com.touhid.composeform.designsystem.components.button
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -19,10 +23,20 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.StatusError
+import com.touhid.composeform.designsystem.theme.StatusSuccess
+
+// Lets callers ask for a semantically-colored action (e.g. Approve/Reject) without leaking raw
+// Material3 ButtonColors through the public signature.
+enum class AppButtonStyle { Primary, Success, Danger }
 
 @Composable
 fun AppButton(
@@ -30,9 +44,30 @@ fun AppButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    buttonType: AppButtonStyle = AppButtonStyle.Primary,
+    // Escape hatch for a one-off brand color that doesn't warrant its own AppButtonStyle case -
+    // no-op (falls back to buttonType) when left unspecified, same convention as AppTextOverride.
+    containerColor: Color = Color.Unspecified,
+    contentColor: Color = Color.Unspecified,
+    leadingIcon: (@Composable () -> Unit)? = null,
     textOverride: AppTextOverride = AppTextOverride(),
 ) {
-    Button(onClick = onClick, modifier = modifier, enabled = enabled) {
+    val styleColors = when (buttonType) {
+        AppButtonStyle.Primary -> ButtonDefaults.buttonColors()
+        AppButtonStyle.Success -> ButtonDefaults.buttonColors(containerColor = StatusSuccess, contentColor = Color.White)
+        AppButtonStyle.Danger -> ButtonDefaults.buttonColors(containerColor = StatusError, contentColor = Color.White)
+    }
+    // Defaults content to white when only a custom containerColor is given - a colored fill
+    // almost always wants light text, and the caller can still pass contentColor to override that.
+    val colors = ButtonDefaults.buttonColors(
+        containerColor = containerColor.takeOrElse { styleColors.containerColor },
+        contentColor = contentColor.takeOrElse { if (containerColor.isSpecified) Color.White else styleColors.contentColor },
+    )
+    Button(onClick = onClick, modifier = modifier, enabled = enabled, colors = colors) {
+        leadingIcon?.let {
+            it()
+            Spacer(modifier = Modifier.width(AppSpacing.Small))
+        }
         AppText(text = text, style = AppTextStyle.Label, override = textOverride)
     }
 }
@@ -43,9 +78,31 @@ fun AppOutlinedButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    buttonType: AppButtonStyle = AppButtonStyle.Primary,
+    // Same escape hatch as AppButton's containerColor/contentColor - no fill here, so one color
+    // covers both the text and the border.
+    contentColor: Color = Color.Unspecified,
+    leadingIcon: (@Composable () -> Unit)? = null,
     textOverride: AppTextOverride = AppTextOverride(),
 ) {
-    OutlinedButton(onClick = onClick, modifier = modifier, enabled = enabled) {
+    val styleColor = when (buttonType) {
+        AppButtonStyle.Primary -> MaterialTheme.colorScheme.primary
+        AppButtonStyle.Success -> StatusSuccess
+        AppButtonStyle.Danger -> StatusError
+    }
+    val resolvedColor = contentColor.takeOrElse { styleColor }
+    val borderColor = if (enabled) resolvedColor else resolvedColor.copy(alpha = 0.38f)
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = resolvedColor),
+        border = BorderStroke(width = 1.dp, color = borderColor),
+    ) {
+        leadingIcon?.let {
+            it()
+            Spacer(modifier = Modifier.width(AppSpacing.Small))
+        }
         AppText(text = text, style = AppTextStyle.Label, override = textOverride)
     }
 }

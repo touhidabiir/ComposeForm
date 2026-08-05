@@ -3,12 +3,16 @@ package com.touhid.composeform.designsystem.components.surface
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 
@@ -33,6 +37,34 @@ private fun TopBarPreview() {
                     AppTopBarAction(Icons.Filled.MoreVert, "More") {},
                 ),
             )
+        }
+    }
+}
+
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CardDividerBadgePreview() {
+    ComposeFormTheme {
+        Column(
+            modifier = Modifier.padding(AppSpacing.Medium),
+            verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+        ) {
+            AppStatusBadge(text = "Approved", tone = AppStatusTone.Success)
+            AppStatusBadge(text = "Pending", tone = AppStatusTone.Warning)
+            AppStatusBadge(text = "Cancelled", tone = AppStatusTone.Error)
+            AppStatusBadge(text = "e-KYC submitted", tone = AppStatusTone.Info)
+            AppStatusBadge(text = "Neutral", tone = AppStatusTone.Neutral)
+            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                AppChip(text = "All", selected = true, onClick = {})
+                AppChip(text = "Pending", selected = false, onClick = {})
+                AppChip(text = "Approved", selected = false, onClick = {})
+            }
+            AppCard {
+                AppText(text = "Card title")
+                AppHorizontalDivider(modifier = Modifier.padding(vertical = AppSpacing.Small))
+                AppText(text = "Card body content")
+            }
         }
     }
 }

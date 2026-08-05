@@ -15,9 +15,8 @@ private fun FormVisibilityCondition.isSatisfiedBy(triggerValue: FormValue?): Boo
     val tokens = triggerValue.toComparableTokens()
     if (tokens.isEmpty()) return false
     return when (operator) {
-        FormVisibilityOperator.Equals -> tokens.singleOrNull() == values.firstOrNull()
-        FormVisibilityOperator.NotEquals -> tokens.singleOrNull() != values.firstOrNull()
-        FormVisibilityOperator.In -> tokens.any { it in values }
+        FormVisibilityOperator.Equals -> tokens.any { it in values }
+        FormVisibilityOperator.NotEquals -> tokens.none { it in values }
     }
 }
 

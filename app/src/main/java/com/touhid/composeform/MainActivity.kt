@@ -21,11 +21,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.touhid.composeform.acquisition.AcquisitionApprovalDetailScreen
+import com.touhid.composeform.acquisition.AcquisitionApprovalListScreen
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppText
-import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.flow.DemoFormApi
 import com.touhid.composeform.flow.FormFlowState
 import com.touhid.composeform.flow.FormFlowViewModel
@@ -35,6 +36,8 @@ import com.touhid.composeform.formbuilder.fieldsWithOptionsUrl
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.formbuilder.withOptions
+import com.touhid.composeform.home.DemoHomeScreen
+import com.touhid.composeform.leaddashboard.LeadDashboardScreen
 
 // Mirrors FormFlowState but scoped to the picker destination, since picker schemas aren't
 // ViewModel-backed today. Only :app interprets a field's optionsUrl - FormRenderer never does.
@@ -49,13 +52,40 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ComposeFormTheme {
+            ComposeFormAppTheme {
                 val navController = rememberNavController()
                 var activePickerKey by rememberSaveable { mutableStateOf<String?>(null) }
                 var activePickerSchema by remember { mutableStateOf<FormSchema?>(null) }
                 var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
 
-                NavHost(navController = navController, startDestination = "form") {
+                NavHost(navController = navController, startDestination = "home") {
+                    composable("home") {
+                        DemoHomeScreen(
+                            onOpenFormDemo = { navController.navigate("form") },
+                            onOpenLeadDashboard = { navController.navigate("leadDashboard") },
+                            onOpenAcquisitionApproval = { navController.navigate("acquisitionApprovalList") },
+                        )
+                    }
+
+                    composable("leadDashboard") {
+                        LeadDashboardScreen(onBack = { navController.popBackStack() })
+                    }
+
+                    composable("acquisitionApprovalList") {
+                        AcquisitionApprovalListScreen(
+                            onBack = { navController.popBackStack() },
+                            onReview = { leadId -> navController.navigate("acquisitionApprovalDetail/$leadId") },
+                        )
+                    }
+
+                    composable("acquisitionApprovalDetail/{leadId}") {
+                        AcquisitionApprovalDetailScreen(
+                            onBack = { navController.popBackStack() },
+                            onApprove = { navController.popBackStack() },
+                            onReject = { navController.popBackStack() },
+                        )
+                    }
+
                     composable("form") {
                         val viewModel: FormFlowViewModel = viewModel()
                         val flowState = viewModel.state
@@ -74,7 +104,7 @@ class MainActivity : ComponentActivity() {
                                 title = (flowState as? FormFlowState.Page)?.schema?.screenTitle ?: "ComposeForm Demo",
                                 scrollBehavior = scrollBehavior,
                                 navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
-                                onNavigationClick = { if (!viewModel.goBack()) finish() },
+                                onNavigationClick = { if (!viewModel.goBack()) navController.popBackStack() },
                             )
                         }) {
                             when (flowState) {

@@ -10,6 +10,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 
@@ -19,20 +20,16 @@ private val DarkColorScheme = darkColorScheme(
     tertiary = Pink80
 )
 
+// primary is the app's actual brand pink (BrandPrimary) rather than the Compose-template Purple40 -
+// surface/background are pinned explicitly so cards render crisp white on a faint tinted page
+// background regardless of what primary's auto-derived tonal palette would otherwise produce.
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = BrandPrimary,
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    secondary = PurpleGrey40,
+    tertiary = Pink40,
+    surface = Color.White,
+    background = Color(0xFFF8F8FF),
 )
 
 @Composable
