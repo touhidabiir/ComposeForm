@@ -26,4 +26,5 @@ rootProject.name = "ComposeForm"
 include(":app")
 include(":designsystem")
 include(":formbuilder")
+include(":network")
  
