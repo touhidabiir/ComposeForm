@@ -7,6 +7,7 @@ import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.model.AcquisitionDetail
 import com.touhid.composeform.network.repository.AppRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -34,6 +35,10 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
     private val _state = MutableStateFlow(AcquisitionApprovalDetailState())
     val state = _state.asStateFlow()
 
+    // Cancelling the previous load before starting a new one means a stale response can't land
+    // after a newer retry superseded it (e.g. tapping Retry twice quickly).
+    private var loadJob: Job? = null
+
     init {
         load()
     }
@@ -45,7 +50,8 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
     }
 
     private fun load() {
-        viewModelScope.launch {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             when (val result = repository.getAcquisitionDetail(leadId)) {
                 is NetworkResult.Success -> _state.update { it.copy(isLoading = false, detail = result.data) }
