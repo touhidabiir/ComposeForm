@@ -38,8 +38,10 @@ internal object NetworkModule {
         .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         // TODO: remove once the real backend is live - also delete MockDataInterceptor.kt and
-        // MockJson.kt (network/) at the same time, they exist solely to back this call.
-        .addInterceptor(MockDataInterceptor())
+        // MockJson.kt (network/) at the same time, they exist solely to back this call. Debug-gated
+        // the same way provideLoggingInterceptor() above is, so a release build can never end up
+        // silently serving fake data instead of failing to reach a real backend.
+        .apply { if (BuildConfig.DEBUG) addInterceptor(MockDataInterceptor()) }
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
         .build()

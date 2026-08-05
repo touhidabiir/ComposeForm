@@ -182,6 +182,14 @@ private fun LeadDashboardContent(
                     }
                 }
 
+                state.leads.isEmpty() -> {
+                    AppText(
+                        text = "কোনো লিড পাওয়া যায়নি",
+                        modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
+                        textAlign = TextAlign.Center,
+                    )
+                }
+
                 else -> {
                     LazyColumn(
                         state = listState,
