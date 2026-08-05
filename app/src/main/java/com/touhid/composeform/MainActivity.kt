@@ -23,6 +23,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.touhid.composeform.acquisition.AcquisitionApprovalDetailScreen
 import com.touhid.composeform.acquisition.AcquisitionApprovalListScreen
+import dagger.hilt.android.AndroidEntryPoint
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
@@ -47,6 +48,7 @@ private sealed interface PickerLoadState {
     data class Ready(val schema: FormSchema) : PickerLoadState
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

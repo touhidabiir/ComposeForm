@@ -14,7 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -28,20 +29,20 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
+import com.touhid.composeform.common.OnEndOfListReached
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
@@ -62,6 +63,9 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
+import com.touhid.composeform.network.model.LeadCloser
+import com.touhid.composeform.network.model.LeadListItem
+import com.touhid.composeform.network.model.LeadStatus
 
 private val RowIconSize = 16.dp
 
@@ -91,29 +95,30 @@ private val AccentIndigo = Color(0xFF675C92)
 // stays a plain local constant rather than a shared designsystem token for a one-off shade.
 private val RejectionBannerBackground = Color(0xFFFFF8FB)
 
-private val LeadListItem.isEkycSubmitted: Boolean get() = ekycSubmitter != null
-
-private fun LeadListItem.toFilter(): LeadStatusFilter = when {
-    status == LeadStatus.Approved && isEkycSubmitted -> LeadStatusFilter.EKyc
-    status == LeadStatus.Approved -> LeadStatusFilter.Approved
-    status == LeadStatus.Pending -> LeadStatusFilter.Pending
-    status == LeadStatus.Rejected -> LeadStatusFilter.Rejected
-    else -> LeadStatusFilter.Pending
-}
-
 @Composable
 fun LeadDashboardScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    leads: List<LeadListItem> = remember { sampleLeadDashboardResults() },
+    viewModel: LeadDashboardViewModel = hiltViewModel(),
 ) {
-    var selectedFilter by rememberSaveable { mutableStateOf(LeadStatusFilter.Pending) }
-    var searchQuery by rememberSaveable { mutableStateOf("") }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    LeadDashboardContent(
+        state = state,
+        onBack = onBack,
+        onAction = viewModel::onAction,
+        modifier = modifier,
+    )
+}
 
-    val visibleLeads = leads.filter { lead ->
-        lead.toFilter() == selectedFilter &&
-            (searchQuery.isBlank() || lead.shopName.contains(searchQuery, ignoreCase = true) || lead.walletNumber.contains(searchQuery))
-    }
+@Composable
+private fun LeadDashboardContent(
+    state: LeadDashboardState,
+    onBack: () -> Unit,
+    onAction: (LeadDashboardAction) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val listState = rememberLazyListState()
+    listState.OnEndOfListReached { onAction(LeadDashboardAction.OnLoadNextPage) }
 
     AppScaffold(
         modifier = modifier.fillMaxSize(),
@@ -124,7 +129,7 @@ fun LeadDashboardScreen(
                 onNavigationClick = onBack,
                 scrollBehavior = scrollBehavior,
                 actions = listOf(
-                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = "Refresh", onClick = {}),
+                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = "Refresh", onClick = { onAction(LeadDashboardAction.OnRefresh) }),
                 ),
             )
         },
@@ -132,36 +137,74 @@ fun LeadDashboardScreen(
         Column(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(AppSpacing.Medium)) {
                 AppSearchField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    value = state.searchQuery,
+                    onValueChange = { onAction(LeadDashboardAction.OnSearchQueryChanged(it)) },
                     placeholder = "লিড বেইজ সার্চ করুন...",
                     modifier = Modifier.fillMaxWidth(),
-                    trailingIcon = { AppIcon(icon = Icons.Filled.Search, contentDescription = null, tint = AccentIndigo) },
-                )
-                Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
-                ) {
-                    LeadStatusFilter.entries.forEach { filter ->
-                        AppChip(
-                            text = filter.label,
-                            selected = filter == selectedFilter,
-                            onClick = { selectedFilter = filter },
+                    trailingIcon = {
+                        AppIconButton(
+                            icon = Icons.Filled.Search,
+                            contentDescription = "Search",
+                            onClick = { onAction(LeadDashboardAction.OnSearchSubmitted) },
+                            tint = AccentIndigo,
                         )
+                    },
+                )
+                if (state.activeSearchQuery == null) {
+                    Spacer(modifier = Modifier.height(AppSpacing.Medium))
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
+                    ) {
+                        LeadStatusFilter.entries.forEach { filter ->
+                            AppChip(
+                                text = filter.label,
+                                selected = filter == state.selectedFilter,
+                                onClick = { onAction(LeadDashboardAction.OnFilterSelected(filter)) },
+                            )
+                        }
                     }
                 }
             }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
-                verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
-            ) {
-                items(items = visibleLeads, key = { it.id }) { lead ->
-                    LeadListCard(lead = lead)
+            when {
+                state.isLoading -> {
+                    AppText(text = "লোড হচ্ছে...", modifier = Modifier.padding(AppSpacing.Medium))
+                }
+
+                state.error != null -> {
+                    Column(modifier = Modifier.padding(AppSpacing.Medium)) {
+                        AppText(text = state.error)
+                        Spacer(modifier = Modifier.height(AppSpacing.Small))
+                        AppButton(text = "Retry", onClick = { onAction(LeadDashboardAction.OnRetry) })
+                    }
+                }
+
+                else -> {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
+                        verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+                    ) {
+                        // Composite id+index key: MockDataInterceptor returns the same fixed set
+                        // of ids on every page, so a bare id key would collide once a second page
+                        // is appended.
+                        itemsIndexed(items = state.leads, key = { index, lead -> "${lead.id}_$index" }) { _, lead ->
+                            LeadListCard(lead = lead)
+                        }
+                        if (state.isLoadingMore) {
+                            item {
+                                AppText(
+                                    text = "আরও লোড হচ্ছে...",
+                                    modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -286,6 +329,21 @@ private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
     }
 }
 
+private val PreviewLeads = listOf(
+    LeadListItem(
+        id = 100238471,
+        displayId = "LEAD-2026-100238471",
+        shopName = "Romij Electric",
+        walletNumber = "01723456789",
+        address = "2 No. Road, Block-B, Syed Shah Road, Bakalia",
+        status = LeadStatus.Pending,
+        premiumnessScore = 61.2,
+        canSubmitEkyc = false,
+        leadCloser = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "01930119876", servingMa = "01930198765"),
+        createdAt = "2026-07-15T10:30:00+06:00",
+    ),
+)
+
 // Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
 // system setting - that's how this screen actually renders in the real app, so a "Dark" tile
 // here would show something the app never does.
@@ -293,6 +351,10 @@ private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
 @Composable
 private fun LeadDashboardScreenPreview() {
     ComposeFormAppTheme {
-        LeadDashboardScreen(onBack = {})
+        LeadDashboardContent(
+            state = LeadDashboardState(isLoading = false, leads = PreviewLeads, selectedFilter = LeadStatusFilter.Pending),
+            onBack = {},
+            onAction = {},
+        )
     }
 }

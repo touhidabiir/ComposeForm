@@ -3,8 +3,11 @@ package com.touhid.composeform.network.repository
 import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.api.AppApiService
 import com.touhid.composeform.network.auth.TokenProvider
+import com.touhid.composeform.network.model.AcquisitionDetail
+import com.touhid.composeform.network.model.AcquisitionListPage
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
+import com.touhid.composeform.network.model.LeadDashboardPage
 import com.touhid.composeform.network.model.LoginRequest
 import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
@@ -35,4 +38,13 @@ class AppRepository @Inject internal constructor(
 
     suspend fun getAdminDetails(id: String): NetworkResult<AdminDetails> =
         safeApiCall { apiService.getAdminDetails(id) }
+
+    suspend fun getLeadDashboard(status: String?, search: String?, pageNo: Int): NetworkResult<LeadDashboardPage> =
+        safeApiCall { apiService.getLeadDashboard(status, search, pageNo).data }
+
+    suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage> =
+        safeApiCall { apiService.getAcquisitionList(search, pageNo).data }
+
+    suspend fun getAcquisitionDetail(leadId: String): NetworkResult<AcquisitionDetail> =
+        safeApiCall { apiService.getAcquisitionDetail(leadId).data }
 }

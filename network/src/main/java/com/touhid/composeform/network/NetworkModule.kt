@@ -37,6 +37,9 @@ internal object NetworkModule {
         .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        // TODO: remove once the real backend is live - also delete MockDataInterceptor.kt and
+        // MockJson.kt (network/) at the same time, they exist solely to back this call.
+        .addInterceptor(MockDataInterceptor())
         .addInterceptor(authInterceptor)
         .addInterceptor(loggingInterceptor)
         .build()
