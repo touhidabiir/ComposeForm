@@ -18,6 +18,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -141,6 +142,10 @@ private fun LeadDashboardContent(
                     onValueChange = { onAction(LeadDashboardAction.OnSearchQueryChanged(it)) },
                     placeholder = "লিড বেইজ সার্চ করুন...",
                     modifier = Modifier.fillMaxWidth(),
+                    // AppSearchField's keyboardOptions already default to imeAction = Search -
+                    // only the action handler needs wiring here so the IME's search key submits
+                    // the same way the trailing search icon already does.
+                    keyboardActions = KeyboardActions(onSearch = { onAction(LeadDashboardAction.OnSearchSubmitted) }),
                     trailingIcon = {
                         AppIconButton(
                             icon = Icons.Filled.Search,
