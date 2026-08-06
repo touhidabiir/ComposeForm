@@ -15,6 +15,10 @@ import javax.inject.Inject
 
 data class LeadDashboardState(
     val isLoading: Boolean = true,
+    // Set only for a pull-to-refresh reload, never alongside isLoading - AppPullToRefreshBox
+    // shows its own indicator for this, so the blocking AppProgressDialog (gated on isLoading)
+    // doesn't also appear and double up.
+    val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val leads: List<LeadListItem> = emptyList(),
     val selectedFilter: LeadStatusFilter = LeadStatusFilter.Pending,
@@ -26,6 +30,9 @@ data class LeadDashboardState(
     val page: Int = 1,
     val hasMore: Boolean = true,
     val error: String? = null,
+    // Bumped on every successful first-page load (filter switch, search, refresh, retry) - the
+    // screen scrolls the list back to the top whenever this changes, but never on a page append.
+    val loadedRevision: Int = 0,
 )
 
 sealed interface LeadDashboardAction {
@@ -79,13 +86,13 @@ class LeadDashboardViewModel @Inject constructor(
                 _state.update { it.copy(activeSearchQuery = query) }
                 loadFirstPage()
             }
-            LeadDashboardAction.OnRefresh -> loadFirstPage()
+            LeadDashboardAction.OnRefresh -> loadFirstPage(isRefresh = true)
             LeadDashboardAction.OnLoadNextPage -> loadNextPage()
             LeadDashboardAction.OnRetry -> if (retryLoadsNextPage) loadNextPage() else loadFirstPage()
         }
     }
 
-    private fun loadFirstPage() {
+    private fun loadFirstPage(isRefresh: Boolean = false) {
         val filter = _state.value.selectedFilter
         val search = _state.value.activeSearchQuery
         retryLoadsNextPage = false
@@ -94,20 +101,36 @@ class LeadDashboardViewModel @Inject constructor(
             // Reset pagination state as the request starts, not just on success - otherwise a
             // failed reload leaves a stale hasMore=false/page from the previous filter behind,
             // which makes a later Retry route into loadNextPage() and no-op.
-            _state.update { it.copy(isLoading = true, isLoadingMore = false, error = null, page = 1, hasMore = true) }
+            _state.update {
+                it.copy(
+                    isLoading = !isRefresh,
+                    isRefreshing = isRefresh,
+                    isLoadingMore = false,
+                    error = null,
+                    page = 1,
+                    hasMore = true,
+                )
+            }
             val status = if (search != null) null else filter.apiValue
             when (val result = repository.getLeadDashboard(status, search, 1)) {
                 is NetworkResult.Success -> _state.update {
-                    it.copy(isLoading = false, leads = result.data.results, page = 1, hasMore = 1 < result.data.totalPages)
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        leads = result.data.results,
+                        page = 1,
+                        hasMore = 1 < result.data.totalPages,
+                        loadedRevision = it.loadedRevision + 1,
+                    )
                 }
-                is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, error = result.error.message) }
+                is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, isRefreshing = false, error = result.error.message) }
             }
         }
     }
 
     private fun loadNextPage() {
         val current = _state.value
-        if (current.isLoading || current.isLoadingMore || !current.hasMore) return
+        if (current.isLoading || current.isRefreshing || current.isLoadingMore || !current.hasMore) return
         val filter = current.selectedFilter
         val search = current.activeSearchQuery
         val nextPage = current.page + 1

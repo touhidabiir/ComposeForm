@@ -41,6 +41,17 @@ private fun ScaffoldWithTopBarPreview() {
 @Preview(name = "Light", showBackground = true)
 @Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
+private fun PullToRefreshBoxPreview() {
+    ComposeFormTheme {
+        AppPullToRefreshBox(isRefreshing = false, onRefresh = {}) {
+            AppText("Pull down to refresh", style = AppTextStyle.TitleMedium, modifier = Modifier.padding(AppSpacing.Medium))
+        }
+    }
+}
+
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
 private fun ScaffoldWithBottomBarPreview() {
     ComposeFormTheme {
         AppScaffold(

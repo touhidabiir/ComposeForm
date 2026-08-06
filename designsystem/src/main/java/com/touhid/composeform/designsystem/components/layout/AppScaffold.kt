@@ -18,6 +18,7 @@ fun AppScaffold(
     modifier: Modifier = Modifier.fillMaxSize(),
     topBar: @Composable (AppTopBarScrollBehavior) -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
+    snackbarHost: @Composable () -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -25,6 +26,7 @@ fun AppScaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { topBar(AppTopBarScrollBehavior(scrollBehavior)) },
         bottomBar = bottomBar,
+        snackbarHost = snackbarHost,
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()

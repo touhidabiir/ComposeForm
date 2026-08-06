@@ -29,6 +29,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,13 +49,18 @@ import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppSearchField
+import com.touhid.composeform.designsystem.components.layout.AppPullToRefreshBox
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppCard
 import com.touhid.composeform.designsystem.components.surface.AppChip
+import com.touhid.composeform.designsystem.components.surface.AppProgressDialog
+import com.touhid.composeform.designsystem.components.surface.AppSnackbarHost
+import com.touhid.composeform.designsystem.components.surface.AppSnackbarResult
 import com.touhid.composeform.designsystem.components.surface.AppStatusBadge
 import com.touhid.composeform.designsystem.components.surface.AppStatusTone
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.surface.AppTopBarAction
+import com.touhid.composeform.designsystem.components.surface.rememberAppSnackbarHostState
 import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
@@ -120,6 +126,24 @@ private fun LeadDashboardContent(
     val listState = rememberLazyListState()
     listState.OnEndOfListReached { onAction(LeadDashboardAction.OnLoadNextPage) }
 
+    // Every successful first-page load (filter switch, search, refresh, retry) bumps
+    // loadedRevision - scrolling back to the top here, not on every leads change, is what keeps a
+    // paginated append from yanking the user's scroll position back up.
+    LaunchedEffect(state.loadedRevision) {
+        listState.scrollToItem(0)
+    }
+
+    val snackbarHostState = rememberAppSnackbarHostState()
+    LaunchedEffect(state.error) {
+        val error = state.error ?: return@LaunchedEffect
+        val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
+        if (result == AppSnackbarResult.ActionPerformed) onAction(LeadDashboardAction.OnRetry)
+    }
+
+    if (state.isLoading) {
+        AppProgressDialog()
+    }
+
     AppScaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { scrollBehavior ->
@@ -133,6 +157,7 @@ private fun LeadDashboardContent(
                 ),
             )
         },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(AppSpacing.Medium)) {
@@ -169,28 +194,22 @@ private fun LeadDashboardContent(
                 }
             }
 
-            when {
-                state.isLoading -> {
-                    AppText(text = "লোড হচ্ছে...", modifier = Modifier.padding(AppSpacing.Medium))
-                }
-
-                state.error != null -> {
-                    Column(modifier = Modifier.padding(AppSpacing.Medium)) {
-                        AppText(text = state.error)
-                        Spacer(modifier = Modifier.height(AppSpacing.Small))
-                        AppButton(text = "Retry", onClick = { onAction(LeadDashboardAction.OnRetry) })
+            AppPullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onAction(LeadDashboardAction.OnRefresh) },
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                if (state.leads.isEmpty()) {
+                    // isLoading already surfaces its own AppProgressDialog - avoid flashing the
+                    // empty-state text underneath it while that first load is still in flight.
+                    if (!state.isLoading) {
+                        AppText(
+                            text = "কোনো লিড পাওয়া যায়নি",
+                            modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
+                            textAlign = TextAlign.Center,
+                        )
                     }
-                }
-
-                state.leads.isEmpty() -> {
-                    AppText(
-                        text = "কোনো লিড পাওয়া যায়নি",
-                        modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
-                        textAlign = TextAlign.Center,
-                    )
-                }
-
-                else -> {
+                } else {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
