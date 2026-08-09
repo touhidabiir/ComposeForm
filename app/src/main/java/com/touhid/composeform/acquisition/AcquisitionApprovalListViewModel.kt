@@ -15,6 +15,10 @@ import javax.inject.Inject
 
 data class AcquisitionApprovalListState(
     val isLoading: Boolean = true,
+    // Set only for a pull-to-refresh reload, never alongside isLoading - AppPullToRefreshBox
+    // shows its own indicator for this, so the blocking AppProgressDialog (gated on isLoading)
+    // doesn't also appear and double up.
+    val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val items: List<AcquisitionListItem> = emptyList(),
     val searchQuery: String = "",
@@ -24,6 +28,9 @@ data class AcquisitionApprovalListState(
     val page: Int = 1,
     val hasMore: Boolean = true,
     val error: String? = null,
+    // Bumped on every successful first-page load (search, refresh, retry) - the screen scrolls
+    // the list back to the top whenever this changes, but never on a page append.
+    val loadedRevision: Int = 0,
 )
 
 sealed interface AcquisitionApprovalListAction {
@@ -71,33 +78,53 @@ class AcquisitionApprovalListViewModel @Inject constructor(
                 _state.update { it.copy(activeSearchQuery = query) }
                 loadFirstPage()
             }
-            AcquisitionApprovalListAction.OnRefresh -> loadFirstPage()
+            AcquisitionApprovalListAction.OnRefresh -> loadFirstPage(isRefresh = true)
             AcquisitionApprovalListAction.OnLoadNextPage -> loadNextPage()
             AcquisitionApprovalListAction.OnRetry -> if (retryLoadsNextPage) loadNextPage() else loadFirstPage()
         }
     }
 
-    private fun loadFirstPage() {
+    private fun loadFirstPage(isRefresh: Boolean = false) {
         val search = _state.value.activeSearchQuery
         retryLoadsNextPage = false
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             // Reset pagination state as the request starts, not just on success - otherwise a
             // failed reload leaves a stale hasMore=false/page from the previous search behind,
-            // which makes a later Retry route into loadNextPage() and no-op.
-            _state.update { it.copy(isLoading = true, isLoadingMore = false, error = null, page = 1, hasMore = true) }
+            // which makes a later Retry route into loadNextPage() and no-op. items is cleared
+            // too (unless this is a refresh) - otherwise a failed search leaves the previous
+            // search's results on screen with only the error snackbar hinting anything went
+            // wrong. A refresh keeps the old list visible while it reloads.
+            _state.update {
+                it.copy(
+                    isLoading = !isRefresh,
+                    isRefreshing = isRefresh,
+                    isLoadingMore = false,
+                    items = if (isRefresh) it.items else emptyList(),
+                    error = null,
+                    page = 1,
+                    hasMore = true,
+                )
+            }
             when (val result = repository.getAcquisitionList(search, 1)) {
                 is NetworkResult.Success -> _state.update {
-                    it.copy(isLoading = false, items = result.data.results, page = 1, hasMore = 1 < result.data.totalPages)
+                    it.copy(
+                        isLoading = false,
+                        isRefreshing = false,
+                        items = result.data.results,
+                        page = 1,
+                        hasMore = 1 < result.data.totalPages,
+                        loadedRevision = it.loadedRevision + 1,
+                    )
                 }
-                is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, error = result.error.message) }
+                is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, isRefreshing = false, error = result.error.message) }
             }
         }
     }
 
     private fun loadNextPage() {
         val current = _state.value
-        if (current.isLoading || current.isLoadingMore || !current.hasMore) return
+        if (current.isLoading || current.isRefreshing || current.isLoadingMore || !current.hasMore) return
         val search = current.activeSearchQuery
         val nextPage = current.page + 1
         retryLoadsNextPage = true
