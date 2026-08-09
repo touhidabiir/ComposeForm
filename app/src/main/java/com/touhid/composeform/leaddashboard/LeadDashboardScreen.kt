@@ -43,10 +43,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
@@ -393,7 +395,12 @@ private fun RejectionBanner(reason: String, onClick: () -> Unit, modifier: Modif
 private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Unit) {
     AppBottomSheet(onDismissRequest = onDismissRequest) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            AppText(text = lead.shopName, style = AppTextStyle.TitleMedium, modifier = Modifier.weight(1f))
+            AppText(
+                text = lead.shopName,
+                style = AppTextStyle.TitleMedium,
+                override = AppTextOverride(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+                modifier = Modifier.weight(1f),
+            )
             AppIconButton(icon = Icons.Filled.Close, contentDescription = "Close", onClick = onDismissRequest)
         }
 
