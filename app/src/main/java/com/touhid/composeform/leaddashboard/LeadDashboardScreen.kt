@@ -105,6 +105,7 @@ private val RejectionBannerBackground = Color(0xFFFFF8FB)
 @Composable
 fun LeadDashboardScreen(
     onBack: () -> Unit,
+    onSubmitEkyc: (LeadListItem) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LeadDashboardViewModel = hiltViewModel(),
 ) {
@@ -113,6 +114,7 @@ fun LeadDashboardScreen(
         state = state,
         onBack = onBack,
         onAction = viewModel::onAction,
+        onSubmitEkyc = onSubmitEkyc,
         modifier = modifier,
     )
 }
@@ -122,6 +124,7 @@ private fun LeadDashboardContent(
     state: LeadDashboardState,
     onBack: () -> Unit,
     onAction: (LeadDashboardAction) -> Unit,
+    onSubmitEkyc: (LeadListItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -225,7 +228,7 @@ private fun LeadDashboardContent(
                         // of ids on every page, so a bare id key would collide once a second page
                         // is appended.
                         itemsIndexed(items = state.leads, key = { index, lead -> "${lead.id}_$index" }) { _, lead ->
-                            LeadListCard(lead = lead)
+                            LeadListCard(lead = lead, onSubmitEkyc = onSubmitEkyc)
                         }
                         if (state.isLoadingMore) {
                             item {
@@ -244,7 +247,7 @@ private fun LeadDashboardContent(
 }
 
 @Composable
-private fun LeadListCard(lead: LeadListItem) {
+private fun LeadListCard(lead: LeadListItem, onSubmitEkyc: (LeadListItem) -> Unit) {
     val iconModifier = Modifier.size(RowIconSize)
     val (badgeLabel, badgeTone) = when {
         lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> "ই-কেওয়াইসি জমা হয়েছে" to AppStatusTone.Success
@@ -321,7 +324,7 @@ private fun LeadListCard(lead: LeadListItem) {
             }
             lead.status == LeadStatus.Approved && lead.canSubmitEkyc && !lead.isEkycSubmitted -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = {}, modifier = Modifier.fillMaxWidth())
+                AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = { onSubmitEkyc(lead) }, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -387,6 +390,7 @@ private fun LeadDashboardScreenPreview() {
             state = LeadDashboardState(isLoading = false, leads = PreviewLeads, selectedFilter = LeadStatusFilter.Pending),
             onBack = {},
             onAction = {},
+            onSubmitEkyc = {},
         )
     }
 }

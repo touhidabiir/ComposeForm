@@ -1,6 +1,7 @@
 package com.touhid.composeform
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -70,7 +72,13 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("leadDashboard") {
-                        LeadDashboardScreen(onBack = { navController.popBackStack() })
+                        val context = LocalContext.current
+                        LeadDashboardScreen(
+                            onBack = { navController.popBackStack() },
+                            onSubmitEkyc = { lead ->
+                                Toast.makeText(context, "eKYC submitted for ${lead.shopName}", Toast.LENGTH_SHORT).show()
+                            },
+                        )
                     }
 
                     composable("acquisitionApprovalList") {
