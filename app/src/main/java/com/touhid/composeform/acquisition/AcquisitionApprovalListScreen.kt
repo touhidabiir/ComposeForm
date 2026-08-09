@@ -180,7 +180,7 @@ private fun AcquisitionApprovalListContent(
                             tint = StatusNeutral,
                         )
                         AppText(
-                            text = "${state.items.size}টি ফলাফল পাওয়া গেছে",
+                            text = "${state.totalCount}টি ফলাফল পাওয়া গেছে",
                             style = AppTextStyle.Label,
                             override = AppTextOverride(color = StatusNeutral),
                         )

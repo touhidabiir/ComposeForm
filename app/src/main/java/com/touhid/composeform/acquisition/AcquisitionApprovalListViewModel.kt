@@ -21,6 +21,9 @@ data class AcquisitionApprovalListState(
     val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val items: List<AcquisitionListItem> = emptyList(),
+    // The API's total matching-result count, separate from items.size (one page's worth) -
+    // what the "N results found" label under an active search should read.
+    val totalCount: Int = 0,
     val searchQuery: String = "",
     // Non-null once a search has been submitted. Going back to an empty search box reverts this
     // to null and restores the normal unfiltered list.
@@ -112,6 +115,7 @@ class AcquisitionApprovalListViewModel @Inject constructor(
                         isLoading = false,
                         isRefreshing = false,
                         items = result.data.results,
+                        totalCount = result.data.count,
                         page = 1,
                         hasMore = 1 < result.data.totalPages,
                         loadedRevision = it.loadedRevision + 1,
