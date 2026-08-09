@@ -9,6 +9,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import com.touhid.composeform.designsystem.theme.AppSpacing
 
 // A modal sheet anchored to the bottom of the screen - the Material3-wrapping reason this lives
@@ -31,6 +32,7 @@ fun AppBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
         modifier = modifier,
+        containerColor = Color.White,
         dragHandle = if (showDragHandle) { { BottomSheetDefaults.DragHandle() } } else null,
     ) {
         Column(
