@@ -21,6 +21,9 @@ data class LeadDashboardState(
     val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val leads: List<LeadListItem> = emptyList(),
+    // The API's total matching-result count, separate from leads.size (one page's worth) - what
+    // the "N results found" label under an active search should read.
+    val totalCount: Int = 0,
     val selectedFilter: LeadStatusFilter = LeadStatusFilter.Pending,
     val searchQuery: String = "",
     // Non-null once a search has been submitted - while active it replaces the status filter as
@@ -123,6 +126,7 @@ class LeadDashboardViewModel @Inject constructor(
                         isLoading = false,
                         isRefreshing = false,
                         leads = result.data.results,
+                        totalCount = result.data.count,
                         page = 1,
                         hasMore = 1 < result.data.totalPages,
                         loadedRevision = it.loadedRevision + 1,

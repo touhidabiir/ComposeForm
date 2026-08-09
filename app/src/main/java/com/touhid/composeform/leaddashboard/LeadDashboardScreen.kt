@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocationOn
@@ -211,6 +212,24 @@ private fun LeadDashboardContent(
                                 onClick = { onAction(LeadDashboardAction.OnFilterSelected(filter)) },
                             )
                         }
+                    }
+                } else {
+                    Spacer(modifier = Modifier.height(AppSpacing.Small))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall),
+                    ) {
+                        AppIcon(
+                            icon = Icons.Filled.CheckCircle,
+                            contentDescription = null,
+                            modifier = Modifier.size(RowIconSize),
+                            tint = StatusNeutral,
+                        )
+                        AppText(
+                            text = "${state.totalCount}টি ফলাফল পাওয়া গেছে",
+                            style = AppTextStyle.Label,
+                            override = AppTextOverride(color = StatusNeutral),
+                        )
                     }
                 }
             }
