@@ -1,6 +1,7 @@
 package com.touhid.composeform.leaddashboard
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -22,6 +24,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
@@ -32,6 +35,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -52,6 +58,7 @@ import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppSearchField
 import com.touhid.composeform.designsystem.components.layout.AppPullToRefreshBox
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.components.surface.AppBottomSheet
 import com.touhid.composeform.designsystem.components.surface.AppCard
 import com.touhid.composeform.designsystem.components.surface.AppChip
 import com.touhid.composeform.designsystem.components.surface.AppProgressDialog
@@ -73,6 +80,10 @@ import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 import com.touhid.composeform.network.model.LeadCloser
 import com.touhid.composeform.network.model.LeadListItem
 import com.touhid.composeform.network.model.LeadStatus
+import com.touhid.composeform.network.model.Rejection
+import com.touhid.composeform.network.model.Reviewer
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 private val RowIconSize = 16.dp
 
@@ -255,10 +266,13 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkyc: (LeadListItem) -> Uni
         lead.status == LeadStatus.Pending -> "পেন্ডিং" to AppStatusTone.Warning
         else -> "বাতিল" to AppStatusTone.Error
     }
+    var showRejectionDetails by remember { mutableStateOf(false) }
 
     AppCard(
         modifier = Modifier.fillMaxWidth(),
-        topContent = lead.rejection?.let { rejection -> { RejectionBanner(reason = rejection.reason) } },
+        topContent = lead.rejection?.let { rejection ->
+            { RejectionBanner(reason = rejection.reason, onClick = { showRejectionDetails = true }) }
+        },
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             AppText(text = lead.shopName, style = AppTextStyle.TitleMedium)
@@ -328,17 +342,23 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkyc: (LeadListItem) -> Uni
             }
         }
     }
+
+    if (showRejectionDetails) {
+        RejectionDetailsSheet(lead = lead, onDismissRequest = { showRejectionDetails = false })
+    }
 }
 
 // The rejection-reason callout at the top of a rejected lead's card - a pale pink banner holding a
-// solid pink "reason" pill plus a single-line, truncated reason with a trailing chevron. Built from
-// Foundation background()/RoundedCornerShape + AppText/AppIcon, one caller, no Material3-derived
-// default - stays in :app rather than :designsystem per the feature-specificity test in CLAUDE.md.
+// solid pink "reason" pill plus a single-line, truncated reason with a trailing chevron. Tapping it
+// opens RejectionDetailsSheet with the untruncated reason. Built from Foundation
+// background()/RoundedCornerShape + AppText/AppIcon, one caller, no Material3-derived default -
+// stays in :app rather than :designsystem per the feature-specificity test in CLAUDE.md.
 @Composable
-private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
+private fun RejectionBanner(reason: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .background(RejectionBannerBackground, RoundedCornerShape(topStart = AppSpacing.Medium, topEnd = AppSpacing.Medium))
             .padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
     ) {
@@ -364,6 +384,57 @@ private fun RejectionBanner(reason: String, modifier: Modifier = Modifier) {
     }
 }
 
+// The full rejection detail opened by tapping RejectionBanner - same shop name / reason data as
+// the banner but untruncated, plus who processed it and when. lead.reviewer/lead.createdAt double
+// as the approver name and timestamp here since Rejection itself carries only a reason - the mock
+// data already populates both alongside a rejection (see MockJson.kt), and reviewer is already
+// labeled "অনুমোদনকারী" elsewhere on this same card.
+@Composable
+private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Unit) {
+    AppBottomSheet(onDismissRequest = onDismissRequest) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            AppText(text = lead.shopName, style = AppTextStyle.TitleMedium, modifier = Modifier.weight(1f))
+            AppIconButton(icon = Icons.Filled.Close, contentDescription = "Close", onClick = onDismissRequest)
+        }
+
+        Spacer(modifier = Modifier.height(AppSpacing.Medium))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AppIcon(icon = Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = BrandPrimary)
+            Spacer(modifier = Modifier.width(AppSpacing.ExtraSmall))
+            AppText(text = "বাতিল করার কারণ", style = AppTextStyle.Label, color = StatusNeutral)
+        }
+
+        Spacer(modifier = Modifier.height(AppSpacing.Small))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(StatusNeutralContainer, RoundedCornerShape(AppSpacing.Small))
+                .padding(AppSpacing.Medium),
+        ) {
+            AppText(text = lead.rejection?.reason.orEmpty(), style = AppTextStyle.BodyMedium)
+        }
+
+        Spacer(modifier = Modifier.height(AppSpacing.Medium))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            AppText(
+                text = "অনুমোদনকারী: ${lead.reviewer?.name ?: "-"}",
+                style = AppTextStyle.Label,
+                color = StatusNeutral,
+            )
+            AppText(
+                text = formatRejectionTimestamp(lead.createdAt),
+                style = AppTextStyle.Label,
+                color = StatusNeutral,
+            )
+        }
+    }
+}
+
+private fun formatRejectionTimestamp(iso: String): String = runCatching {
+    val parsed = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).parse(iso)
+    SimpleDateFormat("d MMM yyyy; h:mm a", Locale.US).format(parsed!!)
+}.getOrDefault(iso)
+
 private val PreviewLeads = listOf(
     LeadListItem(
         id = 100238471,
@@ -376,6 +447,20 @@ private val PreviewLeads = listOf(
         canSubmitEkyc = false,
         leadCloser = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "01930119876", servingMa = "01930198765"),
         createdAt = "2026-07-15T10:30:00+06:00",
+    ),
+    LeadListItem(
+        id = 100238472,
+        displayId = "LEAD-2026-100238472",
+        shopName = "টেস্ট মার্চেন্ট এ",
+        walletNumber = "01723456780",
+        address = "3 No. Road, Block-C, Syed Shah Road, Bakalia",
+        status = LeadStatus.Rejected,
+        premiumnessScore = 40.0,
+        canSubmitEkyc = false,
+        leadCloser = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "01930119876", servingMa = "01930198765"),
+        reviewer = Reviewer(name = "আকমল হোসেন", designation = "OM", territory = "Bakalia"),
+        rejection = Rejection(reason = "ডকুমেন্ট সংগ্রহে অস্পষ্টতা রয়েছে এবং নেটওয়ার্ক সমস্যা থাকায় এটি একটি লো ইমপ্যাক্ট লিড হিসেবে গণ্য হচ্ছে।"),
+        createdAt = "2023-05-12T13:13:00+06:00",
     ),
 )
 
