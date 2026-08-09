@@ -139,7 +139,7 @@ private fun LeadDashboardContent(
 
     val snackbarHostState = rememberAppSnackbarHostState()
     LaunchedEffect(state.error) {
-        val error = state.error ?: return@LaunchedEffect
+        if (state.error == null) return@LaunchedEffect
         val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
         if (result == AppSnackbarResult.ActionPerformed) onAction(LeadDashboardAction.OnRetry)
     }
