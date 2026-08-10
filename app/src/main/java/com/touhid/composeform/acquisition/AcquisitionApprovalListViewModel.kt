@@ -6,6 +6,7 @@ import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.model.AcquisitionListItem
 import com.touhid.composeform.network.repository.AppRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -14,8 +15,15 @@ import javax.inject.Inject
 
 data class AcquisitionApprovalListState(
     val isLoading: Boolean = true,
+    // Set only for a pull-to-refresh reload, never alongside isLoading - AppPullToRefreshBox
+    // shows its own indicator for this, so the blocking AppProgressDialog (gated on isLoading)
+    // doesn't also appear and double up.
+    val isRefreshing: Boolean = false,
     val isLoadingMore: Boolean = false,
     val items: List<AcquisitionListItem> = emptyList(),
+    // The API's total matching-result count, separate from items.size (one page's worth) -
+    // what the "N results found" label under an active search should read.
+    val totalCount: Int = 0,
     val searchQuery: String = "",
     // Non-null once a search has been submitted. Going back to an empty search box reverts this
     // to null and restores the normal unfiltered list.
@@ -23,6 +31,9 @@ data class AcquisitionApprovalListState(
     val page: Int = 1,
     val hasMore: Boolean = true,
     val error: String? = null,
+    // Bumped on every successful first-page load (search, refresh, retry) - the screen scrolls
+    // the list back to the top whenever this changes, but never on a page append.
+    val loadedRevision: Int = 0,
 )
 
 sealed interface AcquisitionApprovalListAction {
@@ -40,6 +51,16 @@ class AcquisitionApprovalListViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(AcquisitionApprovalListState())
     val state = _state.asStateFlow()
+
+    // Cancelling the previous load before starting a new one means an in-flight response can
+    // never land after a newer request superseded it (e.g. two OnRefresh taps) - the old
+    // coroutine is stopped before it can call _state.update at all.
+    private var loadJob: Job? = null
+
+    // state.items being non-empty doesn't reliably mean "a next-page load failed" - a failed
+    // reload leaves the previous search's items sitting in state until a new load resolves - so
+    // Retry needs its own record of which kind of load actually failed.
+    private var retryLoadsNextPage = false
 
     init {
         loadFirstPage()
@@ -60,59 +81,65 @@ class AcquisitionApprovalListViewModel @Inject constructor(
                 _state.update { it.copy(activeSearchQuery = query) }
                 loadFirstPage()
             }
-            AcquisitionApprovalListAction.OnRefresh -> loadFirstPage()
+            AcquisitionApprovalListAction.OnRefresh -> loadFirstPage(isRefresh = true)
             AcquisitionApprovalListAction.OnLoadNextPage -> loadNextPage()
-            AcquisitionApprovalListAction.OnRetry -> if (_state.value.items.isEmpty()) loadFirstPage() else loadNextPage()
+            AcquisitionApprovalListAction.OnRetry -> if (retryLoadsNextPage) loadNextPage() else loadFirstPage()
         }
     }
 
-    private fun loadFirstPage() {
-        val requestedSearch = _state.value.activeSearchQuery
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true, error = null) }
-            when (val result = repository.getAcquisitionList(requestedSearch, 1)) {
-                is NetworkResult.Success -> _state.update { current ->
-                    if (current.activeSearchQuery != requestedSearch) return@update current
-                    // Track the requested page locally rather than trusting the response's own
-                    // page_no/total_pages - MockDataInterceptor always echoes back the same
-                    // canned page_no=1, so relying on it here would never advance and hasMore
-                    // would stay true forever.
-                    current.copy(
+    private fun loadFirstPage(isRefresh: Boolean = false) {
+        val search = _state.value.activeSearchQuery
+        retryLoadsNextPage = false
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            // Reset pagination state as the request starts, not just on success - otherwise a
+            // failed reload leaves a stale hasMore=false/page from the previous search behind,
+            // which makes a later Retry route into loadNextPage() and no-op. items is cleared
+            // too (unless this is a refresh) - otherwise a failed search leaves the previous
+            // search's results on screen with only the error snackbar hinting anything went
+            // wrong. A refresh keeps the old list visible while it reloads.
+            _state.update {
+                it.copy(
+                    isLoading = !isRefresh,
+                    isRefreshing = isRefresh,
+                    isLoadingMore = false,
+                    items = if (isRefresh) it.items else emptyList(),
+                    error = null,
+                    page = 1,
+                    hasMore = true,
+                )
+            }
+            when (val result = repository.getAcquisitionList(search, 1)) {
+                is NetworkResult.Success -> _state.update {
+                    it.copy(
                         isLoading = false,
+                        isRefreshing = false,
                         items = result.data.results,
+                        totalCount = result.data.count,
                         page = 1,
                         hasMore = 1 < result.data.totalPages,
+                        loadedRevision = it.loadedRevision + 1,
                     )
                 }
-                is NetworkResult.Failure -> _state.update { current ->
-                    if (current.activeSearchQuery != requestedSearch) return@update current
-                    current.copy(isLoading = false, error = result.error.message)
-                }
+                is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, isRefreshing = false, error = result.error.message) }
             }
         }
     }
 
     private fun loadNextPage() {
         val current = _state.value
-        if (current.isLoading || current.isLoadingMore || !current.hasMore) return
-        val requestedSearch = current.activeSearchQuery
+        if (current.isLoading || current.isRefreshing || current.isLoadingMore || !current.hasMore) return
+        val search = current.activeSearchQuery
         val nextPage = current.page + 1
-        viewModelScope.launch {
+        retryLoadsNextPage = true
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
             _state.update { it.copy(isLoadingMore = true, error = null) }
-            when (val result = repository.getAcquisitionList(requestedSearch, nextPage)) {
-                is NetworkResult.Success -> _state.update { state ->
-                    if (state.activeSearchQuery != requestedSearch) return@update state
-                    state.copy(
-                        isLoadingMore = false,
-                        items = state.items + result.data.results,
-                        page = nextPage,
-                        hasMore = nextPage < result.data.totalPages,
-                    )
+            when (val result = repository.getAcquisitionList(search, nextPage)) {
+                is NetworkResult.Success -> _state.update {
+                    it.copy(isLoadingMore = false, items = it.items + result.data.results, page = nextPage, hasMore = nextPage < result.data.totalPages)
                 }
-                is NetworkResult.Failure -> _state.update { state ->
-                    if (state.activeSearchQuery != requestedSearch) return@update state
-                    state.copy(isLoadingMore = false, error = result.error.message)
-                }
+                is NetworkResult.Failure -> _state.update { it.copy(isLoadingMore = false, error = result.error.message) }
             }
         }
     }

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,17 +38,21 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.common.OnEndOfListReached
-import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppSearchField
+import com.touhid.composeform.designsystem.components.layout.AppPullToRefreshBox
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppCard
+import com.touhid.composeform.designsystem.components.surface.AppProgressDialog
+import com.touhid.composeform.designsystem.components.surface.AppSnackbarHost
+import com.touhid.composeform.designsystem.components.surface.AppSnackbarResult
 import com.touhid.composeform.designsystem.components.surface.AppStatusBadge
 import com.touhid.composeform.designsystem.components.surface.AppStatusTone
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.surface.AppTopBarAction
+import com.touhid.composeform.designsystem.components.surface.rememberAppSnackbarHostState
 import com.touhid.composeform.designsystem.components.text.AppIconLabelValue
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
@@ -108,6 +114,24 @@ private fun AcquisitionApprovalListContent(
     val listState = rememberLazyListState()
     listState.OnEndOfListReached { onAction(AcquisitionApprovalListAction.OnLoadNextPage) }
 
+    // Every successful first-page load (search, refresh, retry) bumps loadedRevision -
+    // scrolling back to the top here, not on every items change, is what keeps a paginated
+    // append from yanking the user's scroll position back up.
+    LaunchedEffect(state.loadedRevision) {
+        listState.scrollToItem(0)
+    }
+
+    val snackbarHostState = rememberAppSnackbarHostState()
+    LaunchedEffect(state.error) {
+        if (state.error == null) return@LaunchedEffect
+        val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
+        if (result == AppSnackbarResult.ActionPerformed) onAction(AcquisitionApprovalListAction.OnRetry)
+    }
+
+    if (state.isLoading) {
+        AppProgressDialog()
+    }
+
     AppScaffold(
         modifier = modifier.fillMaxSize(),
         topBar = { scrollBehavior ->
@@ -121,6 +145,7 @@ private fun AcquisitionApprovalListContent(
                 ),
             )
         },
+        snackbarHost = { AppSnackbarHost(snackbarHostState) },
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Column(modifier = Modifier.padding(AppSpacing.Medium)) {
@@ -129,6 +154,10 @@ private fun AcquisitionApprovalListContent(
                     onValueChange = { onAction(AcquisitionApprovalListAction.OnSearchQueryChanged(it)) },
                     placeholder = "মার্চেন্ট সার্চ করুন...",
                     modifier = Modifier.fillMaxWidth(),
+                    // AppSearchField's keyboardOptions already default to imeAction = Search -
+                    // only the action handler needs wiring here so the IME's search key submits
+                    // the same way the trailing search icon already does.
+                    keyboardActions = KeyboardActions(onSearch = { onAction(AcquisitionApprovalListAction.OnSearchSubmitted) }),
                     trailingIcon = {
                         AppIconButton(
                             icon = Icons.Filled.Search,
@@ -151,7 +180,7 @@ private fun AcquisitionApprovalListContent(
                             tint = StatusNeutral,
                         )
                         AppText(
-                            text = "${state.items.size}টি ফলাফল পাওয়া গেছে",
+                            text = "${state.totalCount}টি ফলাফল পাওয়া গেছে",
                             style = AppTextStyle.Label,
                             override = AppTextOverride(color = StatusNeutral),
                         )
@@ -159,20 +188,22 @@ private fun AcquisitionApprovalListContent(
                 }
             }
 
-            when {
-                state.isLoading -> {
-                    AppText(text = "Loading…", modifier = Modifier.padding(AppSpacing.Medium))
-                }
-
-                state.error != null -> {
-                    Column(modifier = Modifier.padding(AppSpacing.Medium)) {
-                        AppText(text = state.error)
-                        Spacer(modifier = Modifier.height(AppSpacing.Small))
-                        AppButton(text = "Retry", onClick = { onAction(AcquisitionApprovalListAction.OnRetry) })
+            AppPullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = { onAction(AcquisitionApprovalListAction.OnRefresh) },
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                if (state.items.isEmpty()) {
+                    // isLoading already surfaces its own AppProgressDialog - avoid flashing the
+                    // empty-state text underneath it while that first load is still in flight.
+                    if (!state.isLoading) {
+                        AppText(
+                            text = "কোনো ফলাফল পাওয়া যায়নি",
+                            modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
+                            textAlign = TextAlign.Center,
+                        )
                     }
-                }
-
-                else -> {
+                } else {
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
