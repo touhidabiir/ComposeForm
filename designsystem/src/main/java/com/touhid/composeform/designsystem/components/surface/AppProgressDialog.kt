@@ -14,8 +14,9 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 // A blocking, non-dismissable spinner overlay for a reload that already has content behind it
 // worth protecting from interaction (e.g. a retry) - distinct from pagination's inline "loading
 // more" row, from AppPullToRefreshBox's own indicator, and from AppProgressIndicator (the
-// non-blocking inline spinner used for a screen's very first load, before there's a Back action
-// or any content worth blocking access to yet).
+// non-blocking inline spinner used for a screen's very first load, when there is no detail
+// content worth protecting from interaction yet; the screen remains navigable via its Back
+// action).
 @Composable
 fun AppProgressDialog() {
     Dialog(
