@@ -79,6 +79,7 @@ import com.touhid.composeform.network.model.DigitalPayment
 import com.touhid.composeform.network.model.Facility
 import com.touhid.composeform.network.model.LeadCloser
 import com.touhid.composeform.network.model.OutletInfo
+import com.touhid.composeform.network.model.PremiumnessScoreRange
 import com.touhid.composeform.network.model.WalletInfo
 
 private val RowIconSize = 16.dp
@@ -223,7 +224,7 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
         ShopIdentityCard(shopName = detail.shopName, walletNumber = detail.walletNumber)
 
         AppCard(modifier = Modifier.fillMaxWidth()) {
-            ScoreSection(score = detail.premiumnessScore, band = detail.premiumnessBand)
+            ScoreSection(score = detail.premiumnessScore, ranges = detail.premiumnessScoreRanges)
         }
 
         PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3".toBengaliDigits(), imageUrl = detail.images.shopImageOutside)
@@ -330,34 +331,25 @@ private fun WalletInformationCard(walletInfo: WalletInfo) {
     }
 }
 
-// The score bands (label, range, and color) are acquisition-scoring business data, not a generic
-// design-system concept - kept here rather than baked into a designsystem component, built
-// entirely from already-exposed pieces (AppText, AppIcon) plus Foundation layout, so there's no
-// Material3-wrapping reason for it to live anywhere else. The active band comes straight from the
-// API's own premiumness_band classification rather than being re-derived from score/ratio here.
-private data class ScoreBand(val label: String, val range: String, val color: Color)
-
-private val ScoreBands = listOf(
-    ScoreBand("খুব ঝুঁকিপূর্ণ", "0-24", Color(0xFFE5BDB8)),
-    ScoreBand("ঝুঁকিপূর্ণ", "25-49", Color(0xFFEDD1B6)),
-    ScoreBand("মাঝারি", "50-74", Color(0xFFF0E3B8)),
-    ScoreBand("ভালো", "75-89", Color(0xFF60AB9B)),
-    ScoreBand("খুব ভালো", "90-100", Color(0xFFB4D7BF)),
-)
+// A hex color string (e.g. "#B4D7BF") from the API into a Compose Color - premiumnessScoreRanges
+// drives both the band boundaries and which one is active from the backend now, so the client no
+// longer hardcodes a band table; this is just the one piece (parsing a color string) Gson can't
+// do on its own.
+private fun String.toComposeColor(): Color = Color(android.graphics.Color.parseColor(this))
 
 private val PhotoPlaceholderColor = Color(0xFFCFD8DC)
 
 @Composable
-private fun ScoreSection(score: Double, band: String) {
-    val activeIndex = ScoreBands.indexOfFirst { it.range == band }.takeIf { it >= 0 } ?: ScoreBands.size / 2
-    val tierColor = ScoreBands[activeIndex].color
+private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>) {
+    val activeIndex = ranges.indexOfFirst { it.isActive }.takeIf { it >= 0 } ?: ranges.size / 2
+    val tierColor = ranges[activeIndex].color.toComposeColor()
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
     ) {
         ScoreCircle(title = "প্রিমিয়ামনেস স্কোর", score = score, maxScore = MaxPremiumnessScore, ringColor = tierColor)
-        ScoreBandIndicator(activeIndex = activeIndex, modifier = Modifier.fillMaxWidth())
+        ScoreBandIndicator(ranges = ranges, activeIndex = activeIndex, modifier = Modifier.fillMaxWidth())
         AppStepperButton(label = "বিস্তারিত দেখুন", onClick = {}, modifier = Modifier.fillMaxWidth())
     }
 }
@@ -399,16 +391,17 @@ private fun ScoreCircle(title: String, score: Double, maxScore: Int, ringColor: 
 private val ScoreBandBarHeight = 16.dp
 
 @Composable
-private fun ScoreBandIndicator(activeIndex: Int, modifier: Modifier = Modifier, bands: List<ScoreBand> = ScoreBands) {
+private fun ScoreBandIndicator(ranges: List<PremiumnessScoreRange>, activeIndex: Int, modifier: Modifier = Modifier) {
     Row(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
-        bands.forEachIndexed { index, band ->
+        ranges.forEachIndexed { index, range ->
             val isActive = index == activeIndex
+            val color = range.color.toComposeColor()
             Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
                 if (isActive) {
                     AppIcon(
                         icon = Icons.Filled.KeyboardArrowDown,
                         contentDescription = null,
-                        tint = band.color,
+                        tint = color,
                         modifier = Modifier.size(RowIconSize),
                     )
                 } else {
@@ -425,12 +418,12 @@ private fun ScoreBandIndicator(activeIndex: Int, modifier: Modifier = Modifier, 
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(if (isActive) ScoreBandBarHeight else 8.dp)
-                            .background(color = band.color, shape = RoundedCornerShape(percent = 50)),
+                            .background(color = color, shape = RoundedCornerShape(percent = 50)),
                     )
                 }
                 Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
                 AppText(
-                    text = band.range.toBengaliDigits(),
+                    text = "${range.minScore}-${range.maxScore}".toBengaliDigits(),
                     style = AppTextStyle.Label,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),
@@ -470,8 +463,14 @@ private val PreviewDetail = AcquisitionDetail(
     shopName = "Romij Electric",
     walletNumber = "01723456789",
     status = "submitted",
-    premiumnessScore = 72.4,
-    premiumnessBand = "50-74",
+    premiumnessScore = 71.25,
+    premiumnessScoreRanges = listOf(
+        PremiumnessScoreRange(minScore = 0, maxScore = 12, isActive = false, color = "#E5BDB8"),
+        PremiumnessScoreRange(minScore = 12, maxScore = 25, isActive = false, color = "#EDD1B6"),
+        PremiumnessScoreRange(minScore = 25, maxScore = 37, isActive = false, color = "#F0E3B8"),
+        PremiumnessScoreRange(minScore = 37, maxScore = 62, isActive = false, color = "#60AB9B"),
+        PremiumnessScoreRange(minScore = 62, maxScore = 100, isActive = true, color = "#B4D7BF"),
+    ),
     images = AcquisitionImages(
         shopImageOutside = "https://picsum.photos/id/1011/800/600",
         shopImageInside = "https://picsum.photos/id/1012/800/600",
