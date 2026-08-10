@@ -1,7 +1,6 @@
 package com.touhid.composeform.acquisition
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +20,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -44,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import coil.compose.AsyncImage
 import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
@@ -66,7 +68,7 @@ import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
-import com.touhid.composeform.designsystem.theme.StatusInfoContainer
+import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.network.model.AcquisitionAudit
 import com.touhid.composeform.network.model.AcquisitionDetail
@@ -178,12 +180,14 @@ private fun AcquisitionApprovalDetailContent(
                         text = "Reject",
                         onClick = onReject,
                         buttonType = AppButtonStyle.Danger,
+                        leadingIcon = { AppIcon(icon = Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = StatusError) },
                         modifier = Modifier.weight(1f),
                     )
                     AppButton(
                         text = "Approve",
                         onClick = onApprove,
                         buttonType = AppButtonStyle.Success,
+                        leadingIcon = { AppIcon(icon = Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = Color.White) },
                         modifier = Modifier.weight(1f),
                     )
                 }
@@ -222,12 +226,9 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
             ScoreSection(score = detail.premiumnessScore, band = detail.premiumnessBand)
         }
 
-        // detail.images.shopImageOutside/shopImageInside/businessProofImage hold the real
-        // URLs - still rendered as color placeholders since no image-loading library
-        // (e.g. Coil) is wired into :app yet; see CLAUDE.md's design system boundary notes.
-        PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3".toBengaliDigits(), color = PhotoPlaceholderColors[0])
-        PhotoBlock(caption = "আউটলেটের ভিতরের ছবি", counter = "2/3".toBengaliDigits(), color = PhotoPlaceholderColors[1])
-        PhotoBlock(caption = "ব্যবসার পরিচয়পত্রের ছবি", counter = "3/3".toBengaliDigits(), color = PhotoPlaceholderColors[2])
+        PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3".toBengaliDigits(), imageUrl = detail.images.shopImageOutside)
+        PhotoBlock(caption = "আউটলেটের ভিতরের ছবি", counter = "2/3".toBengaliDigits(), imageUrl = detail.images.shopImageInside)
+        PhotoBlock(caption = "ব্যবসার পরিচয়পত্রের ছবি", counter = "3/3".toBengaliDigits(), imageUrl = detail.images.businessProofImage)
 
         AppCard(modifier = Modifier.fillMaxWidth()) {
             AppText(text = "Owner & Contact Person Details", style = AppTextStyle.TitleMedium)
@@ -264,14 +265,7 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
 private fun ShopIdentityCard(shopName: String, walletNumber: String) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium)) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(StatusInfoContainer, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                AppIcon(icon = Icons.Filled.Storefront, contentDescription = null, modifier = Modifier.size(20.dp), tint = BrandPrimary)
-            }
+            AppIcon(icon = Icons.Filled.Storefront, contentDescription = null, modifier = Modifier.size(24.dp), tint = BrandPrimary)
             Column {
                 AppText(text = shopName, style = AppTextStyle.Label, override = AppTextOverride(color = StatusNeutral))
                 AppText(text = walletNumber, style = AppTextStyle.BodyLarge, override = AppTextOverride(fontWeight = FontWeight.Bold))
@@ -351,7 +345,7 @@ private val ScoreBands = listOf(
     ScoreBand("খুব ভালো", "90-100", Color(0xFFB4D7BF)),
 )
 
-private val PhotoPlaceholderColors = listOf(Color(0xFFB0BEC5), Color(0xFF90A4AE), Color(0xFFCFD8DC))
+private val PhotoPlaceholderColor = Color(0xFFCFD8DC)
 
 @Composable
 private fun ScoreSection(score: Double, band: String) {
@@ -449,16 +443,18 @@ private fun ScoreBandIndicator(activeIndex: Int, modifier: Modifier = Modifier, 
 // A single outlet photo, stacked in a vertical list with the others (not a swipeable carousel -
 // all photos are visible at once in this screen) - caption bottom-left, "n/total" bottom-right.
 @Composable
-private fun PhotoBlock(caption: String, counter: String, color: Color) {
+private fun PhotoBlock(caption: String, counter: String, imageUrl: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        Image(
-            painter = ColorPainter(color),
+        AsyncImage(
+            model = imageUrl,
             contentDescription = caption,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp)
                 .clip(RoundedCornerShape(AppSpacing.Small)),
             contentScale = ContentScale.Crop,
+            placeholder = ColorPainter(PhotoPlaceholderColor),
+            error = ColorPainter(PhotoPlaceholderColor),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -477,9 +473,9 @@ private val PreviewDetail = AcquisitionDetail(
     premiumnessScore = 72.4,
     premiumnessBand = "50-74",
     images = AcquisitionImages(
-        shopImageOutside = "https://storage.example.com/shop-outside.jpg",
-        shopImageInside = "https://storage.example.com/shop-inside.jpg",
-        businessProofImage = "https://storage.example.com/business-proof.jpg",
+        shopImageOutside = "https://picsum.photos/id/1011/800/600",
+        shopImageInside = "https://picsum.photos/id/1012/800/600",
+        businessProofImage = "https://picsum.photos/id/1013/800/600",
     ),
     outletInfo = OutletInfo(
         address = "2 No. Road, Block-B, Syed Shah Road, Bakalia",

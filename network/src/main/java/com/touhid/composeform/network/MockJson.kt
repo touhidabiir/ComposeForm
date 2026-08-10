@@ -269,9 +269,9 @@ internal object MockJson {
         "premiumness_score": 72.4,
         "premiumness_band": "50-74",
         "images": {
-          "shop_image_outside": "https://storage.example.com/shop-outside.jpg",
-          "shop_image_inside": "https://storage.example.com/shop-inside.jpg",
-          "business_proof_image": "https://storage.example.com/business-proof.jpg"
+          "shop_image_outside": "https://picsum.photos/id/1011/800/600",
+          "shop_image_inside": "https://picsum.photos/id/1012/800/600",
+          "business_proof_image": "https://picsum.photos/id/1013/800/600"
         },
         "outlet_info": {
           "address": "2 No. Road, Block-B, Syed Shah Road, Bakalia",
