@@ -9,7 +9,7 @@ import com.touhid.composeform.network.model.LeadListItem
 enum class LeadStatusFilter(val label: String, val apiValue: String) {
     Approved("অনুমোদিত", "approved"),
     Rejected("বাতিল", "rejected"),
-    Pending("পেন্ডিং", "pending"),
+    Pending("পেন্ডিং", "submitted"),
     EKyc("ই-কেওয়াইসি", "ekyc_submitted"),
 }
 
