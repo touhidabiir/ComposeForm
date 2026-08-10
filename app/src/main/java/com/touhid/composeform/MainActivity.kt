@@ -1,6 +1,7 @@
 package com.touhid.composeform
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -23,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.touhid.composeform.acquisition.AcquisitionApprovalDetailScreen
 import com.touhid.composeform.acquisition.AcquisitionApprovalListScreen
+import dagger.hilt.android.AndroidEntryPoint
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
@@ -47,6 +50,7 @@ private sealed interface PickerLoadState {
     data class Ready(val schema: FormSchema) : PickerLoadState
 }
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +72,13 @@ class MainActivity : ComponentActivity() {
                     }
 
                     composable("leadDashboard") {
-                        LeadDashboardScreen(onBack = { navController.popBackStack() })
+                        val context = LocalContext.current
+                        LeadDashboardScreen(
+                            onBack = { navController.popBackStack() },
+                            onSubmitEkyc = { lead ->
+                                Toast.makeText(context, "eKYC submitted for ${lead.shopName}", Toast.LENGTH_SHORT).show()
+                            },
+                        )
                     }
 
                     composable("acquisitionApprovalList") {

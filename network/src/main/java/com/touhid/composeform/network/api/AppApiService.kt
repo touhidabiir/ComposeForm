@@ -1,7 +1,10 @@
 package com.touhid.composeform.network.api
 
+import com.touhid.composeform.network.model.AcquisitionDetailResponse
+import com.touhid.composeform.network.model.AcquisitionListResponse
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
+import com.touhid.composeform.network.model.LeadDashboardResponse
 import com.touhid.composeform.network.model.LoginRequest
 import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
@@ -9,6 +12,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 internal interface AppApiService {
 
@@ -23,4 +27,20 @@ internal interface AppApiService {
 
     @GET("v1/admin/details/{id}")
     suspend fun getAdminDetails(@Path("id") id: String): AdminDetails
+
+    @GET("v1/leads")
+    suspend fun getLeadDashboard(
+        @Query("status") status: String?,
+        @Query("search") search: String?,
+        @Query("page_no") pageNo: Int,
+    ): LeadDashboardResponse
+
+    @GET("v1/acquisitions")
+    suspend fun getAcquisitionList(
+        @Query("search") search: String?,
+        @Query("page_no") pageNo: Int,
+    ): AcquisitionListResponse
+
+    @GET("v1/acquisitions/{leadId}")
+    suspend fun getAcquisitionDetail(@Path("leadId") leadId: String): AcquisitionDetailResponse
 }
