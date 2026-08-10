@@ -55,6 +55,7 @@ import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppCard
 import com.touhid.composeform.designsystem.components.surface.AppProgressDialog
+import com.touhid.composeform.designsystem.components.surface.AppProgressIndicator
 import com.touhid.composeform.designsystem.components.surface.AppSnackbarHost
 import com.touhid.composeform.designsystem.components.surface.AppSnackbarResult
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
@@ -153,7 +154,10 @@ private fun AcquisitionApprovalDetailContent(
         if (result == AppSnackbarResult.ActionPerformed) onAction(AcquisitionApprovalDetailAction.OnRetry)
     }
 
-    if (state.isLoading) {
+    // Modal only when there's already content behind it (a retry) - the initial load has
+    // nothing to protect yet, and blocking Back access while a slow/hung request is in flight
+    // would trap the user on this screen with no way out.
+    if (state.isLoading && state.detail != null) {
         AppProgressDialog()
     }
 
@@ -189,7 +193,11 @@ private fun AcquisitionApprovalDetailContent(
     ) {
         if (state.detail != null) {
             AcquisitionDetailBody(detail = state.detail)
-        } else if (!state.isLoading) {
+        } else if (state.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                AppProgressIndicator()
+            }
+        } else {
             AppText(
                 text = "কোনো তথ্য পাওয়া যায়নি",
                 modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
