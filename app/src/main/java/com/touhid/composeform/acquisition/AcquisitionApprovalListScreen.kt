@@ -17,7 +17,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
@@ -29,8 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,6 +35,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.common.OnEndOfListReached
+import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
@@ -58,7 +56,6 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
-import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.network.model.AcquisitionListItem
 import com.touhid.composeform.network.model.LeadCloser
@@ -69,22 +66,6 @@ private val CopyIconSize = 14.dp
 // Same brand secondary accent as LeadDashboardScreen - one caller each, kept local rather than
 // promoted into :designsystem's theme (see LeadDashboardScreen.kt for the fuller rationale).
 private val AccentIndigo = Color(0xFF675C92)
-
-// A copy-to-clipboard trailing icon for a specific piece of row text - a function (not a fixed
-// composable) since each row copies different text; reads LocalClipboardManager once per call so
-// the returned lambda's onClick can write straight to the system clipboard.
-@Composable
-private fun copyIconButton(text: String): @Composable () -> Unit {
-    val clipboardManager = LocalClipboardManager.current
-    return {
-        AppIconButton(
-            icon = Icons.Filled.ContentCopy,
-            contentDescription = "Copy",
-            onClick = { clipboardManager.setText(AnnotatedString(text)) },
-            tint = BrandPrimary,
-        )
-    }
-}
 
 @Composable
 fun AcquisitionApprovalListScreen(

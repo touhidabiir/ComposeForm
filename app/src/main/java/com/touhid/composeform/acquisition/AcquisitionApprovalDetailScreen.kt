@@ -24,7 +24,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
@@ -43,8 +42,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,6 +50,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.touhid.composeform.ComposeFormAppTheme
+import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
 import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
@@ -100,22 +98,6 @@ private val AccentIndigo = Color(0xFF675C92)
 
 private val BengaliDigits = arrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
 private fun String.toBengaliDigits(): String = map { c -> if (c in '0'..'9') BengaliDigits[c - '0'] else c }.joinToString("")
-
-// A copy-to-clipboard trailing icon for a specific piece of row text - a function (not a fixed
-// composable) since each row copies different text; reads LocalClipboardManager once per call so
-// the returned lambda's onClick can write straight to the system clipboard.
-@Composable
-private fun copyIconButton(text: String): @Composable () -> Unit {
-    val clipboardManager = LocalClipboardManager.current
-    return {
-        AppIconButton(
-            icon = Icons.Filled.ContentCopy,
-            contentDescription = "Copy",
-            onClick = { clipboardManager.setText(AnnotatedString(text)) },
-            tint = BrandPrimary,
-        )
-    }
-}
 
 // The generic marker icon most Outlet/Wallet Information rows use in the design - only the
 // phone and address rows get a semantically distinct icon (phone/location glyphs).
