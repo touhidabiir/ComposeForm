@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -374,41 +375,50 @@ private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>, sur
 @Composable
 private fun SurveyResponsesSheet(responses: List<SurveyResponse>, onDismissRequest: () -> Unit) {
     AppBottomSheet(onDismissRequest = onDismissRequest, expandedByDefault = true) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(BrandPrimary, CircleShape),
-                contentAlignment = Alignment.Center,
-            ) {
-                AppIcon(icon = Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
-            }
-            Spacer(modifier = Modifier.width(AppSpacing.Small))
-            AppText(
-                text = "প্রশ্ন অনুযায়ী উত্তর",
-                style = AppTextStyle.TitleMedium,
-                override = AppTextOverride(fontWeight = FontWeight.Bold),
-                modifier = Modifier.weight(1f),
-            )
-            AppIconButton(icon = Icons.Filled.Close, contentDescription = "Close", onClick = onDismissRequest)
+        SurveyResponsesSheetContent(responses = responses, onDismissRequest = onDismissRequest)
+    }
+}
+
+// Split out from SurveyResponsesSheet so it can be previewed directly - ModalBottomSheet (which
+// AppBottomSheet wraps) renders its content through a Popup on its own window, which Compose's
+// static preview renderer never draws into, so a preview built around AppBottomSheet itself would
+// always show a blank canvas.
+@Composable
+private fun ColumnScope.SurveyResponsesSheetContent(responses: List<SurveyResponse>, onDismissRequest: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .background(BrandPrimary, CircleShape),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppIcon(icon = Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
         }
-        Spacer(modifier = Modifier.height(AppSpacing.Medium))
-        AppHorizontalDivider()
-        responses.forEachIndexed { index, response ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = AppSpacing.Medium),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                AppText(text = response.question, style = AppTextStyle.BodyMedium, modifier = Modifier.weight(1f))
-                AppText(
-                    text = "উত্তর: ${response.answer}",
-                    style = AppTextStyle.BodyMedium,
-                    override = AppTextOverride(color = BrandPrimary, fontWeight = FontWeight.Bold),
-                )
-            }
-            if (index != responses.lastIndex) {
-                AppHorizontalDivider()
-            }
+        Spacer(modifier = Modifier.width(AppSpacing.Small))
+        AppText(
+            text = "প্রশ্ন অনুযায়ী উত্তর",
+            style = AppTextStyle.TitleMedium,
+            override = AppTextOverride(fontWeight = FontWeight.Bold),
+            modifier = Modifier.weight(1f),
+        )
+        AppIconButton(icon = Icons.Filled.Close, contentDescription = "Close", onClick = onDismissRequest)
+    }
+    Spacer(modifier = Modifier.height(AppSpacing.Medium))
+    AppHorizontalDivider()
+    responses.forEachIndexed { index, response ->
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(vertical = AppSpacing.Medium),
+            horizontalArrangement = Arrangement.SpaceBetween,
+        ) {
+            AppText(text = response.question, style = AppTextStyle.BodyMedium, modifier = Modifier.weight(1f))
+            AppText(
+                text = "উত্তর: ${response.answer}",
+                style = AppTextStyle.BodyMedium,
+                override = AppTextOverride(color = BrandPrimary, fontWeight = FontWeight.Bold),
+            )
+        }
+        if (index != responses.lastIndex) {
+            AppHorizontalDivider()
         }
     }
 }
@@ -594,13 +604,23 @@ private fun AcquisitionApprovalDetailScreenPreview() {
     }
 }
 
-// heightDp tall enough that all five PreviewDetail.surveyResponses rows are visible - the sheet
-// itself now opens expandedByDefault, so there's no partial-height state to clip content here
-// either.
+// Renders SurveyResponsesSheetContent directly inside a plain Column rather than through
+// SurveyResponsesSheet/AppBottomSheet - ModalBottomSheet draws its content in a Popup on its own
+// window, which Compose's static preview renderer never captures, so a preview wrapping the real
+// sheet call would always render blank. This Column mimics the sheet's own white background/
+// padding (see AppBottomSheet) closely enough for a layout preview. heightDp is tall enough that
+// all five PreviewDetail.surveyResponses rows are visible.
 @Preview(name = "Survey Responses Sheet", showBackground = true, heightDp = 700)
 @Composable
 private fun SurveyResponsesSheetPreview() {
     ComposeFormAppTheme {
-        SurveyResponsesSheet(responses = PreviewDetail.surveyResponses, onDismissRequest = {})
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color.White)
+                .padding(AppSpacing.Medium),
+        ) {
+            SurveyResponsesSheetContent(responses = PreviewDetail.surveyResponses, onDismissRequest = {})
+        }
     }
 }
