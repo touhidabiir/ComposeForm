@@ -348,10 +348,16 @@ private fun String.toComposeColor(): Color = Color(android.graphics.Color.parseC
 
 private val PhotoPlaceholderColor = Color(0xFFCFD8DC)
 
+// Falls back to when the API sends an empty premiumness_score_ranges list - unreachable via
+// today's mock (MockJson.ACQUISITION_DETAIL always supplies 5 populated ranges), but ranges[activeIndex]
+// would otherwise crash the whole screen on a genuinely empty response instead of just rendering
+// an un-tinted ring.
+private val UnknownScoreTierColor = Color(0xFFCFD8DC)
+
 @Composable
 private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>, surveyResponses: List<SurveyResponse>) {
-    val activeIndex = ranges.indexOfFirst { it.isActive }.takeIf { it >= 0 } ?: ranges.size / 2
-    val tierColor = ranges[activeIndex].color.toComposeColor()
+    val activeIndex = ranges.indexOfFirst { it.isActive }.takeIf { it >= 0 } ?: (ranges.size / 2)
+    val tierColor = ranges.getOrNull(activeIndex)?.color?.toComposeColor() ?: UnknownScoreTierColor
     var showSurveyResponses by remember { mutableStateOf(false) }
 
     Column(
