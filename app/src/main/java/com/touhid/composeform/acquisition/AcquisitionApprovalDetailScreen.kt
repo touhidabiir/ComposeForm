@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,10 +28,14 @@ import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Storefront
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +60,9 @@ import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
+import com.touhid.composeform.designsystem.components.surface.AppBottomSheet
 import com.touhid.composeform.designsystem.components.surface.AppCard
+import com.touhid.composeform.designsystem.components.surface.AppHorizontalDivider
 import com.touhid.composeform.designsystem.components.surface.AppProgressDialog
 import com.touhid.composeform.designsystem.components.surface.AppProgressIndicator
 import com.touhid.composeform.designsystem.components.surface.AppSnackbarHost
@@ -80,6 +87,7 @@ import com.touhid.composeform.network.model.Facility
 import com.touhid.composeform.network.model.LeadCloser
 import com.touhid.composeform.network.model.OutletInfo
 import com.touhid.composeform.network.model.PremiumnessScoreRange
+import com.touhid.composeform.network.model.SurveyResponse
 import com.touhid.composeform.network.model.WalletInfo
 
 private val RowIconSize = 16.dp
@@ -224,7 +232,7 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
         ShopIdentityCard(shopName = detail.shopName, walletNumber = detail.walletNumber)
 
         AppCard(modifier = Modifier.fillMaxWidth()) {
-            ScoreSection(score = detail.premiumnessScore, ranges = detail.premiumnessScoreRanges)
+            ScoreSection(score = detail.premiumnessScore, ranges = detail.premiumnessScoreRanges, surveyResponses = detail.surveyResponses)
         }
 
         PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3".toBengaliDigits(), imageUrl = detail.images.shopImageOutside)
@@ -340,9 +348,11 @@ private fun String.toComposeColor(): Color = Color(android.graphics.Color.parseC
 private val PhotoPlaceholderColor = Color(0xFFCFD8DC)
 
 @Composable
-private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>) {
+private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>, surveyResponses: List<SurveyResponse>) {
     val activeIndex = ranges.indexOfFirst { it.isActive }.takeIf { it >= 0 } ?: ranges.size / 2
     val tierColor = ranges[activeIndex].color.toComposeColor()
+    var showSurveyResponses by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -350,7 +360,56 @@ private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>) {
     ) {
         ScoreCircle(title = "প্রিমিয়ামনেস স্কোর", score = score, maxScore = MaxPremiumnessScore, ringColor = tierColor)
         ScoreBandIndicator(ranges = ranges, activeIndex = activeIndex, modifier = Modifier.fillMaxWidth())
-        AppStepperButton(label = "বিস্তারিত দেখুন", onClick = {}, modifier = Modifier.fillMaxWidth())
+        AppStepperButton(label = "বিস্তারিত দেখুন", onClick = { showSurveyResponses = true }, modifier = Modifier.fillMaxWidth())
+    }
+
+    if (showSurveyResponses) {
+        SurveyResponsesSheet(responses = surveyResponses, onDismissRequest = { showSurveyResponses = false })
+    }
+}
+
+// The Q&A breakdown behind the premiumness score, opened from ScoreSection's "বিস্তারিত দেখুন"
+// button - one caller, built from AppBottomSheet the same way LeadDashboardScreen's
+// RejectionDetailsSheet is.
+@Composable
+private fun SurveyResponsesSheet(responses: List<SurveyResponse>, onDismissRequest: () -> Unit) {
+    AppBottomSheet(onDismissRequest = onDismissRequest) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(32.dp)
+                    .background(BrandPrimary, CircleShape),
+                contentAlignment = Alignment.Center,
+            ) {
+                AppIcon(icon = Icons.Filled.Star, contentDescription = null, modifier = Modifier.size(18.dp), tint = Color.White)
+            }
+            Spacer(modifier = Modifier.width(AppSpacing.Small))
+            AppText(
+                text = "প্রশ্ন অনুযায়ী উত্তর",
+                style = AppTextStyle.TitleMedium,
+                override = AppTextOverride(fontWeight = FontWeight.Bold),
+                modifier = Modifier.weight(1f),
+            )
+            AppIconButton(icon = Icons.Filled.Close, contentDescription = "Close", onClick = onDismissRequest)
+        }
+        Spacer(modifier = Modifier.height(AppSpacing.Medium))
+        AppHorizontalDivider()
+        responses.forEachIndexed { index, response ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = AppSpacing.Medium),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                AppText(text = response.question, style = AppTextStyle.BodyMedium, modifier = Modifier.weight(1f))
+                AppText(
+                    text = "উত্তর: ${response.answer}",
+                    style = AppTextStyle.BodyMedium,
+                    override = AppTextOverride(color = BrandPrimary, fontWeight = FontWeight.Bold),
+                )
+            }
+            if (index != responses.lastIndex) {
+                AppHorizontalDivider()
+            }
+        }
     }
 }
 
@@ -502,7 +561,13 @@ private val PreviewDetail = AcquisitionDetail(
         simUsedInSmartphone = true,
         simOwnedByShopOwner = true,
     ),
-    surveyResponses = emptyList(),
+    surveyResponses = listOf(
+        SurveyResponse(question = "Provides printed bills?", answer = "No", points = 20.7),
+        SurveyResponse(question = "Spot lights count?", answer = "6-10", points = 8.0),
+        SurveyResponse(question = "Accepts card payments?", answer = "No", points = 0.0),
+        SurveyResponse(question = "Tube lights count?", answer = "4-6", points = 5.1),
+        SurveyResponse(question = "Entrance door type?", answer = "Glass", points = 12.6),
+    ),
     audit = AcquisitionAudit(
         createdAt = "2026-07-15T10:30:00+06:00",
         submittedAt = "2026-07-15T10:35:00+06:00",
