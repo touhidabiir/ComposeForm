@@ -3,8 +3,11 @@ package com.touhid.composeform.designsystem.components.surface
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -21,6 +24,12 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 // this pink-tinted instead of matching the screen's actual white bar. [cornerRadius] defaults to
 // 0 (a flat screen-edge bar) - callers that want rounded top corners (e.g. a bottom-sheet-style
 // bar) pass one explicitly, e.g. AppSpacing.Medium, rather than this component always rounding.
+// The Row applies navigationBars insets before its own AppSpacing.Medium padding, not the Surface -
+// since the app draws edge-to-edge (enableEdgeToEdge in MainActivity), the system nav bar/gesture
+// pill would otherwise sit on top of the button row instead of below it. Applying the inset to the
+// Row (which the Surface wraps and sizes to) grows the bar's own background to fill the space
+// behind the nav bar too, so the bar's color still reaches the screen edge instead of leaving a
+// gap.
 @Composable
 fun AppBottomActionBar(
     modifier: Modifier = Modifier,
@@ -37,6 +46,7 @@ fun AppBottomActionBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(AppSpacing.Medium),
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
             content = content,
