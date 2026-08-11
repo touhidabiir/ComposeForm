@@ -266,12 +266,43 @@ internal object MockJson {
         "shop_name": "Romij Electric",
         "wallet_number": "01723456789",
         "status": "submitted",
-        "premiumness_score": 72.4,
-        "premiumness_band": "50-74",
+        "premiumness_score": 71.25,
+        "premiumness_score_ranges": [
+          {
+            "min_score": 0,
+            "max_score": 12,
+            "is_active": false,
+            "color": "#E5BDB8"
+          },
+          {
+            "min_score": 12,
+            "max_score": 25,
+            "is_active": false,
+            "color": "#EDD1B6"
+          },
+          {
+            "min_score": 25,
+            "max_score": 37,
+            "is_active": false,
+            "color": "#F0E3B8"
+          },
+          {
+            "min_score": 37,
+            "max_score": 62,
+            "is_active": false,
+            "color": "#60AB9B"
+          },
+          {
+            "min_score": 62,
+            "max_score": 100,
+            "is_active": true,
+            "color": "#B4D7BF"
+          }
+        ],
         "images": {
-          "shop_image_outside": "https://storage.example.com/shop-outside.jpg",
-          "shop_image_inside": "https://storage.example.com/shop-inside.jpg",
-          "business_proof_image": "https://storage.example.com/business-proof.jpg"
+          "shop_image_outside": "https://picsum.photos/id/1011/800/600",
+          "shop_image_inside": "https://picsum.photos/id/1012/800/600",
+          "business_proof_image": "https://picsum.photos/id/1013/800/600"
         },
         "outlet_info": {
           "address": "2 No. Road, Block-B, Syed Shah Road, Bakalia",

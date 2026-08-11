@@ -26,7 +26,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -42,8 +41,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.common.OnEndOfListReached
+import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
@@ -89,22 +87,6 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 private val RowIconSize = 16.dp
-
-// A copy-to-clipboard trailing icon for a specific piece of row text - a function (not a fixed
-// composable) since each row copies different text; reads LocalClipboardManager once per call so
-// the returned lambda's onClick can write straight to the system clipboard.
-@Composable
-private fun copyIconButton(text: String): @Composable () -> Unit {
-    val clipboardManager = LocalClipboardManager.current
-    return {
-        AppIconButton(
-            icon = Icons.Filled.ContentCopy,
-            contentDescription = "Copy",
-            onClick = { clipboardManager.setText(AnnotatedString(text)) },
-            tint = BrandPrimary,
-        )
-    }
-}
 
 // The brand's secondary accent (search icon, contact icons, assigned-person names) - distinct from
 // BrandPrimary, the brand's primary pink used for the app bar/CTA/selected chip/rejection banner.

@@ -44,7 +44,7 @@ data class AcquisitionDetail(
     @SerializedName("wallet_number") val walletNumber: String,
     val status: String,
     @SerializedName("premiumness_score") val premiumnessScore: Double,
-    @SerializedName("premiumness_band") val premiumnessBand: String,
+    @SerializedName("premiumness_score_ranges") val premiumnessScoreRanges: List<PremiumnessScoreRange>,
     val images: AcquisitionImages,
     @SerializedName("outlet_info") val outletInfo: OutletInfo,
     @SerializedName("digital_payment") val digitalPayment: DigitalPayment,
@@ -52,6 +52,16 @@ data class AcquisitionDetail(
     @SerializedName("wallet_info") val walletInfo: WalletInfo,
     @SerializedName("survey_responses") val surveyResponses: List<SurveyResponse>,
     val audit: AcquisitionAudit,
+)
+
+// One tier of the premiumness score gauge - min/max score, whether this detail's score falls in
+// it, and the color its bar segment should render in. The backend drives all of this now (bounds,
+// which tier is active, and the color), rather than a client-side hardcoded band table.
+data class PremiumnessScoreRange(
+    @SerializedName("min_score") val minScore: Int,
+    @SerializedName("max_score") val maxScore: Int,
+    @SerializedName("is_active") val isActive: Boolean,
+    val color: String,
 )
 
 data class AcquisitionImages(
