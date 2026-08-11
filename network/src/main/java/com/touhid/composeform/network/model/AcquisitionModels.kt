@@ -119,3 +119,24 @@ data class AcquisitionAudit(
     @SerializedName("submitted_at") val submittedAt: String,
     @SerializedName("submitted_by") val submittedBy: LeadCloser,
 )
+
+// Mirrors the backend's approve/reject reason-list response shape 1:1 - "type" echoes back which
+// list was requested (accept/reject), "data" nests the reasons themselves. Unlike
+// AcquisitionDetailResponse's "is_error", this endpoint's sample payload sends is_error as a
+// numeric 0/1 rather than a true/false literal, so it's typed as Int here - Gson's Boolean adapter
+// throws on a JSON number token, it doesn't coerce 0/1 to false/true.
+data class AcquisitionReasonsResponse(
+    @SerializedName("is_error") val isError: Int,
+    val message: String,
+    val data: AcquisitionReasonsData,
+)
+
+data class AcquisitionReasonsData(
+    val type: String,
+    val reasons: List<AcquisitionReason>,
+)
+
+data class AcquisitionReason(
+    val id: Int,
+    val reason: String,
+)

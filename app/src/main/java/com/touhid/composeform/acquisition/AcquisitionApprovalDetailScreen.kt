@@ -3,11 +3,13 @@ package com.touhid.composeform.acquisition
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -57,6 +59,8 @@ import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
+import com.touhid.composeform.designsystem.components.input.AppCheckbox
+import com.touhid.composeform.designsystem.components.input.AppTextField
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
 import com.touhid.composeform.designsystem.components.surface.AppBottomSheet
@@ -76,9 +80,13 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusNeutral
+import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
+import com.touhid.composeform.designsystem.theme.StatusSuccess
+import com.touhid.composeform.designsystem.theme.StatusWarning
 import com.touhid.composeform.network.model.AcquisitionAudit
 import com.touhid.composeform.network.model.AcquisitionDetail
 import com.touhid.composeform.network.model.AcquisitionImages
+import com.touhid.composeform.network.model.AcquisitionReason
 import com.touhid.composeform.network.model.ContactInfo
 import com.touhid.composeform.network.model.ContactPerson
 import com.touhid.composeform.network.model.DigitalPayment
@@ -168,16 +176,20 @@ private fun AcquisitionApprovalDetailContent(
         bottomBar = {
             if (state.detail != null) {
                 AppBottomActionBar(cornerRadius = AppSpacing.Medium) {
+                    // onApprove/onReject (navigation-worthy, currently just pop the back stack -
+                    // see MainActivity) are intentionally not called here. Tapping either button
+                    // now opens its reason sheet instead; onApprove/onReject stay reserved for a
+                    // future task once a real submit call exists to navigate away on success.
                     AppOutlinedButton(
                         text = "Reject",
-                        onClick = onReject,
+                        onClick = { onAction(AcquisitionApprovalDetailAction.OnRejectTapped) },
                         buttonType = AppButtonStyle.Danger,
                         leadingIcon = { AppIcon(icon = Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = StatusError) },
                         modifier = Modifier.weight(1f),
                     )
                     AppButton(
                         text = "Approve",
-                        onClick = onApprove,
+                        onClick = { onAction(AcquisitionApprovalDetailAction.OnApproveTapped) },
                         buttonType = AppButtonStyle.Success,
                         leadingIcon = { AppIcon(icon = Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = Color.White) },
                         modifier = Modifier.weight(1f),
@@ -200,6 +212,25 @@ private fun AcquisitionApprovalDetailContent(
                 textAlign = TextAlign.Center,
             )
         }
+    }
+
+    state.openReasonSheet?.let { sheetType ->
+        ApprovalReasonSheet(
+            type = sheetType,
+            reasons = state.reasons,
+            reasonsLoading = state.reasonsLoading,
+            reasonsError = state.reasonsError,
+            onDismissRequest = { onAction(AcquisitionApprovalDetailAction.OnReasonSheetDismissed) },
+            onConfirm = { reasonIds, note ->
+                onAction(
+                    if (sheetType == ReasonSheetType.Approve) {
+                        AcquisitionApprovalDetailAction.OnApproveConfirmed(reasonIds, note)
+                    } else {
+                        AcquisitionApprovalDetailAction.OnRejectConfirmed(reasonIds, note)
+                    },
+                )
+            },
+        )
     }
 }
 
@@ -510,6 +541,268 @@ private fun PhotoBlock(caption: String, counter: String, imageUrl: String) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             AppText(text = caption, style = AppTextStyle.BodyMedium)
             AppText(text = counter, style = AppTextStyle.Label)
+        }
+    }
+}
+
+private val LikertLabels = listOf("তীব্র দ্বিমত", "দ্বিমত", "নিরপেক্ষ", "একমত", "তীব্র একমত")
+private val LikertCircleSize = 24.dp
+private val LikertConnectorHeight = 2.dp
+private val ReasonCardCheckIconSize = 14.dp
+private val ReasonDotSize = 8.dp
+
+private data class ReasonSheetCopy(
+    val reasonHeading: String,
+    val reasonSubtitle: String,
+    val accentColor: Color,
+    val confirmLabel: String,
+    val confirmButtonStyle: AppButtonStyle,
+)
+
+private fun reasonSheetCopy(type: ReasonSheetType): ReasonSheetCopy = when (type) {
+    ReasonSheetType.Approve -> ReasonSheetCopy(
+        reasonHeading = "অনুমোদনের কারণ",
+        reasonSubtitle = "লিড অনুমোদনের কারণ নির্বাচন করুন।",
+        accentColor = StatusSuccess,
+        confirmLabel = "Approve Lead",
+        confirmButtonStyle = AppButtonStyle.Success,
+    )
+    ReasonSheetType.Reject -> ReasonSheetCopy(
+        reasonHeading = "প্রত্যাখ্যানের কারণ",
+        reasonSubtitle = "লিড প্রত্যাখ্যানের কারণ নির্বাচন করুন।",
+        // Reuses BrandPrimary (already this pink/magenta elsewhere in this file, e.g.
+        // ShopIdentityCard's Storefront icon) rather than StatusError, since the design's reject
+        // accent (card border/checkbox) is a distinct pink from the confirm button's solid red.
+        accentColor = BrandPrimary,
+        confirmLabel = "Reject Lead",
+        confirmButtonStyle = AppButtonStyle.Danger,
+    )
+}
+
+// The Approve/Reject reason-picker sheet opened from the bottom bar - a thin AppBottomSheet
+// wrapper plus a separately-previewable ColumnScope content function, same split as
+// SurveyResponsesSheet/SurveyResponsesSheetContent above (ModalBottomSheet renders via a Popup the
+// static preview renderer can't capture).
+@Composable
+private fun ApprovalReasonSheet(
+    type: ReasonSheetType,
+    reasons: List<AcquisitionReason>,
+    reasonsLoading: Boolean,
+    reasonsError: String?,
+    onDismissRequest: () -> Unit,
+    onConfirm: (reasonIds: List<Int>, note: String) -> Unit,
+) {
+    AppBottomSheet(onDismissRequest = onDismissRequest, expandedByDefault = true) {
+        ApprovalReasonSheetContent(
+            type = type,
+            reasons = reasons,
+            reasonsLoading = reasonsLoading,
+            reasonsError = reasonsError,
+            onConfirm = onConfirm,
+        )
+    }
+}
+
+@Composable
+private fun ColumnScope.ApprovalReasonSheetContent(
+    type: ReasonSheetType,
+    reasons: List<AcquisitionReason>,
+    reasonsLoading: Boolean,
+    reasonsError: String?,
+    onConfirm: (reasonIds: List<Int>, note: String) -> Unit,
+) {
+    val copy = reasonSheetCopy(type)
+    var likertIndex by remember(type) { mutableStateOf(2) }
+    var selectedReasonIds by remember(type) { mutableStateOf(setOf<Int>()) }
+    var noteText by remember(type) { mutableStateOf("") }
+
+    AppText(text = "যাচাইকরণ", style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
+    Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+    AppText(
+        text = "আপনি কি এই প্রিমিয়ামনেস স্কোরের সাথে একমত?",
+        style = AppTextStyle.BodyMedium,
+        override = AppTextOverride(color = StatusNeutral),
+    )
+    Spacer(modifier = Modifier.height(AppSpacing.Medium))
+    LikertScaleIndicator(selectedIndex = likertIndex, onSelect = { likertIndex = it }, modifier = Modifier.fillMaxWidth())
+    Spacer(modifier = Modifier.height(AppSpacing.Medium))
+
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+        Box(modifier = Modifier.size(ReasonDotSize).background(color = copy.accentColor, shape = CircleShape))
+        AppText(text = copy.reasonHeading, style = AppTextStyle.TitleMedium)
+    }
+    Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+    AppText(text = copy.reasonSubtitle, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusNeutral))
+    Spacer(modifier = Modifier.height(AppSpacing.Medium))
+
+    when {
+        reasonsLoading -> Box(modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium), contentAlignment = Alignment.Center) {
+            AppProgressIndicator()
+        }
+        reasonsError != null -> AppText(text = reasonsError, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusError))
+        else -> Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+            reasons.forEach { reason ->
+                val isSelected = reason.id in selectedReasonIds
+                ReasonCheckboxCard(
+                    reason = reason,
+                    selected = isSelected,
+                    accentColor = copy.accentColor,
+                    onToggle = {
+                        selectedReasonIds = if (isSelected) selectedReasonIds - reason.id else selectedReasonIds + reason.id
+                    },
+                )
+            }
+        }
+    }
+    Spacer(modifier = Modifier.height(AppSpacing.Medium))
+
+    AppTextField(
+        value = noteText,
+        onValueChange = { noteText = it },
+        placeholder = "এখানে কারণ উল্লেখ করুন...",
+        singleLine = false,
+        modifier = Modifier.fillMaxWidth().height(96.dp),
+    )
+    Spacer(modifier = Modifier.height(AppSpacing.Medium))
+
+    AppButton(
+        text = copy.confirmLabel,
+        onClick = { onConfirm(selectedReasonIds.toList(), noteText) },
+        buttonType = copy.confirmButtonStyle,
+        enabled = selectedReasonIds.isNotEmpty(),
+        modifier = Modifier.fillMaxWidth(),
+    )
+}
+
+// A single selectable reason row - bordered card wrapping AppCheckbox, whose border and checkbox
+// fill both pick up the sheet's accent color when selected (a plain gray border otherwise). Not a
+// :designsystem primitive - one caller here, no Material3-derived default it relies on.
+@Composable
+private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, accentColor: Color, onToggle: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                border = BorderStroke(width = if (selected) 1.5.dp else 1.dp, color = if (selected) accentColor else StatusNeutralContainer),
+                shape = RoundedCornerShape(AppSpacing.Small),
+            )
+            .padding(horizontal = AppSpacing.Small, vertical = AppSpacing.ExtraSmall),
+    ) {
+        AppCheckbox(checked = selected, onCheckedChange = { onToggle() }, label = reason.reason, checkedColor = accentColor)
+    }
+}
+
+// The "do you agree with the score" agreement scale - a tappable, fixed 5-label stepper, visually
+// similar to ScoreBandIndicator above but NOT sharing a composable with it: ScoreBandIndicator is
+// read-only and API-driven (variable band count/colors), this is fixed-label, single fixed accent,
+// and tappable. Unifying them would need three independent branches (fixed-vs-dynamic labels,
+// tappable-vs-read-only, circle-vs-bar rendering) for what's really just two unrelated callers -
+// kept separate rather than forcing an awkward shared abstraction.
+@Composable
+private fun LikertScaleIndicator(selectedIndex: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
+    Row(modifier = modifier.fillMaxWidth()) {
+        LikertLabels.forEachIndexed { index, label ->
+            val isSelected = index == selectedIndex
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .clickable(onClick = { onSelect(index) }),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    LikertConnector(visible = index != 0)
+                    LikertStepCircle(selected = isSelected)
+                    LikertConnector(visible = index != LikertLabels.lastIndex)
+                }
+                Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+                AppText(
+                    text = label,
+                    style = AppTextStyle.Label,
+                    textAlign = TextAlign.Center,
+                    override = if (isSelected) AppTextOverride(fontWeight = FontWeight.Bold) else AppTextOverride(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+        }
+    }
+}
+
+// Half of the connecting line on one side of a step's circle - invisible on the outer edges
+// (step 0's leading half, the last step's trailing half) so the visible halves read as one
+// continuous line running through every circle's center.
+@Composable
+private fun RowScope.LikertConnector(visible: Boolean) {
+    Box(
+        modifier = Modifier
+            .weight(1f)
+            .height(LikertConnectorHeight)
+            .background(if (visible) StatusNeutralContainer else Color.Transparent),
+    )
+}
+
+@Composable
+private fun LikertStepCircle(selected: Boolean) {
+    Box(
+        modifier = Modifier
+            .size(LikertCircleSize)
+            .background(color = if (selected) StatusWarning else Color.White, shape = CircleShape)
+            .border(width = 2.dp, color = if (selected) StatusWarning else StatusNeutralContainer, shape = CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (selected) {
+            AppIcon(icon = Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(ReasonCardCheckIconSize), tint = Color.White)
+        }
+    }
+}
+
+private val PreviewApproveReasons = listOf(
+    AcquisitionReason(id = 3, reason = "লেনদেন নিয়মিত করে"),
+    AcquisitionReason(id = 4, reason = "ব্যবসা ভালো চলছে"),
+    AcquisitionReason(id = 5, reason = "দোকান সবসময় খোলা থাকে"),
+    AcquisitionReason(id = 6, reason = "আগের ঋণ ঠিকমতো শোধ করেছে"),
+    AcquisitionReason(id = 7, reason = "পেমেন্ট নিতে আগ্রহী"),
+)
+
+private val PreviewRejectReasons = listOf(
+    AcquisitionReason(id = 8, reason = "প্রয়োজনীয় কাগজপত্র অসম্পূর্ণ"),
+    AcquisitionReason(id = 9, reason = "ঠিকানা যাচাই করা যায়নি"),
+    AcquisitionReason(id = 10, reason = "প্রিমিয়ামনেস স্কোর প্রত্যাশিত মানের কম"),
+    AcquisitionReason(id = 11, reason = "যোগাযোগের তথ্যে অসামঞ্জস্য"),
+    AcquisitionReason(id = 12, reason = "একই ওয়ালেট নম্বর ইতিমধ্যে নিবন্ধিত"),
+)
+
+// Rendered directly inside a plain Column (mimicking AppBottomSheet's own white background/
+// padding) rather than through the real sheet, for the same Popup/preview-renderer reason as
+// SurveyResponsesSheetPreview below. heightDp is tall enough to show the full content (Likert
+// scale + all reason rows + text field + confirm button) unclipped.
+@Preview(name = "Approval Reason Sheet - Approve", showBackground = true, heightDp = 900)
+@Composable
+private fun ApprovalReasonSheetContentApprovePreview() {
+    ComposeFormAppTheme {
+        Column(modifier = Modifier.fillMaxWidth().background(Color.White).padding(AppSpacing.Medium)) {
+            ApprovalReasonSheetContent(
+                type = ReasonSheetType.Approve,
+                reasons = PreviewApproveReasons,
+                reasonsLoading = false,
+                reasonsError = null,
+                onConfirm = { _, _ -> },
+            )
+        }
+    }
+}
+
+@Preview(name = "Approval Reason Sheet - Reject", showBackground = true, heightDp = 900)
+@Composable
+private fun ApprovalReasonSheetContentRejectPreview() {
+    ComposeFormAppTheme {
+        Column(modifier = Modifier.fillMaxWidth().background(Color.White).padding(AppSpacing.Medium)) {
+            ApprovalReasonSheetContent(
+                type = ReasonSheetType.Reject,
+                reasons = PreviewRejectReasons,
+                reasonsLoading = false,
+                reasonsError = null,
+                onConfirm = { _, _ -> },
+            )
         }
     }
 }
