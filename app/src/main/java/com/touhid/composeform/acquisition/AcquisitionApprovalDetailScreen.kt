@@ -373,7 +373,7 @@ private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>, sur
 // RejectionDetailsSheet is.
 @Composable
 private fun SurveyResponsesSheet(responses: List<SurveyResponse>, onDismissRequest: () -> Unit) {
-    AppBottomSheet(onDismissRequest = onDismissRequest) {
+    AppBottomSheet(onDismissRequest = onDismissRequest, expandedByDefault = true) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
@@ -591,5 +591,16 @@ private fun AcquisitionApprovalDetailScreenPreview() {
             onReject = {},
             onAction = {},
         )
+    }
+}
+
+// heightDp tall enough that all five PreviewDetail.surveyResponses rows are visible - the sheet
+// itself now opens expandedByDefault, so there's no partial-height state to clip content here
+// either.
+@Preview(name = "Survey Responses Sheet", showBackground = true, heightDp = 700)
+@Composable
+private fun SurveyResponsesSheetPreview() {
+    ComposeFormAppTheme {
+        SurveyResponsesSheet(responses = PreviewDetail.surveyResponses, onDismissRequest = {})
     }
 }

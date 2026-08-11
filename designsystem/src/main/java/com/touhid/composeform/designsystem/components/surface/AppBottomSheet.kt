@@ -18,16 +18,20 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 // itself from AppText/AppIconButton, since there's no second caller yet to justify baking in a
 // fixed header shape. showDragHandle defaults to false since it's a Material3 affordance for a
 // swipeable/expandable sheet - a plain content sheet like RejectionDetailsSheet doesn't want the
-// extra icon and its reserved vertical space above the content.
+// extra icon and its reserved vertical space above the content. expandedByDefault defaults to
+// false (Material3's own default) - a short sheet like RejectionDetailsSheet never hits the
+// partially-expanded state anyway, but a taller one (e.g. SurveyResponsesSheet, with many rows)
+// otherwise opens at half-height and needs a drag before its content is fully visible.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBottomSheet(
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
     showDragHandle: Boolean = false,
+    expandedByDefault: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = expandedByDefault)
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
