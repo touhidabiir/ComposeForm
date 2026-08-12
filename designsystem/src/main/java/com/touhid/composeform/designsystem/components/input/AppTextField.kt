@@ -16,9 +16,13 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.theme.StatusNeutral
-import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 
 enum class AppTextFieldType { Text, Number, Email, Password }
+
+// One-off tones for flatWhenUnfocused's muted look - close to but distinct from
+// StatusNeutralContainer, specific to this field state rather than a general-purpose theme token.
+private val FlatUnfocusedContainerColor = Color(0xFFFAFAFB)
+private val FlatUnfocusedBorderColor = Color(0xFFECEEF0)
 
 @Composable
 fun AppTextField(
@@ -37,9 +41,9 @@ fun AppTextField(
     trailingIcon: @Composable (onClick: () -> Unit) -> Unit = { onClick ->
         AppIconButton(icon = Icons.Filled.Search, contentDescription = "Open picker", onClick = onClick, enabled = enabled)
     },
-    // Muted/filled look (StatusNeutralContainer fill, hidden border, StatusNeutral text) while
-    // unfocused, reverting to the normal outlined look on focus - false keeps every existing
-    // caller (e.g. :formbuilder's inputBox fields) exactly as before.
+    // Muted/filled look (light fill + subtle border, StatusNeutral text) while unfocused,
+    // reverting to the normal outlined look on focus - false keeps every existing caller (e.g.
+    // :formbuilder's inputBox fields) exactly as before.
     flatWhenUnfocused: Boolean = false,
     // Only takes effect when singleLine is false - matches OutlinedTextField's own implicit
     // default, so leaving this unset changes nothing.
@@ -103,8 +107,8 @@ fun AppTextField(
                 )
             }
             flatWhenUnfocused -> OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = StatusNeutralContainer,
-                unfocusedBorderColor = Color.Transparent,
+                unfocusedContainerColor = FlatUnfocusedContainerColor,
+                unfocusedBorderColor = FlatUnfocusedBorderColor,
                 unfocusedTextColor = StatusNeutral,
                 unfocusedPlaceholderColor = StatusNeutral,
                 unfocusedLabelColor = StatusNeutral,
