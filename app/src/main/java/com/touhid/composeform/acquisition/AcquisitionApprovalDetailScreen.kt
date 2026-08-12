@@ -681,6 +681,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
         onValueChange = { noteText = it },
         placeholder = "এখানে কারণ উল্লেখ করুন...",
         singleLine = false,
+        flatWhenUnfocused = true,
         modifier = Modifier.fillMaxWidth().height(96.dp),
     )
     Spacer(modifier = Modifier.height(AppSpacing.Medium))

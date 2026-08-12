@@ -58,6 +58,13 @@ private fun InputPreview() {
                     isError = true,
                     supportingText = "Required",
                 )
+                AppTextField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = "Flat until focused, capped at 20 chars",
+                    flatWhenUnfocused = true,
+                    maxLength = 20,
+                )
                 AppCheckbox(checked = true, onCheckedChange = {}, label = "Subscribe to updates")
                 AppCheckbox(
                     checked = true,
