@@ -11,10 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
+import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 
 enum class AppTextFieldType { Text, Number, Email, Password }
@@ -51,7 +53,13 @@ fun AppTextField(
     // null (default) means unlimited, same as today. When set, input beyond the limit is silently
     // truncated rather than shown as an error or counted.
     maxLength: Int? = null,
+    // Applies only to color, for label/placeholder/supportingText - fontSize/fontWeight are
+    // deliberately not threaded through, since Material3's OutlinedTextField manages the label's
+    // own TextStyle internally to drive its floating/shrink animation, and forcing an explicit
+    // style there risks breaking it. Color has no such interaction, so it's safe to override.
+    textOverride: AppTextOverride = AppTextOverride(),
 ) {
+    val overrideTextColor = if (textOverride.color.isSpecified) textOverride.color else Color.Unspecified
     val keyboardType = when (type) {
         AppTextFieldType.Text -> KeyboardType.Text
         AppTextFieldType.Number -> KeyboardType.Number
@@ -78,10 +86,10 @@ fun AppTextField(
         },
         enabled = if (wholeFieldTriggersAction) false else enabled,
         readOnly = readOnly,
-        label = label?.let { { Text(it) } },
-        placeholder = placeholder?.let { { Text(it) } },
+        label = label?.let { { Text(it, color = overrideTextColor) } },
+        placeholder = placeholder?.let { { Text(it, color = overrideTextColor) } },
         isError = isError,
-        supportingText = supportingText?.let { { Text(it) } },
+        supportingText = supportingText?.let { { Text(it, color = overrideTextColor) } },
         singleLine = singleLine,
         maxLines = if (singleLine) 1 else maxLines,
         keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
