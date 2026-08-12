@@ -222,12 +222,12 @@ private fun AcquisitionApprovalDetailContent(
             reasonsLoading = state.reasonsLoading,
             reasonsError = state.reasonsError,
             onDismissRequest = { onAction(AcquisitionApprovalDetailAction.OnReasonSheetDismissed) },
-            onConfirm = { reasonIds, note ->
+            onConfirm = { reasonIds, note, agreementIndex ->
                 onAction(
                     if (sheetType == ReasonSheetType.Approve) {
-                        AcquisitionApprovalDetailAction.OnApproveConfirmed(reasonIds, note)
+                        AcquisitionApprovalDetailAction.OnApproveConfirmed(reasonIds, note, agreementIndex)
                     } else {
-                        AcquisitionApprovalDetailAction.OnRejectConfirmed(reasonIds, note)
+                        AcquisitionApprovalDetailAction.OnRejectConfirmed(reasonIds, note, agreementIndex)
                     },
                 )
             },
@@ -593,7 +593,7 @@ private fun ApprovalReasonSheet(
     reasonsLoading: Boolean,
     reasonsError: String?,
     onDismissRequest: () -> Unit,
-    onConfirm: (reasonIds: List<Int>, note: String) -> Unit,
+    onConfirm: (reasonIds: List<Int>, note: String, agreementIndex: Int) -> Unit,
 ) {
     AppBottomSheet(onDismissRequest = onDismissRequest, expandedByDefault = true) {
         ApprovalReasonSheetContent(
@@ -612,7 +612,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     reasons: List<AcquisitionReason>,
     reasonsLoading: Boolean,
     reasonsError: String?,
-    onConfirm: (reasonIds: List<Int>, note: String) -> Unit,
+    onConfirm: (reasonIds: List<Int>, note: String, agreementIndex: Int) -> Unit,
 ) {
     val copy = reasonSheetCopy(type)
     var likertIndex by remember(type) { mutableStateOf(2) }
@@ -670,7 +670,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
 
     AppButton(
         text = copy.confirmLabel,
-        onClick = { onConfirm(selectedReasonIds.toList(), noteText) },
+        onClick = { onConfirm(selectedReasonIds.toList(), noteText, likertIndex) },
         buttonType = copy.confirmButtonStyle,
         enabled = selectedReasonIds.isNotEmpty(),
         modifier = Modifier.fillMaxWidth(),
@@ -788,7 +788,7 @@ private fun ApprovalReasonSheetContentApprovePreview() {
                 reasons = PreviewApproveReasons,
                 reasonsLoading = false,
                 reasonsError = null,
-                onConfirm = { _, _ -> },
+                onConfirm = { _, _, _ -> },
             )
         }
     }
@@ -804,7 +804,7 @@ private fun ApprovalReasonSheetContentRejectPreview() {
                 reasons = PreviewRejectReasons,
                 reasonsLoading = false,
                 reasonsError = null,
-                onConfirm = { _, _ -> },
+                onConfirm = { _, _, _ -> },
             )
         }
     }

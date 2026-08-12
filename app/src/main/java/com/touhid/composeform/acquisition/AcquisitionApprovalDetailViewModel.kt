@@ -37,8 +37,8 @@ sealed interface AcquisitionApprovalDetailAction {
     data object OnApproveTapped : AcquisitionApprovalDetailAction
     data object OnRejectTapped : AcquisitionApprovalDetailAction
     data object OnReasonSheetDismissed : AcquisitionApprovalDetailAction
-    data class OnApproveConfirmed(val reasonIds: List<Int>, val note: String) : AcquisitionApprovalDetailAction
-    data class OnRejectConfirmed(val reasonIds: List<Int>, val note: String) : AcquisitionApprovalDetailAction
+    data class OnApproveConfirmed(val reasonIds: List<Int>, val note: String, val agreementIndex: Int) : AcquisitionApprovalDetailAction
+    data class OnRejectConfirmed(val reasonIds: List<Int>, val note: String, val agreementIndex: Int) : AcquisitionApprovalDetailAction
 }
 
 @HiltViewModel
@@ -73,12 +73,13 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
             AcquisitionApprovalDetailAction.OnReasonSheetDismissed -> closeReasonSheet()
             is AcquisitionApprovalDetailAction.OnApproveConfirmed -> {
                 // Stub: no submit endpoint exists yet - a later task wires the real approve call
-                // here using action.reasonIds/action.note.
-                Log.d(TAG, "Approve confirmed: reasonIds=${action.reasonIds}, note=${action.note}")
+                // here using action.reasonIds/action.note/action.agreementIndex. Note is never
+                // logged - it's free text that can carry personal/confidential info.
+                Log.d(TAG, "Approve confirmed: reasonCount=${action.reasonIds.size}, agreementIndex=${action.agreementIndex}")
                 closeReasonSheet()
             }
             is AcquisitionApprovalDetailAction.OnRejectConfirmed -> {
-                Log.d(TAG, "Reject confirmed: reasonIds=${action.reasonIds}, note=${action.note}")
+                Log.d(TAG, "Reject confirmed: reasonCount=${action.reasonIds.size}, agreementIndex=${action.agreementIndex}")
                 closeReasonSheet()
             }
         }
