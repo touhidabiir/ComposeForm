@@ -19,12 +19,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.touhid.composeform.acquisition.AcquisitionApprovalDetailScreen
 import com.touhid.composeform.acquisition.AcquisitionApprovalListScreen
+import com.touhid.composeform.acquisition.ReasonSheetType
 import dagger.hilt.android.AndroidEntryPoint
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
@@ -81,18 +83,32 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    composable("acquisitionApprovalList") {
+                    composable("acquisitionApprovalList") { backStackEntry ->
+                        // Set by the detail screen's onApprove/onReject just before popping back
+                        // here - the list reacts by refreshing and showing a success snackbar,
+                        // then clears it so it doesn't re-fire on a later recomposition.
+                        val decisionResult by backStackEntry.savedStateHandle
+                            .getStateFlow<String?>("acquisitionDecisionResult", null)
+                            .collectAsStateWithLifecycle()
                         AcquisitionApprovalListScreen(
                             onBack = { navController.popBackStack() },
                             onReview = { leadId -> navController.navigate("acquisitionApprovalDetail/$leadId") },
+                            decisionResult = decisionResult,
+                            onDecisionResultConsumed = { backStackEntry.savedStateHandle["acquisitionDecisionResult"] = null },
                         )
                     }
 
                     composable("acquisitionApprovalDetail/{leadId}") {
                         AcquisitionApprovalDetailScreen(
                             onBack = { navController.popBackStack() },
-                            onApprove = { navController.popBackStack() },
-                            onReject = { navController.popBackStack() },
+                            onApprove = {
+                                navController.previousBackStackEntry?.savedStateHandle?.set("acquisitionDecisionResult", ReasonSheetType.Approve.name)
+                                navController.popBackStack()
+                            },
+                            onReject = {
+                                navController.previousBackStackEntry?.savedStateHandle?.set("acquisitionDecisionResult", ReasonSheetType.Reject.name)
+                                navController.popBackStack()
+                            },
                         )
                     }
 

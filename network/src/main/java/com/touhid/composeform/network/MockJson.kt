@@ -404,7 +404,7 @@ internal object MockJson {
 
     val ACQUISITION_DECISION_SUCCESS = """
     {
-      "is_error": 0,
+      "is_error": false,
       "message": "success"
     }
     """.trimIndent()

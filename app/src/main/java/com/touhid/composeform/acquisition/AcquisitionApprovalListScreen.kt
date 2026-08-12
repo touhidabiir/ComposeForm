@@ -72,6 +72,11 @@ fun AcquisitionApprovalListScreen(
     onBack: () -> Unit,
     onReview: (String) -> Unit,
     modifier: Modifier = Modifier,
+    // Set by MainActivity's NavHost right after the detail screen's confirm button successfully
+    // submits an approve/reject decision - null the rest of the time (a plain Back tap, or first
+    // entry into this screen, sets nothing).
+    decisionResult: String? = null,
+    onDecisionResultConsumed: () -> Unit = {},
     viewModel: AcquisitionApprovalListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -80,6 +85,8 @@ fun AcquisitionApprovalListScreen(
         onBack = onBack,
         onReview = onReview,
         onAction = viewModel::onAction,
+        decisionResult = decisionResult,
+        onDecisionResultConsumed = onDecisionResultConsumed,
         modifier = modifier,
     )
 }
@@ -90,6 +97,8 @@ private fun AcquisitionApprovalListContent(
     onBack: () -> Unit,
     onReview: (String) -> Unit,
     onAction: (AcquisitionApprovalListAction) -> Unit,
+    decisionResult: String? = null,
+    onDecisionResultConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -107,6 +116,13 @@ private fun AcquisitionApprovalListContent(
         if (state.error == null) return@LaunchedEffect
         val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
         if (result == AppSnackbarResult.ActionPerformed) onAction(AcquisitionApprovalListAction.OnRetry)
+    }
+    LaunchedEffect(decisionResult) {
+        if (decisionResult == null) return@LaunchedEffect
+        val message = if (decisionResult == ReasonSheetType.Approve.name) "Lead approved successfully" else "Lead rejected successfully"
+        snackbarHostState.showMessage(message = message)
+        onAction(AcquisitionApprovalListAction.OnRefresh)
+        onDecisionResultConsumed()
     }
 
     if (state.isLoading) {

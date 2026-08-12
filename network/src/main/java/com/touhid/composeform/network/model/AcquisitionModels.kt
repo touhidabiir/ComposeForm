@@ -152,6 +152,6 @@ data class AcquisitionDecisionRequest(
 )
 
 data class AcquisitionDecisionResponse(
-    @SerializedName("is_error") val isError: Int,
+    @SerializedName("is_error") val isError: Boolean,
     val message: String,
 )
