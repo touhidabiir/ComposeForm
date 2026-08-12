@@ -40,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
@@ -477,6 +478,7 @@ private fun ScoreCircle(title: String, score: Double, maxScore: Int, ringColor: 
 }
 
 private val ScoreBandBarHeight = 16.dp
+private const val InactiveScoreBandAlpha = 0.4f
 
 @Composable
 private fun ScoreBandIndicator(ranges: List<PremiumnessScoreRange>, activeIndex: Int, modifier: Modifier = Modifier) {
@@ -506,6 +508,7 @@ private fun ScoreBandIndicator(ranges: List<PremiumnessScoreRange>, activeIndex:
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(if (isActive) ScoreBandBarHeight else 8.dp)
+                            .alpha(if (isActive) 1f else InactiveScoreBandAlpha)
                             .background(color = color, shape = RoundedCornerShape(percent = 50)),
                     )
                 }
@@ -514,7 +517,7 @@ private fun ScoreBandIndicator(ranges: List<PremiumnessScoreRange>, activeIndex:
                     text = "${range.minScore}-${range.maxScore}".toBengaliDigits(),
                     style = AppTextStyle.Label,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().alpha(if (isActive) 1f else InactiveScoreBandAlpha),
                 )
             }
         }
