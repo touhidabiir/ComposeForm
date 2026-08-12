@@ -21,8 +21,8 @@ internal class MockDataInterceptor : Interceptor {
         val json = when {
             path.endsWith("/v1/leads") -> MockJson.LEAD_DASHBOARD
             // Checked before the "/v1/acquisitions/" contains-branch below, since
-            // ".../acquisitions/{leadId}/reasons" would otherwise match that broader branch first
-            // and incorrectly return the acquisition-detail JSON.
+            // ".../acquisitions/{leadId}/reasons" and ".../decision" would otherwise match that
+            // broader branch first and incorrectly return the acquisition-detail JSON.
             path.endsWith("/reasons") -> {
                 if (request.url.queryParameter("type") == "reject") {
                     MockJson.ACQUISITION_REASONS_REJECT
@@ -30,6 +30,7 @@ internal class MockDataInterceptor : Interceptor {
                     MockJson.ACQUISITION_REASONS_ACCEPT
                 }
             }
+            path.endsWith("/decision") -> MockJson.ACQUISITION_DECISION_SUCCESS
             path.contains("/v1/acquisitions/") -> MockJson.ACQUISITION_DETAIL
             path.endsWith("/v1/acquisitions") -> MockJson.ACQUISITION_LIST
             else -> null

@@ -401,4 +401,11 @@ internal object MockJson {
       }
     }
     """.trimIndent()
+
+    val ACQUISITION_DECISION_SUCCESS = """
+    {
+      "is_error": 0,
+      "message": "success"
+    }
+    """.trimIndent()
 }

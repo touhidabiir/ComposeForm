@@ -156,6 +156,13 @@ private fun AcquisitionApprovalDetailContent(
         val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
         if (result == AppSnackbarResult.ActionPerformed) onAction(AcquisitionApprovalDetailAction.OnRetry)
     }
+    LaunchedEffect(state.submittedDecision) {
+        when (state.submittedDecision) {
+            ReasonSheetType.Approve -> onApprove()
+            ReasonSheetType.Reject -> onReject()
+            null -> Unit
+        }
+    }
 
     // Modal only when there's already content behind it (a retry) - the initial load has
     // nothing to protect yet, and blocking Back access while a slow/hung request is in flight
@@ -177,10 +184,11 @@ private fun AcquisitionApprovalDetailContent(
         bottomBar = {
             if (state.detail != null) {
                 AppBottomActionBar(cornerRadius = AppSpacing.Medium) {
-                    // onApprove/onReject (navigation-worthy, currently just pop the back stack -
-                    // see MainActivity) are intentionally not called here. Tapping either button
-                    // now opens its reason sheet instead; onApprove/onReject stay reserved for a
-                    // future task once a real submit call exists to navigate away on success.
+                    // onApprove/onReject (navigation-worthy - pops the back stack, see
+                    // MainActivity) aren't called directly from these buttons. Tapping either
+                    // opens its reason sheet first; onApprove/onReject only fire once the sheet's
+                    // own confirm button successfully submits (see the submittedDecision
+                    // LaunchedEffect above).
                     AppOutlinedButton(
                         text = "Reject",
                         onClick = { onAction(AcquisitionApprovalDetailAction.OnRejectTapped) },
@@ -221,6 +229,8 @@ private fun AcquisitionApprovalDetailContent(
             reasons = state.reasons,
             reasonsLoading = state.reasonsLoading,
             reasonsError = state.reasonsError,
+            submitting = state.submitting,
+            submitError = state.submitError,
             onDismissRequest = { onAction(AcquisitionApprovalDetailAction.OnReasonSheetDismissed) },
             onConfirm = { reasonIds, note, agreementIndex ->
                 onAction(
@@ -605,6 +615,8 @@ private fun ApprovalReasonSheet(
     reasons: List<AcquisitionReason>,
     reasonsLoading: Boolean,
     reasonsError: String?,
+    submitting: Boolean,
+    submitError: String?,
     onDismissRequest: () -> Unit,
     onConfirm: (reasonIds: List<Int>, note: String, agreementIndex: Int) -> Unit,
 ) {
@@ -614,6 +626,8 @@ private fun ApprovalReasonSheet(
             reasons = reasons,
             reasonsLoading = reasonsLoading,
             reasonsError = reasonsError,
+            submitting = submitting,
+            submitError = submitError,
             onConfirm = onConfirm,
         )
     }
@@ -625,6 +639,8 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     reasons: List<AcquisitionReason>,
     reasonsLoading: Boolean,
     reasonsError: String?,
+    submitting: Boolean,
+    submitError: String?,
     onConfirm: (reasonIds: List<Int>, note: String, agreementIndex: Int) -> Unit,
 ) {
     val copy = reasonSheetCopy(type)
@@ -686,11 +702,16 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     )
     Spacer(modifier = Modifier.height(AppSpacing.Medium))
 
+    if (submitError != null) {
+        AppText(text = submitError, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusError))
+        Spacer(modifier = Modifier.height(AppSpacing.Small))
+    }
+
     AppButton(
         text = copy.confirmLabel,
         onClick = { onConfirm(selectedReasonIds.toList(), noteText, likertIndex) },
         buttonType = copy.confirmButtonStyle,
-        enabled = selectedReasonIds.isNotEmpty(),
+        enabled = selectedReasonIds.isNotEmpty() && !submitting,
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -826,6 +847,8 @@ private fun ApprovalReasonSheetContentApprovePreview() {
                 reasons = PreviewApproveReasons,
                 reasonsLoading = false,
                 reasonsError = null,
+                submitting = false,
+                submitError = null,
                 onConfirm = { _, _, _ -> },
             )
         }
@@ -842,6 +865,8 @@ private fun ApprovalReasonSheetContentRejectPreview() {
                 reasons = PreviewRejectReasons,
                 reasonsLoading = false,
                 reasonsError = null,
+                submitting = false,
+                submitError = null,
                 onConfirm = { _, _, _ -> },
             )
         }

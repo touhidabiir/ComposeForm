@@ -140,3 +140,18 @@ data class AcquisitionReason(
     val id: Int,
     val reason: String,
 )
+
+// Request body for submitting an approve/reject decision - "type" here is "approve"/"reject",
+// a different vocabulary from AcquisitionReasonsData's "type" ("accept"/"reject" for fetching the
+// reason list) - the backend just uses different words for the two endpoints, not a typo.
+data class AcquisitionDecisionRequest(
+    val type: String,
+    @SerializedName("reason_ids") val reasonIds: List<Int>,
+    val note: String,
+    @SerializedName("score_agreement") val scoreAgreement: String,
+)
+
+data class AcquisitionDecisionResponse(
+    @SerializedName("is_error") val isError: Int,
+    val message: String,
+)

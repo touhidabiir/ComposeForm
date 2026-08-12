@@ -1,5 +1,7 @@
 package com.touhid.composeform.network.api
 
+import com.touhid.composeform.network.model.AcquisitionDecisionRequest
+import com.touhid.composeform.network.model.AcquisitionDecisionResponse
 import com.touhid.composeform.network.model.AcquisitionDetailResponse
 import com.touhid.composeform.network.model.AcquisitionListResponse
 import com.touhid.composeform.network.model.AcquisitionReasonsResponse
@@ -50,4 +52,10 @@ internal interface AppApiService {
         @Path("leadId") leadId: String,
         @Query("type") type: String,
     ): AcquisitionReasonsResponse
+
+    @POST("v1/acquisitions/{leadId}/decision")
+    suspend fun submitAcquisitionDecision(
+        @Path("leadId") leadId: String,
+        @Body request: AcquisitionDecisionRequest,
+    ): AcquisitionDecisionResponse
 }

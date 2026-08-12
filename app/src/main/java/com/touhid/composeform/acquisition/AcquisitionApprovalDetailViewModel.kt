@@ -1,6 +1,5 @@
 package com.touhid.composeform.acquisition
 
-import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,8 +15,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val TAG = "AcquisitionApprovalDetail"
-
 enum class ReasonSheetType { Approve, Reject }
 
 data class AcquisitionApprovalDetailState(
@@ -30,6 +27,12 @@ data class AcquisitionApprovalDetailState(
     val reasonsLoading: Boolean = false,
     val reasons: List<AcquisitionReason> = emptyList(),
     val reasonsError: String? = null,
+    val submitting: Boolean = false,
+    val submitError: String? = null,
+    // Set to the just-submitted type for one shot after a successful decision submit, so the
+    // screen can navigate away (via its own onApprove/onReject) - the ViewModel itself has no
+    // navigation concept, only whether the decision succeeded.
+    val submittedDecision: ReasonSheetType? = null,
 )
 
 sealed interface AcquisitionApprovalDetailAction {
@@ -61,6 +64,8 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
     // wrong (or now-closed) sheet.
     private var reasonsJob: Job? = null
 
+    private var submitJob: Job? = null
+
     init {
         load()
     }
@@ -71,26 +76,20 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
             AcquisitionApprovalDetailAction.OnApproveTapped -> openReasonSheet(ReasonSheetType.Approve)
             AcquisitionApprovalDetailAction.OnRejectTapped -> openReasonSheet(ReasonSheetType.Reject)
             AcquisitionApprovalDetailAction.OnReasonSheetDismissed -> closeReasonSheet()
-            is AcquisitionApprovalDetailAction.OnApproveConfirmed -> {
-                // Stub: no submit endpoint exists yet - a later task wires the real approve call
-                // here using action.reasonIds/action.note/action.agreementIndex. Note is never
-                // logged - it's free text that can carry personal/confidential info.
-                Log.d(TAG, "Approve confirmed: reasonCount=${action.reasonIds.size}, agreementIndex=${action.agreementIndex}")
-                closeReasonSheet()
-            }
-            is AcquisitionApprovalDetailAction.OnRejectConfirmed -> {
-                Log.d(TAG, "Reject confirmed: reasonCount=${action.reasonIds.size}, agreementIndex=${action.agreementIndex}")
-                closeReasonSheet()
-            }
+            is AcquisitionApprovalDetailAction.OnApproveConfirmed ->
+                submitDecision(ReasonSheetType.Approve, action.reasonIds, action.note, action.agreementIndex)
+            is AcquisitionApprovalDetailAction.OnRejectConfirmed ->
+                submitDecision(ReasonSheetType.Reject, action.reasonIds, action.note, action.agreementIndex)
         }
     }
 
     private fun openReasonSheet(type: ReasonSheetType) {
         reasonsJob?.cancel()
-        _state.update { it.copy(openReasonSheet = type, reasonsLoading = true, reasons = emptyList(), reasonsError = null) }
+        _state.update { it.copy(openReasonSheet = type, reasonsLoading = true, reasons = emptyList(), reasonsError = null, submitError = null) }
         reasonsJob = viewModelScope.launch {
-            // UI-facing "Approve"/"Reject" naming intentionally maps to the API's "accept"/"reject"
-            // type values - not a typo.
+            // UI-facing "Approve"/"Reject" naming intentionally maps to the reasons API's
+            // "accept"/"reject" type values - not a typo (the decision-submit API below uses a
+            // different vocabulary, "approve"/"reject", for the same UI concept).
             val apiType = when (type) {
                 ReasonSheetType.Approve -> "accept"
                 ReasonSheetType.Reject -> "reject"
@@ -104,7 +103,32 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
 
     private fun closeReasonSheet() {
         reasonsJob?.cancel()
-        _state.update { it.copy(openReasonSheet = null) }
+        submitJob?.cancel()
+        _state.update { it.copy(openReasonSheet = null, submitting = false, submitError = null) }
+    }
+
+    private fun submitDecision(type: ReasonSheetType, reasonIds: List<Int>, note: String, agreementIndex: Int) {
+        submitJob?.cancel()
+        _state.update { it.copy(submitting = true, submitError = null) }
+        submitJob = viewModelScope.launch {
+            val apiType = when (type) {
+                ReasonSheetType.Approve -> "approve"
+                ReasonSheetType.Reject -> "reject"
+            }
+            val scoreAgreement = when (agreementIndex) {
+                0 -> "strongly_disagree"
+                1 -> "disagree"
+                3 -> "agree"
+                4 -> "strongly_agree"
+                else -> "neutral"
+            }
+            when (val result = repository.submitAcquisitionDecision(leadId, apiType, reasonIds, note, scoreAgreement)) {
+                is NetworkResult.Success -> _state.update {
+                    it.copy(submitting = false, openReasonSheet = null, submittedDecision = type)
+                }
+                is NetworkResult.Failure -> _state.update { it.copy(submitting = false, submitError = result.error.message) }
+            }
+        }
     }
 
     private fun load() {
