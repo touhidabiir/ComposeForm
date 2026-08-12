@@ -83,7 +83,6 @@ import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 import com.touhid.composeform.designsystem.theme.StatusSuccess
-import com.touhid.composeform.designsystem.theme.StatusWarning
 import com.touhid.composeform.network.model.AcquisitionAudit
 import com.touhid.composeform.network.model.AcquisitionDetail
 import com.touhid.composeform.network.model.AcquisitionImages
@@ -549,10 +548,22 @@ private fun PhotoBlock(caption: String, counter: String, imageUrl: String) {
 }
 
 private val LikertLabels = listOf("তীব্র দ্বিমত", "দ্বিমত", "নিরপেক্ষ", "একমত", "তীব্র একমত")
+
+// Fixed left-to-right diverging scale (strongly disagree -> strongly agree) - always visible on
+// every step's circle, not just the selected one; index-paired with LikertLabels.
+private val LikertStepColors = listOf(
+    Color(0xFFD1544C),
+    Color(0xFFE08A3E),
+    Color(0xFFE8C547),
+    Color(0xFF5BBF8A),
+    Color(0xFF2E9E5B),
+)
+
 private val LikertCircleSize = 24.dp
 private val LikertConnectorHeight = 2.dp
 private val ReasonCardCheckIconSize = 14.dp
 private val ReasonDotSize = 8.dp
+private val ReasonCardBackgroundColor = Color(0xFFFEF3F8)
 
 private data class ReasonSheetCopy(
     val reasonHeading: String,
@@ -685,6 +696,7 @@ private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, acc
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(color = ReasonCardBackgroundColor, shape = RoundedCornerShape(AppSpacing.Small))
             .border(
                 border = BorderStroke(width = if (selected) 1.5.dp else 1.dp, color = if (selected) accentColor else StatusNeutralContainer),
                 shape = RoundedCornerShape(AppSpacing.Small),
@@ -714,7 +726,7 @@ private fun LikertScaleIndicator(selectedIndex: Int, onSelect: (Int) -> Unit, mo
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     LikertConnector(visible = index != 0)
-                    LikertStepCircle(selected = isSelected)
+                    LikertStepCircle(selected = isSelected, color = LikertStepColors[index])
                     LikertConnector(visible = index != LikertLabels.lastIndex)
                 }
                 Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
@@ -743,13 +755,14 @@ private fun RowScope.LikertConnector(visible: Boolean) {
     )
 }
 
+// Every step's circle is always filled with its own fixed color (see LikertStepColors) - only
+// the checkmark distinguishes the selected step now, there's no separate "unselected" gray state.
 @Composable
-private fun LikertStepCircle(selected: Boolean) {
+private fun LikertStepCircle(selected: Boolean, color: Color) {
     Box(
         modifier = Modifier
             .size(LikertCircleSize)
-            .background(color = if (selected) StatusWarning else Color.White, shape = CircleShape)
-            .border(width = 2.dp, color = if (selected) StatusWarning else StatusNeutralContainer, shape = CircleShape),
+            .background(color = color, shape = CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         if (selected) {
