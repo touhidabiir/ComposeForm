@@ -561,6 +561,7 @@ private val LikertStepColors = listOf(
 
 private val LikertCircleSize = 24.dp
 private val LikertConnectorHeight = 2.dp
+private const val InactiveLikertStepAlpha = 0.5f
 private val ReasonCardCheckIconSize = 14.dp
 private val ReasonDotSize = 8.dp
 private val ReasonCardBackgroundColor = Color(0xFFFEF3F8)
@@ -630,41 +631,45 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     var selectedReasonIds by remember(type) { mutableStateOf(setOf<Int>()) }
     var noteText by remember(type) { mutableStateOf("") }
 
-    AppText(text = "যাচাইকরণ", style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
-    Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
-    AppText(
-        text = "আপনি কি এই প্রিমিয়ামনেস স্কোরের সাথে একমত?",
-        style = AppTextStyle.BodyMedium,
-        override = AppTextOverride(color = StatusNeutral),
-    )
-    Spacer(modifier = Modifier.height(AppSpacing.Medium))
-    LikertScaleIndicator(selectedIndex = likertIndex, onSelect = { likertIndex = it }, modifier = Modifier.fillMaxWidth())
-    Spacer(modifier = Modifier.height(AppSpacing.Medium))
-
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
-        Box(modifier = Modifier.size(ReasonDotSize).background(color = copy.accentColor, shape = CircleShape))
-        AppText(text = copy.reasonHeading, style = AppTextStyle.TitleMedium)
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        AppText(text = "যাচাইকরণ", style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
+        Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+        AppText(
+            text = "আপনি কি এই প্রিমিয়ামনেস স্কোরের সাথে একমত?",
+            style = AppTextStyle.BodyMedium,
+            override = AppTextOverride(color = StatusNeutral),
+        )
+        Spacer(modifier = Modifier.height(AppSpacing.Medium))
+        LikertScaleIndicator(selectedIndex = likertIndex, onSelect = { likertIndex = it }, modifier = Modifier.fillMaxWidth())
     }
-    Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
-    AppText(text = copy.reasonSubtitle, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusNeutral))
     Spacer(modifier = Modifier.height(AppSpacing.Medium))
 
-    when {
-        reasonsLoading -> Box(modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium), contentAlignment = Alignment.Center) {
-            AppProgressIndicator()
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+            Box(modifier = Modifier.size(ReasonDotSize).background(color = copy.accentColor, shape = CircleShape))
+            AppText(text = copy.reasonHeading, style = AppTextStyle.TitleMedium)
         }
-        reasonsError != null -> AppText(text = reasonsError, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusError))
-        else -> Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
-            reasons.forEach { reason ->
-                val isSelected = reason.id in selectedReasonIds
-                ReasonCheckboxCard(
-                    reason = reason,
-                    selected = isSelected,
-                    accentColor = copy.accentColor,
-                    onToggle = {
-                        selectedReasonIds = if (isSelected) selectedReasonIds - reason.id else selectedReasonIds + reason.id
-                    },
-                )
+        Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+        AppText(text = copy.reasonSubtitle, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusNeutral))
+        Spacer(modifier = Modifier.height(AppSpacing.Medium))
+
+        when {
+            reasonsLoading -> Box(modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium), contentAlignment = Alignment.Center) {
+                AppProgressIndicator()
+            }
+            reasonsError != null -> AppText(text = reasonsError, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusError))
+            else -> Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                reasons.forEach { reason ->
+                    val isSelected = reason.id in selectedReasonIds
+                    ReasonCheckboxCard(
+                        reason = reason,
+                        selected = isSelected,
+                        accentColor = copy.accentColor,
+                        onToggle = {
+                            selectedReasonIds = if (isSelected) selectedReasonIds - reason.id else selectedReasonIds + reason.id
+                        },
+                    )
+                }
             }
         }
     }
@@ -690,7 +695,11 @@ private fun ColumnScope.ApprovalReasonSheetContent(
 
 // A single selectable reason row - bordered card wrapping AppCheckbox, whose border and checkbox
 // fill both pick up the sheet's accent color when selected (a plain gray border otherwise). Not a
-// :designsystem primitive - one caller here, no Material3-derived default it relies on.
+// :designsystem primitive - one caller here, no Material3-derived default it relies on. The
+// clickable sits before padding in the modifier chain so the whole card (including its padding,
+// not just the checkbox/label AppCheckbox itself renders) toggles selection - AppCheckbox keeps
+// its own click handling too (tapping directly on it still works), but since it's the innermost
+// handler for its own bounds, only one of the two ever fires per tap.
 @Composable
 private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, accentColor: Color, onToggle: () -> Unit) {
     Row(
@@ -701,7 +710,8 @@ private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, acc
                 border = BorderStroke(width = if (selected) 1.5.dp else 1.dp, color = if (selected) accentColor else StatusNeutralContainer),
                 shape = RoundedCornerShape(AppSpacing.Small),
             )
-            .padding(horizontal = AppSpacing.Small, vertical = AppSpacing.ExtraSmall),
+            .clickable(onClick = onToggle)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         AppCheckbox(checked = selected, onCheckedChange = { onToggle() }, label = reason.reason, checkedColor = accentColor)
     }
@@ -718,15 +728,17 @@ private fun LikertScaleIndicator(selectedIndex: Int, onSelect: (Int) -> Unit, mo
     Row(modifier = modifier.fillMaxWidth()) {
         LikertLabels.forEachIndexed { index, label ->
             val isSelected = index == selectedIndex
+            val stepColor = LikertStepColors[index]
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .clickable(onClick = { onSelect(index) }),
+                    .clickable(onClick = { onSelect(index) })
+                    .alpha(if (isSelected) 1f else InactiveLikertStepAlpha),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     LikertConnector(visible = index != 0)
-                    LikertStepCircle(selected = isSelected, color = LikertStepColors[index])
+                    LikertStepCircle(selected = isSelected, color = stepColor)
                     LikertConnector(visible = index != LikertLabels.lastIndex)
                 }
                 Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
@@ -734,7 +746,11 @@ private fun LikertScaleIndicator(selectedIndex: Int, onSelect: (Int) -> Unit, mo
                     text = label,
                     style = AppTextStyle.Label,
                     textAlign = TextAlign.Center,
-                    override = if (isSelected) AppTextOverride(fontWeight = FontWeight.Bold) else AppTextOverride(),
+                    override = if (isSelected) {
+                        AppTextOverride(fontWeight = FontWeight.Bold, color = stepColor)
+                    } else {
+                        AppTextOverride()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
