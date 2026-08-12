@@ -61,6 +61,7 @@ import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppCheckbox
+import com.touhid.composeform.designsystem.components.input.AppCheckboxPosition
 import com.touhid.composeform.designsystem.components.input.AppTextField
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppBottomActionBar
@@ -713,7 +714,13 @@ private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, acc
             .clickable(onClick = onToggle)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        AppCheckbox(checked = selected, onCheckedChange = { onToggle() }, label = reason.reason, checkedColor = accentColor)
+        AppCheckbox(
+            checked = selected,
+            onCheckedChange = { onToggle() },
+            label = reason.reason,
+            checkedColor = accentColor,
+            position = AppCheckboxPosition.End,
+        )
     }
 }
 

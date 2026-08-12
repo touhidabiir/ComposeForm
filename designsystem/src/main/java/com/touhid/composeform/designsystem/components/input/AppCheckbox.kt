@@ -15,6 +15,10 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.theme.AppSpacing
 
+// Which side of the label the checkbox sits on - same Start/End shape as AppIconPosition (text's
+// AppIconLabelValue), just without Top/Bottom since a checkbox+label row has no vertical variant.
+enum class AppCheckboxPosition { Start, End }
+
 @Composable
 fun AppCheckbox(
     checked: Boolean,
@@ -27,7 +31,14 @@ fun AppCheckbox(
     // token - no-op (falls back to Material3's default) when left unspecified, same convention as
     // AppButton's containerColor/contentColor.
     checkedColor: Color = Color.Unspecified,
+    position: AppCheckboxPosition = AppCheckboxPosition.Start,
 ) {
+    val checkboxColors = if (checkedColor.isSpecified) {
+        CheckboxDefaults.colors(checkedColor = checkedColor)
+    } else {
+        CheckboxDefaults.colors()
+    }
+
     Row(
         modifier = modifier.toggleable(
             value = checked,
@@ -38,16 +49,15 @@ fun AppCheckbox(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
     ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = null,
-            enabled = enabled,
-            colors = if (checkedColor.isSpecified) {
-                CheckboxDefaults.colors(checkedColor = checkedColor)
-            } else {
-                CheckboxDefaults.colors()
-            },
-        )
-        AppText(text = label, override = labelOverride)
+        if (position == AppCheckboxPosition.Start) {
+            Checkbox(checked = checked, onCheckedChange = null, enabled = enabled, colors = checkboxColors)
+            AppText(text = label, override = labelOverride)
+        } else {
+            // weight(1f) pushes the checkbox to the row's trailing edge - relies on the caller's
+            // own container giving this Row a bounded width to expand into (e.g. via its own
+            // fillMaxWidth()), same as any other weighted Row child.
+            AppText(text = label, override = labelOverride, modifier = Modifier.weight(1f))
+            Checkbox(checked = checked, onCheckedChange = null, enabled = enabled, colors = checkboxColors)
+        }
     }
 }
