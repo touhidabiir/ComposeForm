@@ -755,14 +755,15 @@ private fun RowScope.LikertConnector(visible: Boolean) {
     )
 }
 
-// Every step's circle is always filled with its own fixed color (see LikertStepColors) - only
-// the checkmark distinguishes the selected step now, there's no separate "unselected" gray state.
+// Every step keeps its own fixed color (see LikertStepColors) as an outline when unselected;
+// selecting a step fills its circle with that same color and shows a white checkmark.
 @Composable
 private fun LikertStepCircle(selected: Boolean, color: Color) {
     Box(
         modifier = Modifier
             .size(LikertCircleSize)
-            .background(color = color, shape = CircleShape),
+            .background(color = if (selected) color else Color.Transparent, shape = CircleShape)
+            .border(width = 2.dp, color = color, shape = CircleShape),
         contentAlignment = Alignment.Center,
     ) {
         if (selected) {
