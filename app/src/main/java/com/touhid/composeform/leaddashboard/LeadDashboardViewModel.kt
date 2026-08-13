@@ -111,12 +111,15 @@ class LeadDashboardViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             // Reset pagination state as the request starts, not just on success - otherwise a
-            // failed reload leaves a stale hasMore=false/page from the previous filter behind,
-            // which makes a later Retry route into loadNextPage() and no-op. leads is cleared
+            // failed reload leaves a stale page from the previous filter behind. leads is cleared
             // too (unless this is a refresh) - otherwise a failed filter switch or search leaves
             // the previous filter's results on screen under the new filter/search state, with
             // only the error snackbar hinting anything went wrong. A refresh keeps the old list
-            // visible while it reloads, which is the point of pull-to-refresh.
+            // visible while it reloads, which is the point of pull-to-refresh. hasMore resets to
+            // false, not true - we don't know yet whether this filter/search has a next page, and
+            // if this request fails while old items are still on screen (the refresh case), a
+            // stale hasMore=true would let a scroll-triggered OnLoadNextPage fetch a "next page"
+            // for a page 1 that never actually loaded.
             _state.update {
                 it.copy(
                     isLoading = !isRefresh,
@@ -125,7 +128,7 @@ class LeadDashboardViewModel @Inject constructor(
                     leads = if (isRefresh) it.leads else emptyList(),
                     error = null,
                     page = 1,
-                    hasMore = true,
+                    hasMore = false,
                 )
             }
             val status = if (search != null) null else filter.apiValue
