@@ -205,7 +205,7 @@ private fun AcquisitionApprovalListContent(
                     // empty state underneath it while that first load is still in flight. Unlike
                     // Lead Dashboard, this screen uses the same message for search and non-search.
                     if (!state.isLoading) {
-                        ListEmptyState(message = "কোনো লিড পাওয়া যায়নি")
+                        ListEmptyState(message = "কোনো লিড পাওয়া যায়নি", modifier = Modifier.align(Alignment.Center))
                     }
                 } else {
                     LazyColumn(

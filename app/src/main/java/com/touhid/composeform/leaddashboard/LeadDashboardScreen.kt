@@ -234,6 +234,7 @@ private fun LeadDashboardContent(
                             } else {
                                 "এই স্ট্যাটাসে কোনো লিড পাওয়া যায়নি"
                             },
+                            modifier = Modifier.align(Alignment.Center),
                         )
                     }
                 } else {
