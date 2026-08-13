@@ -124,6 +124,8 @@ private fun LeadDashboardContent(
     onSubmitEkyc: (LeadListItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(Unit) { onAction(LeadDashboardAction.OnScreenStart) }
+
     val listState = rememberLazyListState()
     listState.OnEndOfListReached { onAction(LeadDashboardAction.OnLoadNextPage) }
 

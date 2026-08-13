@@ -39,6 +39,10 @@ data class LeadDashboardState(
 )
 
 sealed interface LeadDashboardAction {
+    // Dispatched once from LaunchedEffect(Unit) in LeadDashboardScreen - kept as an explicit,
+    // intent-driven trigger rather than an init{} side effect so construction stays cheap and
+    // ViewModel tests can build the ViewModel without a load firing automatically.
+    data object OnScreenStart : LeadDashboardAction
     data class OnFilterSelected(val filter: LeadStatusFilter) : LeadDashboardAction
     data class OnSearchQueryChanged(val query: String) : LeadDashboardAction
     data object OnSearchSubmitted : LeadDashboardAction
@@ -65,12 +69,17 @@ class LeadDashboardViewModel @Inject constructor(
     // resolves - so Retry needs its own record of which kind of load actually failed.
     private var retryLoadsNextPage = false
 
-    init {
-        loadFirstPage()
-    }
+    // Guards OnScreenStart so a re-dispatch (e.g. LaunchedEffect(Unit) re-running after process
+    // death restores the same ViewModel instance) doesn't fire a second first-page load.
+    private var hasLoaded = false
 
     fun onAction(action: LeadDashboardAction) {
         when (action) {
+            LeadDashboardAction.OnScreenStart -> {
+                if (hasLoaded) return
+                hasLoaded = true
+                loadFirstPage()
+            }
             is LeadDashboardAction.OnFilterSelected -> {
                 if (action.filter == _state.value.selectedFilter) return
                 _state.update { it.copy(selectedFilter = action.filter) }
