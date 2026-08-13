@@ -42,6 +42,10 @@ sealed interface AcquisitionApprovalDetailAction {
     data object OnReasonSheetDismissed : AcquisitionApprovalDetailAction
     data class OnApproveConfirmed(val reasonIds: List<Int>, val note: String, val agreementIndex: Int) : AcquisitionApprovalDetailAction
     data class OnRejectConfirmed(val reasonIds: List<Int>, val note: String, val agreementIndex: Int) : AcquisitionApprovalDetailAction
+    // Dispatched by the screen right after it acts on a successful submittedDecision (navigating
+    // away via onApprove/onReject) - clears the one-shot signal so a config-change-driven
+    // recomposition (the ViewModel survives, the Compose slot table doesn't) can't re-fire it.
+    data object OnDecisionHandled : AcquisitionApprovalDetailAction
 }
 
 @HiltViewModel
@@ -80,6 +84,7 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
                 submitDecision(ReasonSheetType.Approve, action.reasonIds, action.note, action.agreementIndex)
             is AcquisitionApprovalDetailAction.OnRejectConfirmed ->
                 submitDecision(ReasonSheetType.Reject, action.reasonIds, action.note, action.agreementIndex)
+            AcquisitionApprovalDetailAction.OnDecisionHandled -> _state.update { it.copy(submittedDecision = null) }
         }
     }
 

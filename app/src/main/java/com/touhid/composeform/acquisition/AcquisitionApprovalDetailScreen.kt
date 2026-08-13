@@ -160,8 +160,11 @@ private fun AcquisitionApprovalDetailContent(
         when (state.submittedDecision) {
             ReasonSheetType.Approve -> onApprove()
             ReasonSheetType.Reject -> onReject()
-            null -> Unit
+            null -> return@LaunchedEffect
         }
+        // Marks the one-shot signal handled so a later recomposition with the same ViewModel
+        // instance (e.g. after a configuration change) can't re-invoke onApprove/onReject.
+        onAction(AcquisitionApprovalDetailAction.OnDecisionHandled)
     }
 
     // Modal only when there's already content behind it (a retry) - the initial load has
