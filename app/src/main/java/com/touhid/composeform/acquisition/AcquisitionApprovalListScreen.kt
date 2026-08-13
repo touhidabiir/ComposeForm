@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +60,7 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.network.model.AcquisitionListItem
 import com.touhid.composeform.network.model.LeadCloser
+import kotlinx.coroutines.launch
 
 private val RowIconSize = 16.dp
 private val CopyIconSize = 14.dp
@@ -72,6 +74,11 @@ fun AcquisitionApprovalListScreen(
     onBack: () -> Unit,
     onReview: (String) -> Unit,
     modifier: Modifier = Modifier,
+    // Set by MainActivity's NavHost right after the detail screen's confirm button successfully
+    // submits an approve/reject decision - null the rest of the time (a plain Back tap, or first
+    // entry into this screen, sets nothing).
+    decisionResult: String? = null,
+    onDecisionResultConsumed: () -> Unit = {},
     viewModel: AcquisitionApprovalListViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -80,6 +87,8 @@ fun AcquisitionApprovalListScreen(
         onBack = onBack,
         onReview = onReview,
         onAction = viewModel::onAction,
+        decisionResult = decisionResult,
+        onDecisionResultConsumed = onDecisionResultConsumed,
         modifier = modifier,
     )
 }
@@ -90,6 +99,8 @@ private fun AcquisitionApprovalListContent(
     onBack: () -> Unit,
     onReview: (String) -> Unit,
     onAction: (AcquisitionApprovalListAction) -> Unit,
+    decisionResult: String? = null,
+    onDecisionResultConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val listState = rememberLazyListState()
@@ -107,6 +118,20 @@ private fun AcquisitionApprovalListContent(
         if (state.error == null) return@LaunchedEffect
         val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
         if (result == AppSnackbarResult.ActionPerformed) onAction(AcquisitionApprovalListAction.OnRetry)
+    }
+    // Tied to the composable's own lifecycle, not decisionResult - showMessage() suspends until
+    // the snackbar is dismissed, and by then decisionResult has already flipped back to null
+    // (onDecisionResultConsumed below), which would cancel a LaunchedEffect(decisionResult)-scoped
+    // coroutine mid-display. Launching it here instead lets it keep running independently.
+    val coroutineScope = rememberCoroutineScope()
+    LaunchedEffect(decisionResult) {
+        if (decisionResult == null) return@LaunchedEffect
+        // Refresh and consume immediately - not after the snackbar dismisses - so the stale,
+        // already-decided list item can't be tapped again while the snackbar is still showing.
+        onAction(AcquisitionApprovalListAction.OnRefresh)
+        onDecisionResultConsumed()
+        val message = if (decisionResult == ReasonSheetType.Approve.name) "Lead approved successfully" else "Lead rejected successfully"
+        coroutineScope.launch { snackbarHostState.showMessage(message = message) }
     }
 
     if (state.isLoading) {

@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
@@ -57,7 +58,21 @@ private fun InputPreview() {
                     isError = true,
                     supportingText = "Required",
                 )
+                AppTextField(
+                    value = "",
+                    onValueChange = {},
+                    placeholder = "Flat until focused, capped at 20 chars",
+                    flatWhenUnfocused = true,
+                    maxLength = 20,
+                )
                 AppCheckbox(checked = true, onCheckedChange = {}, label = "Subscribe to updates")
+                AppCheckbox(
+                    checked = true,
+                    onCheckedChange = {},
+                    label = "Checkbox trailing the label",
+                    position = AppCheckboxPosition.End,
+                    modifier = Modifier.fillMaxWidth(),
+                )
                 AppRadioButton(selected = true, onClick = {}, label = "Option A")
                 AppRadioButton(selected = false, onClick = {}, label = "Option B")
                 AppRadioCheckCircle(selected = true, onClick = {}, label = "Option A")

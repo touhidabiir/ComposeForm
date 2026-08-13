@@ -364,4 +364,48 @@ internal object MockJson {
       }
     }
     """.trimIndent()
+
+    // Placeholder copy - real reason text (for both accept and reject) should be confirmed
+    // against the actual backend once it exists; the accept list mirrors the sample payload
+    // provided for this endpoint, the reject list is authored in a similar register/length.
+    val ACQUISITION_REASONS_ACCEPT = """
+    {
+      "is_error": 0,
+      "message": "success",
+      "data": {
+        "type": "accept",
+        "reasons": [
+          {"id": 3, "reason": "লেনদেন নিয়মিত করে"},
+          {"id": 4, "reason": "ব্যবসা ভালো চলছে"},
+          {"id": 5, "reason": "দোকান সবসময় খোলা থাকে"},
+          {"id": 6, "reason": "আগের ঋণ ঠিকমতো শোধ করেছে"},
+          {"id": 7, "reason": "পেমেন্ট নিতে আগ্রহী"}
+        ]
+      }
+    }
+    """.trimIndent()
+
+    val ACQUISITION_REASONS_REJECT = """
+    {
+      "is_error": 0,
+      "message": "success",
+      "data": {
+        "type": "reject",
+        "reasons": [
+          {"id": 8, "reason": "প্রয়োজনীয় কাগজপত্র অসম্পূর্ণ"},
+          {"id": 9, "reason": "ঠিকানা যাচাই করা যায়নি"},
+          {"id": 10, "reason": "প্রিমিয়ামনেস স্কোর প্রত্যাশিত মানের কম"},
+          {"id": 11, "reason": "যোগাযোগের তথ্যে অসামঞ্জস্য"},
+          {"id": 12, "reason": "একই ওয়ালেট নম্বর ইতিমধ্যে নিবন্ধিত"}
+        ]
+      }
+    }
+    """.trimIndent()
+
+    val ACQUISITION_DECISION_SUCCESS = """
+    {
+      "is_error": false,
+      "message": "success"
+    }
+    """.trimIndent()
 }

@@ -3,8 +3,10 @@ package com.touhid.composeform.network.repository
 import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.api.AppApiService
 import com.touhid.composeform.network.auth.TokenProvider
+import com.touhid.composeform.network.model.AcquisitionDecisionRequest
 import com.touhid.composeform.network.model.AcquisitionDetail
 import com.touhid.composeform.network.model.AcquisitionListPage
+import com.touhid.composeform.network.model.AcquisitionReason
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
 import com.touhid.composeform.network.model.LeadDashboardPage
@@ -47,4 +49,21 @@ class AppRepository @Inject internal constructor(
 
     suspend fun getAcquisitionDetail(leadId: String): NetworkResult<AcquisitionDetail> =
         safeApiCall { apiService.getAcquisitionDetail(leadId).data }
+
+    suspend fun getAcquisitionReasons(leadId: String, type: String): NetworkResult<List<AcquisitionReason>> =
+        safeApiCall { apiService.getAcquisitionReasons(leadId, type).data.reasons }
+
+    suspend fun submitAcquisitionDecision(
+        leadId: String,
+        type: String,
+        reasonIds: List<Int>,
+        note: String,
+        scoreAgreement: String,
+    ): NetworkResult<Unit> {
+        val request = AcquisitionDecisionRequest(type = type, reasonIds = reasonIds, note = note, scoreAgreement = scoreAgreement)
+        return when (val result = safeApiCall { apiService.submitAcquisitionDecision(leadId, request) }) {
+            is NetworkResult.Success -> NetworkResult.Success(Unit)
+            is NetworkResult.Failure -> result
+        }
+    }
 }
