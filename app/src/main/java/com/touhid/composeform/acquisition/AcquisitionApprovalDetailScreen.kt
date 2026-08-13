@@ -53,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.touhid.composeform.ComposeFormAppTheme
+import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
@@ -218,11 +219,9 @@ private fun AcquisitionApprovalDetailContent(
                 AppProgressIndicator()
             }
         } else {
-            AppText(
-                text = "কোনো তথ্য পাওয়া যায়নি",
-                modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
-                textAlign = TextAlign.Center,
-            )
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                ListEmptyState(message = "কোনো তথ্য পাওয়া যায়নি")
+            }
         }
     }
 
@@ -664,31 +663,37 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     }
     Spacer(modifier = Modifier.height(AppSpacing.Medium))
 
-    AppCard(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
-            Box(modifier = Modifier.size(ReasonDotSize).background(color = copy.accentColor, shape = CircleShape))
-            AppText(text = copy.reasonHeading, style = AppTextStyle.TitleMedium)
-        }
-        Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
-        AppText(text = copy.reasonSubtitle, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusNeutral))
-        Spacer(modifier = Modifier.height(AppSpacing.Medium))
-
-        when {
-            reasonsLoading -> Box(modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium), contentAlignment = Alignment.Center) {
-                AppProgressIndicator()
+    // The reason-list card itself is hidden entirely on a fetch error - there's no list to
+    // frame, so the card's heading/subtitle chrome would just be dressing around an error line.
+    if (reasonsError != null) {
+        AppText(text = reasonsError, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusError))
+    } else {
+        AppCard(modifier = Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                Box(modifier = Modifier.size(ReasonDotSize).background(color = copy.accentColor, shape = CircleShape))
+                AppText(text = copy.reasonHeading, style = AppTextStyle.TitleMedium)
             }
-            reasonsError != null -> AppText(text = reasonsError, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusError))
-            else -> Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
-                reasons.forEach { reason ->
-                    val isSelected = reason.id in selectedReasonIds
-                    ReasonCheckboxCard(
-                        reason = reason,
-                        selected = isSelected,
-                        accentColor = copy.accentColor,
-                        onToggle = {
-                            selectedReasonIds = if (isSelected) selectedReasonIds - reason.id else selectedReasonIds + reason.id
-                        },
-                    )
+            Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+            AppText(text = copy.reasonSubtitle, style = AppTextStyle.BodyMedium, override = AppTextOverride(color = StatusNeutral))
+            Spacer(modifier = Modifier.height(AppSpacing.Medium))
+
+            if (reasonsLoading) {
+                Box(modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium), contentAlignment = Alignment.Center) {
+                    AppProgressIndicator()
+                }
+            } else {
+                Column(verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                    reasons.forEach { reason ->
+                        val isSelected = reason.id in selectedReasonIds
+                        ReasonCheckboxCard(
+                            reason = reason,
+                            selected = isSelected,
+                            accentColor = copy.accentColor,
+                            onToggle = {
+                                selectedReasonIds = if (isSelected) selectedReasonIds - reason.id else selectedReasonIds + reason.id
+                            },
+                        )
+                    }
                 }
             }
         }
