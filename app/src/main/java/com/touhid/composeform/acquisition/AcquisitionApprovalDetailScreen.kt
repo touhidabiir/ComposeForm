@@ -53,6 +53,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.touhid.composeform.ComposeFormAppTheme
+import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
@@ -218,11 +219,9 @@ private fun AcquisitionApprovalDetailContent(
                 AppProgressIndicator()
             }
         } else {
-            AppText(
-                text = "কোনো তথ্য পাওয়া যায়নি",
-                modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
-                textAlign = TextAlign.Center,
-            )
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                ListEmptyState(message = "কোনো তথ্য পাওয়া যায়নি")
+            }
         }
     }
 

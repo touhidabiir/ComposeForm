@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
+import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.OnEndOfListReached
 import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
@@ -201,13 +202,10 @@ private fun AcquisitionApprovalListContent(
             ) {
                 if (state.items.isEmpty()) {
                     // isLoading already surfaces its own AppProgressDialog - avoid flashing the
-                    // empty-state text underneath it while that first load is still in flight.
+                    // empty state underneath it while that first load is still in flight. Unlike
+                    // Lead Dashboard, this screen uses the same message for search and non-search.
                     if (!state.isLoading) {
-                        AppText(
-                            text = "কোনো ফলাফল পাওয়া যায়নি",
-                            modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
-                            textAlign = TextAlign.Center,
-                        )
+                        ListEmptyState(message = "কোনো লিড পাওয়া যায়নি", modifier = Modifier.align(Alignment.Center))
                     }
                 } else {
                     LazyColumn(
