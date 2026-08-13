@@ -31,7 +31,7 @@ data class LeadDashboardState(
     // this to null and restores the normal status-filtered browsing.
     val activeSearchQuery: String? = null,
     val page: Int = 1,
-    val hasMore: Boolean = true,
+    val hasMore: Boolean = false,
     val error: String? = null,
     // Bumped on every successful first-page load (filter switch, search, refresh, retry) - the
     // screen scrolls the list back to the top whenever this changes, but never on a page append.
