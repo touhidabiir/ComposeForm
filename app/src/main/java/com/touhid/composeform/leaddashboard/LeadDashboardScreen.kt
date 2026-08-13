@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.ComposeFormAppTheme
+import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.OnEndOfListReached
 import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppButton
@@ -223,12 +224,16 @@ private fun LeadDashboardContent(
             ) {
                 if (state.leads.isEmpty()) {
                     // isLoading already surfaces its own AppProgressDialog - avoid flashing the
-                    // empty-state text underneath it while that first load is still in flight.
+                    // empty state underneath it while that first load is still in flight.
                     if (!state.isLoading) {
-                        AppText(
-                            text = "কোনো লিড পাওয়া যায়নি",
-                            modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
-                            textAlign = TextAlign.Center,
+                        // Same illustration either way - only the message distinguishes "this
+                        // status has nothing" from "this search matched nothing".
+                        ListEmptyState(
+                            message = if (state.activeSearchQuery != null) {
+                                "কোনো লিড পাওয়া যায়নি"
+                            } else {
+                                "এই স্ট্যাটাসে কোনো লিড পাওয়া যায়নি"
+                            },
                         )
                     }
                 } else {
