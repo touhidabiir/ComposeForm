@@ -41,6 +41,9 @@ class AppRepository @Inject internal constructor(
     suspend fun getAdminDetails(id: String): NetworkResult<AdminDetails> =
         safeApiCall { apiService.getAdminDetails(id) }
 
+    suspend fun getSpecificForm(): NetworkResult<String> =
+        safeApiCall { apiService.getSpecificForm() }
+
     suspend fun getLeadDashboard(status: String?, search: String?, pageNo: Int): NetworkResult<LeadDashboardPage> =
         safeApiCall { apiService.getLeadDashboard(status, search, pageNo).data }
 

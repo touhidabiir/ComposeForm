@@ -31,6 +31,13 @@ internal interface AppApiService {
     @GET("v1/admin/details/{id}")
     suspend fun getAdminDetails(@Path("id") id: String): AdminDetails
 
+    // Returned as a raw String (served by ScalarsConverterFactory, which NetworkModule registers
+    // ahead of Gson) rather than a Gson-parsed model - the body is a form schema that
+    // :formbuilder's parseSpecificFormSchema already knows how to turn into a FormSchema from raw
+    // JSON, so there's no need for a second, duplicate model of the same shape in :network.
+    @GET("v1/forms/specific")
+    suspend fun getSpecificForm(): String
+
     @GET("v1/leads")
     suspend fun getLeadDashboard(
         @Query("status") status: String?,

@@ -408,4 +408,133 @@ internal object MockJson {
       "message": "success"
     }
     """.trimIndent()
+
+    // Same "questions" shape as :formbuilder's SPECIFIC_JSON_FORM preview fixture (parsed via
+    // parseSpecificFormSchema, not parseFormSchema) - kept as a verbatim copy here since :network
+    // can't depend on :formbuilder to reuse that constant directly.
+    val SPECIFIC_FORM = """
+    {
+      "questions": [
+        {
+          "key": "q1",
+          "question": "দোকানটি কি মার্কেটের ভিতরে অবস্থিত?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": false,
+          "answers": [
+            {"key": "yes", "value": "হ্যাঁ"},
+            {"key": "no", "value": "না"}
+          ]
+        },
+        {
+          "key": "q2",
+          "question": "মার্কেট বা দোকানটি কি শীতাতপ নিয়ন্ত্রিত?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": false,
+          "answers": [
+            {"key": "yes", "value": "হ্যাঁ"},
+            {"key": "no", "value": "না"}
+          ]
+        },
+        {
+          "key": "q3",
+          "question": "দোকানটির প্রবেশ পথে দরজা কি ধরণের?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": false,
+          "answers": [
+            {"key": "glass", "value": "গ্লাস"},
+            {"key": "wood", "value": "কাঠ"},
+            {"key": "thai_glass", "value": "থাই গ্লাস"},
+            {"key": "none", "value": "কোনো দরজা নেই"}
+          ]
+        },
+        {
+          "key": "q4",
+          "question": "দোকানের বাহিরে কি কোন আলোকিত সাইন বোর্ড আছে?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": false,
+          "answers": [
+            {"key": "yes", "value": "হ্যাঁ", "show": ["q5"]},
+            {"key": "no", "value": "না", "hide": ["q5"]}
+          ]
+        },
+        {
+          "key": "q5",
+          "question": "দোকানটির আলোকিত সাইন বোর্ড কি পরিষ্কার পরিছন্ন?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": true,
+          "depends_on": {"question": "q4", "answer": "yes"},
+          "answers": [
+            {"key": "yes", "value": "হ্যাঁ"},
+            {"key": "no", "value": "না"}
+          ]
+        },
+        {
+          "key": "q6",
+          "question": "দোকানটির ভেতরে কয়টি টিউব লাইট আছে?",
+          "type": "single_choice",
+          "orientation": "vertical",
+          "is_dependent": false,
+          "answers": [
+            {"key": "none", "value": "কোনো টিউবলাইট নেই"},
+            {"key": "1_to_3", "value": "১ থেকে ৩"},
+            {"key": "4_to_6", "value": "৪ থেকে ৬"},
+            {"key": "7_to_10", "value": "৭ থেকে ১০"},
+            {"key": "more_than_10", "value": "১০ এর অধিক"}
+          ]
+        },
+        {
+          "key": "q7",
+          "question": "দোকানটির ভেতরে কয়টি স্পট লাইট আছে?",
+          "type": "single_choice",
+          "orientation": "vertical",
+          "is_dependent": false,
+          "answers": [
+            {"key": "none", "value": "কোনো স্পটলাইট নেই"},
+            {"key": "1_to_5", "value": "১ থেকে ৫"},
+            {"key": "6_to_10", "value": "৬ থেকে ১০"},
+            {"key": "11_to_15", "value": "১১ থেকে ১৫"},
+            {"key": "more_than_15", "value": "১৫ এর অধিক"}
+          ]
+        },
+        {
+          "key": "q8",
+          "question": "দোকানে আলাদা ক্যাশ কাউন্টার আছে?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": false,
+          "answers": [
+            {"key": "yes", "value": "হ্যাঁ"},
+            {"key": "no", "value": "না"}
+          ]
+        },
+        {
+          "key": "q9",
+          "question": "দোকানটি কি কার্ডের মাধ্যমে পেমেন্ট গ্রহণ করে?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": false,
+          "answers": [
+            {"key": "yes", "value": "হ্যাঁ"},
+            {"key": "no", "value": "না"}
+          ]
+        },
+        {
+          "key": "q10",
+          "question": "দোকানটি কি প্রিন্টেড বিল প্রদান করে?",
+          "type": "single_choice",
+          "orientation": "horizontal",
+          "is_dependent": false,
+          "answers": [
+            {"key": "yes", "value": "হ্যাঁ"},
+            {"key": "no", "value": "না"}
+          ]
+        }
+      ]
+    }
+    """.trimIndent()
 }

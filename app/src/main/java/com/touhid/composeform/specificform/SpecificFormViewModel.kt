@@ -1,0 +1,62 @@
+package com.touhid.composeform.specificform
+
+import android.util.Log
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.touhid.composeform.formbuilder.parseSpecificFormSchema
+import com.touhid.composeform.formbuilder.schema.FormField
+import com.touhid.composeform.formbuilder.schema.FormSchema
+import com.touhid.composeform.formbuilder.schema.FormValue
+import com.touhid.composeform.formbuilder.singleAnswerValue
+import com.touhid.composeform.network.NetworkResult
+import com.touhid.composeform.network.repository.AppRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+sealed interface SpecificFormUiState {
+    data object Loading : SpecificFormUiState
+    data class Error(val message: String) : SpecificFormUiState
+    data class Ready(val schema: FormSchema) : SpecificFormUiState
+}
+
+@HiltViewModel
+class SpecificFormViewModel @Inject constructor(
+    private val repository: AppRepository,
+) : ViewModel() {
+
+    private val _state = MutableStateFlow<SpecificFormUiState>(SpecificFormUiState.Loading)
+    val state = _state.asStateFlow()
+
+    init {
+        load()
+    }
+
+    fun retry() = load()
+
+    private fun load() {
+        _state.update { SpecificFormUiState.Loading }
+        viewModelScope.launch {
+            when (val result = repository.getSpecificForm()) {
+                is NetworkResult.Success -> {
+                    val parsed = parseSpecificFormSchema(result.data)
+                    val schema = parsed.copy(fields = parsed.fields + FormField.Submit(key = "submit", label = "Submit"))
+                    _state.update { SpecificFormUiState.Ready(schema) }
+                }
+                is NetworkResult.Failure -> _state.update { SpecificFormUiState.Error(result.error.message) }
+            }
+        }
+    }
+
+    fun onSubmit(values: Map<String, FormValue>) {
+        val schema = (_state.value as? SpecificFormUiState.Ready)?.schema ?: return
+        Log.d(TAG, "Submitted answer: ${schema.singleAnswerValue(values)}")
+    }
+
+    private companion object {
+        const val TAG = "SpecificForm"
+    }
+}
