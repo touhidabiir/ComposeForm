@@ -36,6 +36,10 @@ data class AcquisitionApprovalDetailState(
 )
 
 sealed interface AcquisitionApprovalDetailAction {
+    // Dispatched once from LaunchedEffect(Unit) in AcquisitionApprovalDetailScreen - kept as an
+    // explicit, intent-driven trigger rather than an init{} side effect so construction stays
+    // cheap and ViewModel tests can build the ViewModel without a load firing automatically.
+    data object OnScreenStart : AcquisitionApprovalDetailAction
     data object OnRetry : AcquisitionApprovalDetailAction
     data object OnApproveTapped : AcquisitionApprovalDetailAction
     data object OnRejectTapped : AcquisitionApprovalDetailAction
@@ -70,12 +74,17 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
 
     private var submitJob: Job? = null
 
-    init {
-        load()
-    }
+    // Guards OnScreenStart so a re-dispatch (e.g. LaunchedEffect(Unit) re-running after process
+    // death restores the same ViewModel instance) doesn't fire a second load.
+    private var hasLoaded = false
 
     fun onAction(action: AcquisitionApprovalDetailAction) {
         when (action) {
+            AcquisitionApprovalDetailAction.OnScreenStart -> {
+                if (hasLoaded) return
+                hasLoaded = true
+                load()
+            }
             AcquisitionApprovalDetailAction.OnRetry -> load()
             AcquisitionApprovalDetailAction.OnApproveTapped -> openReasonSheet(ReasonSheetType.Approve)
             AcquisitionApprovalDetailAction.OnRejectTapped -> openReasonSheet(ReasonSheetType.Reject)
