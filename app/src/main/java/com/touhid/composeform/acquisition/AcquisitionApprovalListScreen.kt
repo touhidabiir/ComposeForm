@@ -104,6 +104,8 @@ private fun AcquisitionApprovalListContent(
     onDecisionResultConsumed: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(Unit) { onAction(AcquisitionApprovalListAction.OnScreenStart) }
+
     val listState = rememberLazyListState()
     listState.OnEndOfListReached { onAction(AcquisitionApprovalListAction.OnLoadNextPage) }
 
