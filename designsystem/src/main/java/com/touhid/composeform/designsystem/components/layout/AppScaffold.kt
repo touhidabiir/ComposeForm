@@ -16,7 +16,9 @@ import com.touhid.composeform.designsystem.components.surface.AppTopBarScrollBeh
 @Composable
 fun AppScaffold(
     modifier: Modifier = Modifier.fillMaxSize(),
-    topBar: @Composable (AppTopBarScrollBehavior) -> Unit = {},
+    // Null (the default) hides the app bar entirely - callers that don't need one shouldn't have
+    // to pass a no-op lambda to get that.
+    topBar: (@Composable (AppTopBarScrollBehavior) -> Unit)? = null,
     bottomBar: @Composable () -> Unit = {},
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
@@ -24,7 +26,7 @@ fun AppScaffold(
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = { topBar(AppTopBarScrollBehavior(scrollBehavior)) },
+        topBar = { topBar?.invoke(AppTopBarScrollBehavior(scrollBehavior)) },
         bottomBar = bottomBar,
         snackbarHost = snackbarHost,
     ) { innerPadding ->

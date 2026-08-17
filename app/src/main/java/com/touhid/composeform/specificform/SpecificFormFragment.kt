@@ -4,11 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.Fragment
@@ -43,24 +47,26 @@ class SpecificFormFragment : Fragment() {
                     AppScaffold(topBar = { scrollBehavior ->
                         AppTopBar(title = title, scrollBehavior = scrollBehavior)
                     }) {
-                        when (val current = state) {
-                            is SpecificFormUiState.Loading -> {
-                                AppText(text = "Loading…", modifier = Modifier.padding(16.dp))
-                            }
-
-                            is SpecificFormUiState.Error -> {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    AppText(text = current.message)
-                                    AppButton(text = "Retry", onClick = viewModel::retry)
+                        Box(modifier = Modifier.fillMaxSize().background(Color.White)) {
+                            when (val current = state) {
+                                is SpecificFormUiState.Loading -> {
+                                    AppText(text = "Loading…", modifier = Modifier.padding(16.dp))
                                 }
-                            }
 
-                            is SpecificFormUiState.Ready -> {
-                                FormRenderer(
-                                    schema = current.schema,
-                                    modifier = Modifier.padding(16.dp),
-                                    onSubmit = viewModel::onSubmit,
-                                )
+                                is SpecificFormUiState.Error -> {
+                                    Column(modifier = Modifier.padding(16.dp)) {
+                                        AppText(text = current.message)
+                                        AppButton(text = "Retry", onClick = viewModel::retry)
+                                    }
+                                }
+
+                                is SpecificFormUiState.Ready -> {
+                                    FormRenderer(
+                                        schema = current.schema,
+                                        modifier = Modifier.padding(16.dp),
+                                        onSubmit = viewModel::onSubmit,
+                                    )
+                                }
                             }
                         }
                     }
