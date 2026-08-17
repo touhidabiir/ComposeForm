@@ -29,7 +29,7 @@ data class AcquisitionApprovalListState(
     // to null and restores the normal unfiltered list.
     val activeSearchQuery: String? = null,
     val page: Int = 1,
-    val hasMore: Boolean = true,
+    val hasMore: Boolean = false,
     val error: String? = null,
     // Bumped on every successful first-page load (search, refresh, retry) - the screen scrolls
     // the list back to the top whenever this changes, but never on a page append.
@@ -37,6 +37,10 @@ data class AcquisitionApprovalListState(
 )
 
 sealed interface AcquisitionApprovalListAction {
+    // Dispatched once from LaunchedEffect(Unit) in AcquisitionApprovalListScreen - kept as an
+    // explicit, intent-driven trigger rather than an init{} side effect so construction stays
+    // cheap and ViewModel tests can build the ViewModel without a load firing automatically.
+    data object OnScreenStart : AcquisitionApprovalListAction
     data class OnSearchQueryChanged(val query: String) : AcquisitionApprovalListAction
     data object OnSearchSubmitted : AcquisitionApprovalListAction
     data object OnRetry : AcquisitionApprovalListAction
@@ -62,12 +66,17 @@ class AcquisitionApprovalListViewModel @Inject constructor(
     // Retry needs its own record of which kind of load actually failed.
     private var retryLoadsNextPage = false
 
-    init {
-        loadFirstPage()
-    }
+    // Guards OnScreenStart so a re-dispatch (e.g. LaunchedEffect(Unit) re-running after process
+    // death restores the same ViewModel instance) doesn't fire a second first-page load.
+    private var hasLoaded = false
 
     fun onAction(action: AcquisitionApprovalListAction) {
         when (action) {
+            AcquisitionApprovalListAction.OnScreenStart -> {
+                if (hasLoaded) return
+                hasLoaded = true
+                loadFirstPage()
+            }
             is AcquisitionApprovalListAction.OnSearchQueryChanged -> {
                 _state.update { it.copy(searchQuery = action.query) }
                 if (action.query.isBlank() && _state.value.activeSearchQuery != null) {
@@ -93,11 +102,14 @@ class AcquisitionApprovalListViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             // Reset pagination state as the request starts, not just on success - otherwise a
-            // failed reload leaves a stale hasMore=false/page from the previous search behind,
-            // which makes a later Retry route into loadNextPage() and no-op. items is cleared
+            // failed reload leaves a stale page from the previous search behind. items is cleared
             // too (unless this is a refresh) - otherwise a failed search leaves the previous
             // search's results on screen with only the error snackbar hinting anything went
-            // wrong. A refresh keeps the old list visible while it reloads.
+            // wrong. A refresh keeps the old list visible while it reloads. hasMore resets to
+            // false, not true - we don't know yet whether this search has a next page, and if
+            // this request fails while old items are still on screen (the refresh case), a stale
+            // hasMore=true would let a scroll-triggered OnLoadNextPage fetch a "next page" for a
+            // page 1 that never actually loaded.
             _state.update {
                 it.copy(
                     isLoading = !isRefresh,
@@ -106,7 +118,7 @@ class AcquisitionApprovalListViewModel @Inject constructor(
                     items = if (isRefresh) it.items else emptyList(),
                     error = null,
                     page = 1,
-                    hasMore = true,
+                    hasMore = false,
                 )
             }
             when (val result = repository.getAcquisitionList(search, 1)) {

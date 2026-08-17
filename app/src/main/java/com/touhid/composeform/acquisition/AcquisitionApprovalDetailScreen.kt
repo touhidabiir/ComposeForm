@@ -151,6 +151,8 @@ private fun AcquisitionApprovalDetailContent(
     onAction: (AcquisitionApprovalDetailAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    LaunchedEffect(Unit) { onAction(AcquisitionApprovalDetailAction.OnScreenStart) }
+
     val snackbarHostState = rememberAppSnackbarHostState()
     LaunchedEffect(state.error) {
         if (state.error == null) return@LaunchedEffect
