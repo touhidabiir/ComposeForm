@@ -37,12 +37,21 @@ class SpecificFormViewModel @Inject constructor(
     // death restores the same ViewModel instance) doesn't fire a second load.
     private var hasLoaded = false
 
+    // This fragment's 1-based position among the host Activity's other fragments, and how many
+    // there are in total - supplied by the host via SpecificFormFragment's arguments, not
+    // anything this form's own schema/response knows about. Drives the stepper button's
+    // progressText below.
+    private var position = 1
+    private var totalCount = 1
+
     // Dispatched once from LaunchedEffect(Unit) in SpecificFormFragment - kept as an explicit,
     // intent-driven trigger rather than an init{} side effect so construction stays cheap and the
     // ViewModel can be tested without a load firing automatically.
-    fun onScreenStart() {
+    fun onScreenStart(position: Int, totalCount: Int) {
         if (hasLoaded) return
         hasLoaded = true
+        this.position = position
+        this.totalCount = totalCount
         load()
     }
 
@@ -56,15 +65,11 @@ class SpecificFormViewModel @Inject constructor(
                     val payload = result.data
                     val questionsJson = JsonObject().apply { add("questions", payload.questions) }.toString()
                     val parsed = parseSpecificFormSchema(questionsJson)
-                    // The step count shown on the submit button is however many answerable
-                    // questions this response actually contains, not a value the backend sends -
-                    // Text fields (headings, etc.) don't count as steps.
-                    val stepCount = parsed.fields.count { it !is FormField.Text }
                     val submitField = FormField.Submit(
                         key = "submit",
                         label = "Submit",
                         appearance = FormSubmitAppearance.Stepper,
-                        progressText = stepCount.toString(),
+                        progressText = "$position/$totalCount",
                     )
                     val schema = parsed.copy(fields = parsed.fields + submitField)
                     _state.update { SpecificFormUiState.Ready(schema, title = payload.title, key = payload.key) }
