@@ -31,7 +31,16 @@ class SpecificFormViewModel @Inject constructor(
     private val _state = MutableStateFlow<SpecificFormUiState>(SpecificFormUiState.Loading)
     val state = _state.asStateFlow()
 
-    init {
+    // Guards onScreenStart so a re-dispatch (e.g. LaunchedEffect(Unit) re-running after process
+    // death restores the same ViewModel instance) doesn't fire a second load.
+    private var hasLoaded = false
+
+    // Dispatched once from LaunchedEffect(Unit) in SpecificFormFragment - kept as an explicit,
+    // intent-driven trigger rather than an init{} side effect so construction stays cheap and the
+    // ViewModel can be tested without a load firing automatically.
+    fun onScreenStart() {
+        if (hasLoaded) return
+        hasLoaded = true
         load()
     }
 
