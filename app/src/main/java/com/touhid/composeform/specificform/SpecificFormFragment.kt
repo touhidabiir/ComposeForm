@@ -38,9 +38,10 @@ class SpecificFormFragment : Fragment() {
                     LaunchedEffect(Unit) { viewModel.onScreenStart() }
 
                     val state by viewModel.state.collectAsStateWithLifecycle()
+                    val title = (state as? SpecificFormUiState.Ready)?.title ?: "Specific Form"
 
                     AppScaffold(topBar = { scrollBehavior ->
-                        AppTopBar(title = "Specific Form", scrollBehavior = scrollBehavior)
+                        AppTopBar(title = title, scrollBehavior = scrollBehavior)
                     }) {
                         when (val current = state) {
                             is SpecificFormUiState.Loading -> {

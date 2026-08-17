@@ -409,12 +409,17 @@ internal object MockJson {
     }
     """.trimIndent()
 
-    // Same "questions" shape as :formbuilder's SPECIFIC_JSON_FORM preview fixture (parsed via
+    // The "questions" array matches :formbuilder's SPECIFIC_JSON_FORM preview fixture (parsed via
     // parseSpecificFormSchema, not parseFormSchema) - kept as a verbatim copy here since :network
-    // can't depend on :formbuilder to reuse that constant directly.
+    // can't depend on :formbuilder to reuse that constant directly. Wrapped in the "data" envelope
+    // (key/title alongside questions) that the real backend responds with - key is opaque here,
+    // reserved for a later use; title is what SpecificFormViewModel shows as the app bar title.
     val SPECIFIC_FORM = """
     {
-      "questions": [
+      "data": {
+        "key": "outlet_survey",
+        "title": "দোকান জরিপ",
+        "questions": [
         {
           "key": "q1",
           "question": "দোকানটি কি মার্কেটের ভিতরে অবস্থিত?",
@@ -534,7 +539,8 @@ internal object MockJson {
             {"key": "no", "value": "না"}
           ]
         }
-      ]
+        ]
+      }
     }
     """.trimIndent()
 }
