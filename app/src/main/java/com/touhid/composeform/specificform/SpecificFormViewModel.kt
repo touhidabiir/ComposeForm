@@ -7,6 +7,7 @@ import com.google.gson.JsonObject
 import com.touhid.composeform.formbuilder.parseSpecificFormSchema
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormSchema
+import com.touhid.composeform.formbuilder.schema.FormSubmitAppearance
 import com.touhid.composeform.formbuilder.schema.FormValue
 import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.network.NetworkResult
@@ -55,7 +56,17 @@ class SpecificFormViewModel @Inject constructor(
                     val payload = result.data
                     val questionsJson = JsonObject().apply { add("questions", payload.questions) }.toString()
                     val parsed = parseSpecificFormSchema(questionsJson)
-                    val schema = parsed.copy(fields = parsed.fields + FormField.Submit(key = "submit", label = "Submit"))
+                    // The step count shown on the submit button is however many answerable
+                    // questions this response actually contains, not a value the backend sends -
+                    // Text fields (headings, etc.) don't count as steps.
+                    val stepCount = parsed.fields.count { it !is FormField.Text }
+                    val submitField = FormField.Submit(
+                        key = "submit",
+                        label = "Submit",
+                        appearance = FormSubmitAppearance.Stepper,
+                        progressText = stepCount.toString(),
+                    )
+                    val schema = parsed.copy(fields = parsed.fields + submitField)
                     _state.update { SpecificFormUiState.Ready(schema, title = payload.title, key = payload.key) }
                 }
                 is NetworkResult.Failure -> _state.update { SpecificFormUiState.Error(result.error.message) }
