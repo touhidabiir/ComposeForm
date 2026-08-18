@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -132,25 +133,34 @@ fun AppStepperButton(
         color = if (enabled) containerColor else disabledColor.copy(alpha = DisabledContainerAlpha),
         contentColor = if (enabled) contentColor else disabledColor.copy(alpha = DisabledContentAlpha),
     ) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
         ) {
-            if (progressText != null) {
-                Box(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
-                    AppText(text = progressText, style = AppTextStyle.Label)
-                }
-                VerticalDivider(modifier = Modifier.fillMaxHeight().padding(vertical = AppSpacing.Small))
-            }
+            // Centered against the button's full width via Box + align, not a weight(1f) Row
+            // sharing space with the progress box - a weight(1f) row only centers within
+            // whatever's left over, drifting the label right whenever progressText is shown.
             Row(
                 modifier = Modifier
-                    .weight(1f)
+                    .align(Alignment.Center)
                     .padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AppText(text = label, style = AppTextStyle.Label, override = textOverride)
                 Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+            }
+            if (progressText != null) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterStart).fillMaxHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
+                        AppText(text = progressText, style = AppTextStyle.Label)
+                    }
+                    VerticalDivider(modifier = Modifier.fillMaxHeight().padding(vertical = AppSpacing.Small))
+                }
             }
         }
     }
