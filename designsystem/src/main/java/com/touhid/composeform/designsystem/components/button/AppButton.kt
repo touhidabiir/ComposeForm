@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -38,6 +39,11 @@ import com.touhid.composeform.designsystem.theme.StatusSuccess
 // Material3 ButtonColors through the public signature.
 enum class AppButtonStyle { Primary, Success, Danger }
 
+// A disabled button's container is its own enabled container color at this alpha, not a fixed
+// color - so a disabled Danger button still reads as a faint red, a disabled Success button a
+// faint green, etc. Shared by AppButton, AppOutlinedButton and AppStepperButton below.
+private const val DisabledContainerAlpha = 0.12f
+
 @Composable
 fun AppButton(
     text: String,
@@ -57,11 +63,13 @@ fun AppButton(
         AppButtonStyle.Success -> ButtonDefaults.buttonColors(containerColor = StatusSuccess, contentColor = Color.White)
         AppButtonStyle.Danger -> ButtonDefaults.buttonColors(containerColor = StatusError, contentColor = Color.White)
     }
+    val resolvedContainerColor = containerColor.takeOrElse { styleColors.containerColor }
     // Defaults content to white when only a custom containerColor is given - a colored fill
     // almost always wants light text, and the caller can still pass contentColor to override that.
     val colors = ButtonDefaults.buttonColors(
-        containerColor = containerColor.takeOrElse { styleColors.containerColor },
+        containerColor = resolvedContainerColor,
         contentColor = contentColor.takeOrElse { if (containerColor.isSpecified) Color.White else styleColors.contentColor },
+        disabledContainerColor = resolvedContainerColor.copy(alpha = DisabledContainerAlpha),
     )
     Button(onClick = onClick, modifier = modifier, enabled = enabled, colors = colors) {
         leadingIcon?.let {
@@ -96,7 +104,14 @@ fun AppOutlinedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = resolvedColor),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = resolvedColor,
+            // AppOutlinedButton has no fill when enabled - its "container color" for this formula
+            // is its own brand color, same as its border/text, not literally its (transparent)
+            // enabled container.
+            disabledContainerColor = resolvedColor.copy(alpha = DisabledContainerAlpha),
+        ),
         border = BorderStroke(width = 1.dp, color = borderColor),
     ) {
         leadingIcon?.let {
@@ -107,9 +122,6 @@ fun AppOutlinedButton(
     }
 }
 
-// Matches Material3 ButtonDefaults.buttonColors()' disabled container/content colors,
-// so AppButton and AppStepperButton look identical when disabled.
-private const val DisabledContainerAlpha = 0.12f
 private const val DisabledContentAlpha = 0.38f
 
 @Composable
@@ -129,28 +141,37 @@ fun AppStepperButton(
         enabled = enabled,
         modifier = modifier,
         shape = RoundedCornerShape(percent = 50),
-        color = if (enabled) containerColor else disabledColor.copy(alpha = DisabledContainerAlpha),
+        color = if (enabled) containerColor else containerColor.copy(alpha = DisabledContainerAlpha),
         contentColor = if (enabled) contentColor else disabledColor.copy(alpha = DisabledContentAlpha),
     ) {
-        Row(
-            modifier = Modifier.height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically,
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Min),
         ) {
-            if (progressText != null) {
-                Box(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
-                    AppText(text = progressText, style = AppTextStyle.Label)
-                }
-                VerticalDivider(modifier = Modifier.fillMaxHeight().padding(vertical = AppSpacing.Small))
-            }
+            // Centered against the button's full width via Box + align, not a weight(1f) Row
+            // sharing space with the progress box - a weight(1f) row only centers within
+            // whatever's left over, drifting the label right whenever progressText is shown.
             Row(
                 modifier = Modifier
-                    .weight(1f)
+                    .align(Alignment.Center)
                     .padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 AppText(text = label, style = AppTextStyle.Label, override = textOverride)
                 Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null)
+            }
+            if (progressText != null) {
+                Row(
+                    modifier = Modifier.align(Alignment.CenterStart).fillMaxHeight(),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(modifier = Modifier.padding(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small)) {
+                        AppText(text = progressText, style = AppTextStyle.Label)
+                    }
+                    VerticalDivider(modifier = Modifier.fillMaxHeight().padding(vertical = AppSpacing.Small))
+                }
             }
         }
     }
