@@ -39,10 +39,10 @@ import com.touhid.composeform.designsystem.theme.StatusSuccess
 // Material3 ButtonColors through the public signature.
 enum class AppButtonStyle { Primary, Success, Danger }
 
-// One shared disabled-container look for every button style (Primary/Success/Danger all use
-// this instead of their own enabled color at reduced alpha) - used by both AppButton and
-// AppStepperButton below.
-private val DisabledButtonColor = Color(0xFFFF96C8)
+// A disabled button's container is its own enabled container color at this alpha, not a fixed
+// color - so a disabled Danger button still reads as a faint red, a disabled Success button a
+// faint green, etc. Shared by AppButton, AppOutlinedButton and AppStepperButton below.
+private const val DisabledContainerAlpha = 0.12f
 
 @Composable
 fun AppButton(
@@ -63,12 +63,13 @@ fun AppButton(
         AppButtonStyle.Success -> ButtonDefaults.buttonColors(containerColor = StatusSuccess, contentColor = Color.White)
         AppButtonStyle.Danger -> ButtonDefaults.buttonColors(containerColor = StatusError, contentColor = Color.White)
     }
+    val resolvedContainerColor = containerColor.takeOrElse { styleColors.containerColor }
     // Defaults content to white when only a custom containerColor is given - a colored fill
     // almost always wants light text, and the caller can still pass contentColor to override that.
     val colors = ButtonDefaults.buttonColors(
-        containerColor = containerColor.takeOrElse { styleColors.containerColor },
+        containerColor = resolvedContainerColor,
         contentColor = contentColor.takeOrElse { if (containerColor.isSpecified) Color.White else styleColors.contentColor },
-        disabledContainerColor = DisabledButtonColor,
+        disabledContainerColor = resolvedContainerColor.copy(alpha = DisabledContainerAlpha),
     )
     Button(onClick = onClick, modifier = modifier, enabled = enabled, colors = colors) {
         leadingIcon?.let {
@@ -103,7 +104,14 @@ fun AppOutlinedButton(
         onClick = onClick,
         modifier = modifier,
         enabled = enabled,
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = resolvedColor),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = Color.Transparent,
+            contentColor = resolvedColor,
+            // AppOutlinedButton has no fill when enabled - its "container color" for this formula
+            // is its own brand color, same as its border/text, not literally its (transparent)
+            // enabled container.
+            disabledContainerColor = resolvedColor.copy(alpha = DisabledContainerAlpha),
+        ),
         border = BorderStroke(width = 1.dp, color = borderColor),
     ) {
         leadingIcon?.let {
@@ -133,7 +141,7 @@ fun AppStepperButton(
         enabled = enabled,
         modifier = modifier,
         shape = RoundedCornerShape(percent = 50),
-        color = if (enabled) containerColor else DisabledButtonColor,
+        color = if (enabled) containerColor else containerColor.copy(alpha = DisabledContainerAlpha),
         contentColor = if (enabled) contentColor else disabledColor.copy(alpha = DisabledContentAlpha),
     ) {
         Box(
