@@ -39,6 +39,11 @@ import com.touhid.composeform.designsystem.theme.StatusSuccess
 // Material3 ButtonColors through the public signature.
 enum class AppButtonStyle { Primary, Success, Danger }
 
+// One shared disabled-container look for every button style (Primary/Success/Danger all use
+// this instead of their own enabled color at reduced alpha) - used by both AppButton and
+// AppStepperButton below.
+private val DisabledButtonColor = Color(0xFFFF96C8)
+
 @Composable
 fun AppButton(
     text: String,
@@ -63,6 +68,7 @@ fun AppButton(
     val colors = ButtonDefaults.buttonColors(
         containerColor = containerColor.takeOrElse { styleColors.containerColor },
         contentColor = contentColor.takeOrElse { if (containerColor.isSpecified) Color.White else styleColors.contentColor },
+        disabledContainerColor = DisabledButtonColor,
     )
     Button(onClick = onClick, modifier = modifier, enabled = enabled, colors = colors) {
         leadingIcon?.let {
@@ -108,9 +114,6 @@ fun AppOutlinedButton(
     }
 }
 
-// Matches Material3 ButtonDefaults.buttonColors()' disabled container/content colors,
-// so AppButton and AppStepperButton look identical when disabled.
-private const val DisabledContainerAlpha = 0.12f
 private const val DisabledContentAlpha = 0.38f
 
 @Composable
@@ -130,7 +133,7 @@ fun AppStepperButton(
         enabled = enabled,
         modifier = modifier,
         shape = RoundedCornerShape(percent = 50),
-        color = if (enabled) containerColor else disabledColor.copy(alpha = DisabledContainerAlpha),
+        color = if (enabled) containerColor else DisabledButtonColor,
         contentColor = if (enabled) contentColor else disabledColor.copy(alpha = DisabledContentAlpha),
     ) {
         Box(
