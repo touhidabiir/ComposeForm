@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,10 +21,10 @@ import com.touhid.composeform.designsystem.components.surface.AppTopBarScrollBeh
 @Composable
 fun AppScaffold(
     modifier: Modifier = Modifier.fillMaxSize(),
-    // Null (the default) hides the app bar entirely - callers that don't need one shouldn't have
-    // to pass a no-op lambda to get that.
+    // Null (the default) hides the app bar/bottom bar entirely - callers that don't need one
+    // shouldn't have to pass a no-op lambda to get that.
     topBar: (@Composable (AppTopBarScrollBehavior) -> Unit)? = null,
-    bottomBar: @Composable () -> Unit = {},
+    bottomBar: (@Composable () -> Unit)? = null,
     snackbarHost: @Composable () -> Unit = {},
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -31,18 +32,18 @@ fun AppScaffold(
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { topBar?.invoke(AppTopBarScrollBehavior(scrollBehavior)) },
-        bottomBar = bottomBar,
+        bottomBar = { bottomBar?.invoke() },
         snackbarHost = snackbarHost,
-        // A real AppTopBar consumes the status-bar inset itself. With no topBar, nothing does -
-        // left as the default, that inset still lands in innerPadding, leaving a status-bar-height
-        // band painted in Scaffold's containerColor above the content (reads as a stray "empty app
-        // bar"). Excluding it here only when there's no topBar lets content run edge-to-edge under
-        // the status bar instead, same as an actually absent app bar should look.
-        contentWindowInsets = if (topBar != null) {
-            ScaffoldDefaults.contentWindowInsets
-        } else {
-            ScaffoldDefaults.contentWindowInsets.exclude(WindowInsets.statusBars)
-        },
+        // A real AppTopBar/AppBottomActionBar consumes its own edge's system-bar inset itself
+        // (see AppBottomActionBar's windowInsetsPadding(WindowInsets.navigationBars)). With no
+        // topBar/bottomBar, nothing does - left as the default, that inset still lands in
+        // innerPadding, leaving a status/navigation-bar-height band painted in Scaffold's
+        // containerColor at that edge of the content (reads as a stray "empty bar"). Excluding it
+        // here only for the edge that's actually missing its bar lets content run edge-to-edge
+        // there instead, same as an actually absent bar should look.
+        contentWindowInsets = ScaffoldDefaults.contentWindowInsets
+            .let { if (topBar == null) it.exclude(WindowInsets.statusBars) else it }
+            .let { if (bottomBar == null) it.exclude(WindowInsets.navigationBars) else it },
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             content()
