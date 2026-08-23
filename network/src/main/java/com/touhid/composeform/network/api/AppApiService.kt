@@ -11,6 +11,7 @@ import com.touhid.composeform.network.model.LeadDashboardResponse
 import com.touhid.composeform.network.model.LoginRequest
 import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
+import com.touhid.composeform.network.model.SpecificFormResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -30,6 +31,9 @@ internal interface AppApiService {
 
     @GET("v1/admin/details/{id}")
     suspend fun getAdminDetails(@Path("id") id: String): AdminDetails
+
+    @GET("v1/forms/specific")
+    suspend fun getSpecificForm(): SpecificFormResponse
 
     @GET("v1/leads")
     suspend fun getLeadDashboard(
