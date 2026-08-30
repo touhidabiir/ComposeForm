@@ -5,9 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -213,7 +216,17 @@ private fun AcquisitionApprovalListContent(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
+                        // This screen has no bottomBar, so AppScaffold deliberately excludes the
+                        // navigation-bar inset from its own content padding (see AppScaffold's
+                        // contentWindowInsets) - content is meant to run edge-to-edge there,
+                        // which otherwise leaves the last card sitting under the system nav bar.
+                        // Added on top of, not instead of, the normal AppSpacing.Small padding.
+                        contentPadding = PaddingValues(
+                            start = AppSpacing.Medium,
+                            end = AppSpacing.Medium,
+                            top = AppSpacing.Small,
+                            bottom = AppSpacing.Small + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+                        ),
                         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
                     ) {
                         // Composite id+index key: MockDataInterceptor returns the same fixed set
