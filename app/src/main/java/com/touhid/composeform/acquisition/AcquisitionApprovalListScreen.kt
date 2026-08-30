@@ -24,7 +24,10 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -109,10 +112,19 @@ private fun AcquisitionApprovalListContent(
     val listState = rememberLazyListState()
     listState.OnEndOfListReached { onAction(AcquisitionApprovalListAction.OnLoadNextPage) }
 
-    // Every successful first-page load (search, refresh, retry) bumps loadedRevision -
-    // scrolling back to the top here, not on every items change, is what keeps a paginated
-    // append from yanking the user's scroll position back up.
+    // Every successful first-page load (search, refresh, retry) bumps loadedRevision - scrolling
+    // back to the top here, not on every items change, is what keeps a paginated append from
+    // yanking the user's scroll position back up. LaunchedEffect(state.loadedRevision) fires on
+    // every fresh composition, not just when the value changes - Navigation Compose disposes a
+    // covered destination's composition entirely, so returning from the detail screen re-mounts
+    // this screen from scratch and would otherwise call scrollToItem(0) unconditionally, undoing
+    // the scroll position rememberSaveable(listState) just restored. lastScrolledRevision is
+    // itself rememberSaveable so it survives that same dispose/recreate cycle, letting the effect
+    // tell "genuinely new results" apart from "just returning to a screen already caught up".
+    var lastScrolledRevision by rememberSaveable { mutableStateOf(state.loadedRevision) }
     LaunchedEffect(state.loadedRevision) {
+        if (state.loadedRevision == lastScrolledRevision) return@LaunchedEffect
+        lastScrolledRevision = state.loadedRevision
         listState.scrollToItem(0)
     }
 
@@ -129,9 +141,11 @@ private fun AcquisitionApprovalListContent(
     val coroutineScope = rememberCoroutineScope()
     LaunchedEffect(decisionResult) {
         if (decisionResult == null) return@LaunchedEffect
-        // Refresh and consume immediately - not after the snackbar dismisses - so the stale,
+        // Resync and consume immediately - not after the snackbar dismisses - so the stale,
         // already-decided list item can't be tapped again while the snackbar is still showing.
-        onAction(AcquisitionApprovalListAction.OnRefresh)
+        // OnReturnedWithDecision (not OnRefresh) so this silent resync doesn't yank the user back
+        // to the top of a list they may have been scrolled through.
+        onAction(AcquisitionApprovalListAction.OnReturnedWithDecision)
         onDecisionResultConsumed()
         val message = if (decisionResult == ReasonSheetType.Approve.name) "Lead approved successfully" else "Lead rejected successfully"
         coroutineScope.launch { snackbarHostState.showMessage(message = message) }

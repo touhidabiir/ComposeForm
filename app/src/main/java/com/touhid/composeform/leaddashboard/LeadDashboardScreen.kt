@@ -36,6 +36,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -132,7 +133,17 @@ private fun LeadDashboardContent(
     // Every successful first-page load (filter switch, search, refresh, retry) bumps
     // loadedRevision - scrolling back to the top here, not on every leads change, is what keeps a
     // paginated append from yanking the user's scroll position back up.
+    // LaunchedEffect(state.loadedRevision) fires on every fresh composition, not just when the
+    // value changes - Navigation Compose disposes a covered destination's composition entirely, so
+    // returning to this screen (e.g. from a pushed detail screen) re-mounts it from scratch and
+    // would otherwise call scrollToItem(0) unconditionally, undoing the scroll position
+    // rememberSaveable(listState) just restored. lastScrolledRevision is itself rememberSaveable so
+    // it survives that same dispose/recreate cycle, letting the effect tell "genuinely new results"
+    // apart from "just returning to a screen already caught up".
+    var lastScrolledRevision by rememberSaveable { mutableStateOf(state.loadedRevision) }
     LaunchedEffect(state.loadedRevision) {
+        if (state.loadedRevision == lastScrolledRevision) return@LaunchedEffect
+        lastScrolledRevision = state.loadedRevision
         listState.scrollToItem(0)
     }
 
