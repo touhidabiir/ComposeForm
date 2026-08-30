@@ -6,15 +6,11 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -63,6 +59,7 @@ import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppSearchField
 import com.touhid.composeform.designsystem.components.layout.AppPullToRefreshBox
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.components.layout.edgeToEdgeListContentPadding
 import com.touhid.composeform.designsystem.components.surface.AppBottomSheet
 import com.touhid.composeform.designsystem.components.surface.AppCard
 import com.touhid.composeform.designsystem.components.surface.AppChip
@@ -246,17 +243,11 @@ private fun LeadDashboardContent(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        // This screen has no bottomBar, so AppScaffold deliberately excludes the
-                        // navigation-bar inset from its own content padding (see AppScaffold's
-                        // contentWindowInsets) - content is meant to run edge-to-edge there,
-                        // which otherwise leaves the last card sitting under the system nav bar.
-                        // Added on top of, not instead of, the normal AppSpacing.Small padding.
-                        contentPadding = PaddingValues(
-                            start = AppSpacing.Medium,
-                            end = AppSpacing.Medium,
-                            top = AppSpacing.Small,
-                            bottom = AppSpacing.Small + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
-                        ),
+                        // This screen has no bottomBar, so AppScaffold leaves the navigation-bar
+                        // inset out of its own content padding - edgeToEdgeListContentPadding
+                        // adds it back just for this scrollable list, so the last card doesn't
+                        // sit under the system nav bar.
+                        contentPadding = edgeToEdgeListContentPadding(),
                         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
                     ) {
                         // Composite id+index key: MockDataInterceptor returns the same fixed set
