@@ -59,7 +59,7 @@ import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppSearchField
 import com.touhid.composeform.designsystem.components.layout.AppPullToRefreshBox
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
-import com.touhid.composeform.designsystem.components.layout.edgeToEdgeListContentPadding
+import com.touhid.composeform.designsystem.components.layout.edgeToEdgeContentPadding
 import com.touhid.composeform.designsystem.components.surface.AppBottomSheet
 import com.touhid.composeform.designsystem.components.surface.AppCard
 import com.touhid.composeform.designsystem.components.surface.AppChip
@@ -244,10 +244,10 @@ private fun LeadDashboardContent(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
                         // This screen has no bottomBar, so AppScaffold leaves the navigation-bar
-                        // inset out of its own content padding - edgeToEdgeListContentPadding
+                        // inset out of its own content padding - edgeToEdgeContentPadding
                         // adds it back just for this scrollable list, so the last card doesn't
                         // sit under the system nav bar.
-                        contentPadding = edgeToEdgeListContentPadding(),
+                        contentPadding = edgeToEdgeContentPadding(),
                         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
                     ) {
                         // Composite id+index key: MockDataInterceptor returns the same fixed set

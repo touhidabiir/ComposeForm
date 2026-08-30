@@ -56,11 +56,12 @@ fun AppScaffold(
 }
 
 // The complement to the navigationBars exclusion above: a screen with no bottomBar gets
-// edge-to-edge content from AppScaffold, but a scrollable list inside it (LazyColumn/LazyRow's
-// contentPadding) still needs to keep its last item from sitting under the system navigation bar.
-// One shared place for that math, rather than every such screen re-deriving it inline.
+// edge-to-edge content from AppScaffold, but any scrollable content inside it still needs to
+// keep its bottom edge from sitting under the system navigation bar - pass this to a LazyColumn/
+// LazyRow's contentPadding, or to Modifier.padding(...) on a Column using verticalScroll(). One
+// shared place for that math, rather than every such screen re-deriving it inline.
 @Composable
-fun edgeToEdgeListContentPadding(horizontal: Dp = AppSpacing.Medium, vertical: Dp = AppSpacing.Small): PaddingValues {
+fun edgeToEdgeContentPadding(horizontal: Dp = AppSpacing.Medium, vertical: Dp = AppSpacing.Small): PaddingValues {
     return PaddingValues(
         start = horizontal,
         end = horizontal,
