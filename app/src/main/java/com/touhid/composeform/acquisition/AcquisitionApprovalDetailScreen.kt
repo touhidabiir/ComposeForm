@@ -269,29 +269,40 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
         PhotoBlock(caption = "ব্যবসার পরিচয়পত্রের ছবি", counter = "3/3".toBengaliDigits(), imageUrl = detail.images.businessProofImage)
 
         AppCard(modifier = Modifier.fillMaxWidth()) {
+            val outletOwner = detail.contactInfo.outletOwner
+            val contactPerson = detail.contactInfo.contactPerson
+            // outlet_owner is sometimes returned with no name/phone at all - in that case there's
+            // no separate operator, so the owner block falls back to contact_person's data and the
+            // operator block (which would otherwise just repeat the same person) is hidden.
+            val hasOwnerData = outletOwner.name.isNotBlank() || outletOwner.phoneNumber.isNotBlank()
+            val ownerName = if (hasOwnerData) outletOwner.name else contactPerson.name
+            val ownerPhone = if (hasOwnerData) outletOwner.phoneNumber else contactPerson.phoneNumber
+
             AppText(text = "Owner & Contact Person Details", style = AppTextStyle.TitleMedium)
             Spacer(modifier = Modifier.height(AppSpacing.Medium))
             AppIconLabelValue(
                 label = "Shop Owner Info",
-                value = detail.contactInfo.outletOwner.name,
+                value = ownerName,
                 icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
             )
             Spacer(modifier = Modifier.height(AppSpacing.Small))
             AppIconLabelValue(
-                value = detail.contactInfo.outletOwner.phoneNumber,
-                trailingIcon = copyIconButton(detail.contactInfo.outletOwner.phoneNumber),
+                value = ownerPhone,
+                trailingIcon = copyIconButton(ownerPhone),
             )
-            Spacer(modifier = Modifier.height(AppSpacing.Medium))
-            AppIconLabelValue(
-                label = "Shop Operator Info (if different)",
-                value = detail.contactInfo.contactPerson.name,
-                icon = { AppIcon(icon = Icons.Filled.Groups, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
-            )
-            Spacer(modifier = Modifier.height(AppSpacing.Small))
-            AppIconLabelValue(
-                value = detail.contactInfo.contactPerson.phoneNumber,
-                trailingIcon = copyIconButton(detail.contactInfo.contactPerson.phoneNumber),
-            )
+            if (hasOwnerData) {
+                Spacer(modifier = Modifier.height(AppSpacing.Medium))
+                AppIconLabelValue(
+                    label = contactPerson.designation?.let { "Shop Operator Info ($it)" } ?: "Shop Operator Info",
+                    value = contactPerson.name,
+                    icon = { AppIcon(icon = Icons.Filled.Groups, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
+                )
+                Spacer(modifier = Modifier.height(AppSpacing.Small))
+                AppIconLabelValue(
+                    value = contactPerson.phoneNumber,
+                    trailingIcon = copyIconButton(contactPerson.phoneNumber),
+                )
+            }
         }
 
         OutletInformationCard(outletInfo = detail.outletInfo, digitalPayment = detail.digitalPayment)
