@@ -2,7 +2,9 @@ package com.touhid.composeform.designsystem.components.layout
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.exclude
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
@@ -15,7 +17,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.unit.Dp
 import com.touhid.composeform.designsystem.components.surface.AppTopBarScrollBehavior
+import com.touhid.composeform.designsystem.theme.AppSpacing
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,4 +53,19 @@ fun AppScaffold(
             content()
         }
     }
+}
+
+// The complement to the navigationBars exclusion above: a screen with no bottomBar gets
+// edge-to-edge content from AppScaffold, but any scrollable content inside it still needs to
+// keep its bottom edge from sitting under the system navigation bar - pass this to a LazyColumn/
+// LazyRow's contentPadding, or to Modifier.padding(...) on a Column using verticalScroll(). One
+// shared place for that math, rather than every such screen re-deriving it inline.
+@Composable
+fun edgeToEdgeContentPadding(horizontal: Dp = AppSpacing.Medium, vertical: Dp = AppSpacing.Small): PaddingValues {
+    return PaddingValues(
+        start = horizontal,
+        end = horizontal,
+        top = vertical,
+        bottom = vertical + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+    )
 }

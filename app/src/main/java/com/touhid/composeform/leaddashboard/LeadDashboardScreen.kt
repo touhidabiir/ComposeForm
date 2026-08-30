@@ -6,7 +6,6 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -60,6 +59,7 @@ import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.input.AppSearchField
 import com.touhid.composeform.designsystem.components.layout.AppPullToRefreshBox
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.components.layout.edgeToEdgeContentPadding
 import com.touhid.composeform.designsystem.components.surface.AppBottomSheet
 import com.touhid.composeform.designsystem.components.surface.AppCard
 import com.touhid.composeform.designsystem.components.surface.AppChip
@@ -243,7 +243,11 @@ private fun LeadDashboardContent(
                     LazyColumn(
                         state = listState,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(horizontal = AppSpacing.Medium, vertical = AppSpacing.Small),
+                        // This screen has no bottomBar, so AppScaffold leaves the navigation-bar
+                        // inset out of its own content padding - edgeToEdgeContentPadding
+                        // adds it back just for this scrollable list, so the last card doesn't
+                        // sit under the system nav bar.
+                        contentPadding = edgeToEdgeContentPadding(),
                         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
                     ) {
                         // Composite id+index key: MockDataInterceptor returns the same fixed set
