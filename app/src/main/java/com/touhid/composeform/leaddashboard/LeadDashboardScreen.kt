@@ -322,7 +322,7 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkyc: (LeadListItem) -> Uni
                 value = "${reviewer.name} (${reviewer.designation})",
                 icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
                 valueOverride = AppTextOverride(color = AccentIndigo),
-                subValue = "টেরিটরি- ${reviewer.territory}",
+                subValue = "${reviewer.hierarchyKey}- ${reviewer.hierarchyValue}",
             )
         }
 
@@ -486,7 +486,7 @@ private val PreviewLeads = listOf(
         premiumnessScore = 40.0,
         canSubmitEkyc = false,
         leadCloser = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "01930119876", servingMa = "01930198765"),
-        reviewer = Reviewer(name = "আকমল হোসেন", designation = "OM", territory = "Bakalia"),
+        reviewer = Reviewer(name = "আকমল হোসেন", designation = "OM", servingMa = "", hierarchyKey = "টেরিটরি", hierarchyValue = "Bakalia"),
         rejection = Rejection(
             reasons = listOf(RejectionReason(id = 31, reason = "ডকুমেন্ট সংগ্রহে অস্পষ্টতা"), RejectionReason(id = 32, reason = "লেনদেন নিয়মিত করে না")),
             note = "Documents are blurry and unreadable.",

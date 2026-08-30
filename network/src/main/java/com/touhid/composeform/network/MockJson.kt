@@ -54,7 +54,9 @@ internal object MockJson {
             "reviewer": {
               "name": "Khastogir Alom",
               "designation": "OM",
-              "territory": "Bakalia"
+              "serving_ma": "",
+              "hierarchy_key": "টেরিটরি",
+              "hierarchy_value": "Bakalia"
             },
             "ekyc_submitter": null,
             "rejection": null,
@@ -78,7 +80,9 @@ internal object MockJson {
             "reviewer": {
               "name": "Khastogir Alom",
               "designation": "OM",
-              "territory": "Bakalia"
+              "serving_ma": "",
+              "hierarchy_key": "টেরিটরি",
+              "hierarchy_value": "Bakalia"
             },
             "ekyc_submitter": {
               "name": "Jamal Bhuiyan"
@@ -104,7 +108,9 @@ internal object MockJson {
             "reviewer": {
               "name": "Rahgir Alom",
               "designation": "TM",
-              "territory": "Dhanmondi Outer"
+              "serving_ma": "",
+              "hierarchy_key": "টেরিটরি",
+              "hierarchy_value": "Dhanmondi Outer"
             },
             "ekyc_submitter": null,
             "rejection": {
@@ -161,7 +167,9 @@ internal object MockJson {
             "reviewer": {
               "name": "Khastogir Alom",
               "designation": "OM",
-              "territory": "Bakalia"
+              "serving_ma": "",
+              "hierarchy_key": "টেরিটরি",
+              "hierarchy_value": "Bakalia"
             },
             "ekyc_submitter": null,
             "rejection": null,
@@ -185,7 +193,9 @@ internal object MockJson {
             "reviewer": {
               "name": "Khastogir Alom",
               "designation": "OM",
-              "territory": "Bakalia"
+              "serving_ma": "",
+              "hierarchy_key": "টেরিটরি",
+              "hierarchy_value": "Bakalia"
             },
             "ekyc_submitter": {
               "name": "Jamal Bhuiyan"
@@ -211,7 +221,9 @@ internal object MockJson {
             "reviewer": {
               "name": "Rahgir Alom",
               "designation": "TM",
-              "territory": "Dhanmondi Outer"
+              "serving_ma": "",
+              "hierarchy_key": "টেরিটরি",
+              "hierarchy_value": "Dhanmondi Outer"
             },
             "ekyc_submitter": null,
             "rejection": {
