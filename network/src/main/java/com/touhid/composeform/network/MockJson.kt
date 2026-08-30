@@ -108,7 +108,18 @@ internal object MockJson {
             },
             "ekyc_submitter": null,
             "rejection": {
-              "reason": "এই লিডটি অননুমোদিত লোকেশনের জন্য ইতিমধ্যে বাতিল করা হয়েছে।"
+              "reasons": [
+                {
+                  "id": 31,
+                  "reason": "অননুমোদিত লোকেশন"
+                },
+                {
+                  "id": 32,
+                  "reason": "লেনদেন নিয়মিত করে না"
+                }
+              ],
+              "note": "Location does not match the submitted address proof.",
+              "reviewed_at": "2026/07/01 11:00:00 AM"
             },
             "created_at": "2026-07-01T11:00:00+06:00"
           },
@@ -204,7 +215,14 @@ internal object MockJson {
             },
             "ekyc_submitter": null,
             "rejection": {
-              "reason": "প্রয়োজনীয় নথিপত্র সঠিকভাবে জমা দেওয়া হয়নি বলে লিডটি বাতিল করা হয়েছে।"
+              "reasons": [
+                {
+                  "id": 33,
+                  "reason": "প্রয়োজনীয় নথিপত্র অনুপস্থিত"
+                }
+              ],
+              "note": "Documents are blurry and unreadable.",
+              "reviewed_at": "2026/06/28 03:30:00 PM"
             },
             "created_at": "2026-06-28T15:30:00+06:00"
           }

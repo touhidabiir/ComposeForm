@@ -34,6 +34,13 @@ data class EkycSubmitter(
 )
 
 data class Rejection(
+    val reasons: List<RejectionReason>,
+    val note: String,
+    @SerializedName("reviewed_at") val reviewedAt: String,
+)
+
+data class RejectionReason(
+    val id: Int,
     val reason: String,
 )
 

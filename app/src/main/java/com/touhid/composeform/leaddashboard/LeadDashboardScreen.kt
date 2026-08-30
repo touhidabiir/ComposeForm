@@ -83,6 +83,7 @@ import com.touhid.composeform.network.model.LeadCloser
 import com.touhid.composeform.network.model.LeadListItem
 import com.touhid.composeform.network.model.LeadStatus
 import com.touhid.composeform.network.model.Rejection
+import com.touhid.composeform.network.model.RejectionReason
 import com.touhid.composeform.network.model.Reviewer
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -282,7 +283,7 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkyc: (LeadListItem) -> Uni
     AppCard(
         modifier = Modifier.fillMaxWidth(),
         topContent = lead.rejection?.let { rejection ->
-            { RejectionBanner(reason = rejection.reason, onClick = { showRejectionDetails = true }) }
+            { RejectionBanner(reason = rejection.reasonsText(), onClick = { showRejectionDetails = true }) }
         },
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -395,13 +396,18 @@ private fun RejectionBanner(reason: String, onClick: () -> Unit, modifier: Modif
     }
 }
 
-// The full rejection detail opened by tapping RejectionBanner - same shop name / reason data as
-// the banner but untruncated, plus who processed it and when. lead.reviewer/lead.createdAt double
-// as the approver name and timestamp here since Rejection itself carries only a reason - the mock
-// data already populates both alongside a rejection (see MockJson.kt), and reviewer is already
-// labeled "অনুমোদনকারী" elsewhere on this same card.
+// The comma-separated reason list shown by both RejectionBanner (truncated to one line) and
+// RejectionDetailsSheet (untruncated, alongside the note) - one shared helper since both callers
+// need the exact same "reason, reason, reason" text.
+private fun Rejection.reasonsText(): String = reasons.joinToString(", ") { it.reason }
+
+// The full rejection detail opened by tapping RejectionBanner - same reason list as the banner but
+// untruncated, plus the reviewer's free-text note, who processed it and when. The timestamp comes
+// from rejection.reviewedAt (not lead.createdAt, which is when the lead itself was created) -
+// reviewer is already labeled "অনুমোদনকারী" elsewhere on this same card.
 @Composable
 private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Unit) {
+    val rejection = lead.rejection
     AppBottomSheet(onDismissRequest = onDismissRequest) {
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             AppText(
@@ -427,7 +433,13 @@ private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Un
                 .background(StatusNeutralContainer, RoundedCornerShape(AppSpacing.Small))
                 .padding(AppSpacing.Medium),
         ) {
-            AppText(text = lead.rejection?.reason.orEmpty(), style = AppTextStyle.BodyMedium)
+            Column {
+                AppText(text = rejection?.reasonsText().orEmpty(), style = AppTextStyle.BodyMedium)
+                if (!rejection?.note.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+                    AppText(text = rejection?.note.orEmpty(), style = AppTextStyle.BodyMedium, color = StatusNeutral)
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
@@ -438,7 +450,7 @@ private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Un
                 color = StatusNeutral,
             )
             AppText(
-                text = formatRejectionTimestamp(lead.createdAt),
+                text = rejection?.reviewedAt?.let(::formatRejectionTimestamp) ?: "-",
                 style = AppTextStyle.Label,
                 color = StatusNeutral,
             )
@@ -446,10 +458,10 @@ private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Un
     }
 }
 
-private fun formatRejectionTimestamp(iso: String): String = runCatching {
-    val parsed = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.US).parse(iso)
+private fun formatRejectionTimestamp(reviewedAt: String): String = runCatching {
+    val parsed = SimpleDateFormat("yyyy/MM/dd hh:mm:ss a", Locale.US).parse(reviewedAt)
     SimpleDateFormat("d MMM yyyy; h:mm a", Locale.US).format(parsed!!)
-}.getOrDefault(iso)
+}.getOrDefault(reviewedAt)
 
 private val PreviewLeads = listOf(
     LeadListItem(
@@ -475,7 +487,11 @@ private val PreviewLeads = listOf(
         canSubmitEkyc = false,
         leadCloser = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "01930119876", servingMa = "01930198765"),
         reviewer = Reviewer(name = "আকমল হোসেন", designation = "OM", territory = "Bakalia"),
-        rejection = Rejection(reason = "ডকুমেন্ট সংগ্রহে অস্পষ্টতা রয়েছে এবং নেটওয়ার্ক সমস্যা থাকায় এটি একটি লো ইমপ্যাক্ট লিড হিসেবে গণ্য হচ্ছে।"),
+        rejection = Rejection(
+            reasons = listOf(RejectionReason(id = 31, reason = "ডকুমেন্ট সংগ্রহে অস্পষ্টতা"), RejectionReason(id = 32, reason = "লেনদেন নিয়মিত করে না")),
+            note = "Documents are blurry and unreadable.",
+            reviewedAt = "2026/07/12 03:36:46 PM",
+        ),
         createdAt = "2023-05-12T13:13:00+06:00",
     ),
 )
