@@ -28,6 +28,7 @@ private data class SpecificQuestion(
     val question: String,
     val type: String,
     val orientation: FormOrientation = FormOrientation.Horizontal,
+    val required: Boolean = false,
     @SerialName("depends_on") val dependsOn: SpecificDependsOn? = null,
     val answers: List<SpecificAnswer>,
 )
@@ -36,7 +37,7 @@ private data class SpecificQuestion(
 private data class SpecificDependsOn(val question: String, val answer: String)
 
 @Serializable
-private data class SpecificAnswer(val key: String, val value: String)
+private data class SpecificAnswer(val key: String, val value: String, val default: Boolean = false)
 
 fun parseSpecificFormSchema(jsonString: String): FormSchema {
     val raw = json.decodeFromString(SpecificForm.serializer(), jsonString)
@@ -48,7 +49,7 @@ fun parseSpecificFormSchema(jsonString: String): FormSchema {
 }
 
 private fun SpecificQuestion.toFormField(): FormField {
-    val options = answers.map { FormOption(id = it.key, value = it.value, style = defaultTextStyle, margin = optionMargin) }
+    val options = answers.map { FormOption(id = it.key, value = it.value, default = it.default, style = defaultTextStyle, margin = optionMargin) }
     val visibleWhen = dependsOn?.let {
         FormVisibilityCondition(key = it.question, operator = FormVisibilityOperator.Equals, values = listOf(it.answer))
     }
@@ -61,6 +62,7 @@ private fun SpecificQuestion.toFormField(): FormField {
             style = defaultTextStyle,
             margin = questionMargin,
             visibleWhen = visibleWhen,
+            required = required,
         )
     } else {
         FormField.Radio(
@@ -71,6 +73,7 @@ private fun SpecificQuestion.toFormField(): FormField {
             style = defaultTextStyle,
             margin = questionMargin,
             visibleWhen = visibleWhen,
+            required = required,
         )
     }
 }
