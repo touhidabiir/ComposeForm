@@ -28,6 +28,7 @@ private data class SpecificQuestion(
     val question: String,
     val type: String,
     val orientation: FormOrientation = FormOrientation.Horizontal,
+    val required: Boolean = false,
     @SerialName("depends_on") val dependsOn: SpecificDependsOn? = null,
     val answers: List<SpecificAnswer>,
 )
@@ -61,6 +62,7 @@ private fun SpecificQuestion.toFormField(): FormField {
             style = defaultTextStyle,
             margin = questionMargin,
             visibleWhen = visibleWhen,
+            required = required,
         )
     } else {
         FormField.Radio(
@@ -71,6 +73,7 @@ private fun SpecificQuestion.toFormField(): FormField {
             style = defaultTextStyle,
             margin = questionMargin,
             visibleWhen = visibleWhen,
+            required = required,
         )
     }
 }
