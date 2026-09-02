@@ -26,7 +26,9 @@ enum class LeadStatus {
 data class Reviewer(
     val name: String,
     val designation: String,
-    val territory: String,
+    @SerializedName("serving_ma") val servingMa: String,
+    @SerializedName("hierarchy_key") val hierarchyKey: String,
+    @SerializedName("hierarchy_value") val hierarchyValue: String,
 )
 
 data class EkycSubmitter(
@@ -34,6 +36,13 @@ data class EkycSubmitter(
 )
 
 data class Rejection(
+    val reasons: List<RejectionReason>,
+    val note: String,
+    @SerializedName("reviewed_at") val reviewedAt: String,
+)
+
+data class RejectionReason(
+    val id: Int,
     val reason: String,
 )
 
