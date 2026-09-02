@@ -37,7 +37,7 @@ private data class SpecificQuestion(
 private data class SpecificDependsOn(val question: String, val answer: String)
 
 @Serializable
-private data class SpecificAnswer(val key: String, val value: String)
+private data class SpecificAnswer(val key: String, val value: String, val default: Boolean = false)
 
 fun parseSpecificFormSchema(jsonString: String): FormSchema {
     val raw = json.decodeFromString(SpecificForm.serializer(), jsonString)
@@ -49,7 +49,7 @@ fun parseSpecificFormSchema(jsonString: String): FormSchema {
 }
 
 private fun SpecificQuestion.toFormField(): FormField {
-    val options = answers.map { FormOption(id = it.key, value = it.value, style = defaultTextStyle, margin = optionMargin) }
+    val options = answers.map { FormOption(id = it.key, value = it.value, default = it.default, style = defaultTextStyle, margin = optionMargin) }
     val visibleWhen = dependsOn?.let {
         FormVisibilityCondition(key = it.question, operator = FormVisibilityOperator.Equals, values = listOf(it.answer))
     }
