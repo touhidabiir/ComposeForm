@@ -170,7 +170,10 @@ private fun LeadDashboardContent(
         snackbarHostState.showMessage(message = state.ekycSubmitError)
     }
 
-    if (state.isLoading) {
+    // isLoading and an in-flight eKYC submission are mutually exclusive in practice (the latter
+    // only starts from a fully-loaded list), but checking both rather than assuming that keeps
+    // this correct even if that ever changes - either one blocks interaction with its own dialog.
+    if (state.isLoading || state.submittingEkycLeadIds.isNotEmpty()) {
         AppProgressDialog()
     }
 
@@ -283,7 +286,6 @@ private fun LeadDashboardContent(
                         itemsIndexed(items = state.leads, key = { index, lead -> "${lead.id}_$index" }) { _, lead ->
                             LeadListCard(
                                 lead = lead,
-                                isSubmittingEkyc = lead.id in state.submittingEkycLeadIds,
                                 onSubmitEkycTapped = { onAction(LeadDashboardAction.OnSubmitEkycTapped(lead)) },
                             )
                         }
@@ -304,7 +306,7 @@ private fun LeadDashboardContent(
 }
 
 @Composable
-private fun LeadListCard(lead: LeadListItem, isSubmittingEkyc: Boolean, onSubmitEkycTapped: () -> Unit) {
+private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
     val iconModifier = Modifier.size(RowIconSize)
     val (badgeLabel, badgeTone) = when {
         lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> "ই-কেওয়াইসি জমা হয়েছে" to AppStatusTone.Success
@@ -384,12 +386,7 @@ private fun LeadListCard(lead: LeadListItem, isSubmittingEkyc: Boolean, onSubmit
             }
             lead.status == LeadStatus.Approved && lead.canSubmitEkyc && !lead.isEkycSubmitted -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppStepperButton(
-                    label = "ই-কেওয়াইসি জমা দিন",
-                    onClick = onSubmitEkycTapped,
-                    enabled = !isSubmittingEkyc,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = onSubmitEkycTapped, modifier = Modifier.fillMaxWidth())
             }
         }
     }
