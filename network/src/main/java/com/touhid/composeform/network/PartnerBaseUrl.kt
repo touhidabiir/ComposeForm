@@ -8,9 +8,9 @@ import javax.inject.Qualifier
  * `@Provides @PartnerBaseUrl fun providePartnerBaseUrl(): String = "https://..."`). Requires a
  * trailing slash, same as [BaseUrl].
  *
- * This is a third-party backend, not our own - [com.touhid.composeform.network.api.PartnerApiService]'s
- * methods are annotated `@NoAuth` so [com.touhid.composeform.network.auth.AuthInterceptor] never
- * attaches our app's bearer token to requests against this base URL.
+ * This is a third-party backend, not our own - `NetworkModule` builds its `Retrofit` via
+ * [RetrofitFactory] with `authInterceptor = null`, so [com.touhid.composeform.network.auth.AuthInterceptor]
+ * is never even part of the client for this base URL, let alone attaches our app's bearer token.
  */
 @Qualifier
 @Retention(AnnotationRetention.BINARY)

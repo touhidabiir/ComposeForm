@@ -32,8 +32,8 @@ object AppNetworkModule {
     fun provideAnalyticsBaseUrl(): String = "https://analytics.composeform.dummy/"
 
     // TODO: replace with the real partner's base URL once one exists. Third-party backend, not
-    // ours - PartnerApiService's methods are @NoAuth so AuthInterceptor never attaches our app's
-    // bearer token here.
+    // ours - NetworkModule builds this base URL's Retrofit with authInterceptor = null, so our
+    // app's bearer token is never attached here.
     @Provides
     @PartnerBaseUrl
     fun providePartnerBaseUrl(): String = "https://partner.composeform.dummy/"
