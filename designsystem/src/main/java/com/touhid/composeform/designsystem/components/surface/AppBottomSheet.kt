@@ -3,6 +3,8 @@ package com.touhid.composeform.designsystem.components.surface
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -22,6 +24,10 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 // false (Material3's own default) - a short sheet like RejectionDetailsSheet never hits the
 // partially-expanded state anyway, but a taller one (e.g. SurveyResponsesSheet, with many rows)
 // otherwise opens at half-height and needs a drag before its content is fully visible.
+// ModalBottomSheet doesn't scroll its content on its own - left unscrollable, content taller than
+// the sheet's max height (e.g. a long reason/response list) simply overflows, pushing anything
+// below it (a confirm button, an error message) off-screen with no way to reach it. verticalScroll
+// here is the one place that needs to know that, so every caller gets a scrollable sheet for free.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBottomSheet(
@@ -40,7 +46,9 @@ fun AppBottomSheet(
         dragHandle = if (showDragHandle) { { BottomSheetDefaults.DragHandle() } } else null,
     ) {
         Column(
-            modifier = Modifier.padding(AppSpacing.Medium),
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(AppSpacing.Medium),
             content = content,
         )
     }
