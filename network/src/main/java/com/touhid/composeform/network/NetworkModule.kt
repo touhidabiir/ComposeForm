@@ -1,6 +1,9 @@
 package com.touhid.composeform.network
 
+import com.touhid.composeform.network.api.AnalyticsApiService
 import com.touhid.composeform.network.api.AppApiService
+import com.touhid.composeform.network.api.PartnerApiService
+import com.touhid.composeform.network.api.PaymentApiService
 import com.touhid.composeform.network.auth.AuthInterceptor
 import dagger.Module
 import dagger.Provides
@@ -46,9 +49,11 @@ internal object NetworkModule {
         .addInterceptor(loggingInterceptor)
         .build()
 
-    @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, @BaseUrl baseUrl: String): Retrofit =
+    // Shared by every Retrofit instance below - one OkHttpClient (one connection pool/dispatcher)
+    // serving multiple base URLs, rather than one client per URL. AuthInterceptor still runs for
+    // all of them; a service whose requests must never carry the bearer token (PartnerApiService)
+    // opts out per-method via @NoAuth instead of needing its own client.
+    private fun buildRetrofit(okHttpClient: OkHttpClient, baseUrl: String): Retrofit =
         Retrofit.Builder()
             .baseUrl(if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/")
             .client(okHttpClient)
@@ -59,5 +64,43 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient, @BaseUrl baseUrl: String): Retrofit =
+        buildRetrofit(okHttpClient, baseUrl)
+
+    @Provides
+    @Singleton
     fun provideAppApiService(retrofit: Retrofit): AppApiService = retrofit.create(AppApiService::class.java)
+
+    @Provides
+    @Singleton
+    @PaymentRetrofit
+    fun providePaymentRetrofit(okHttpClient: OkHttpClient, @PaymentBaseUrl baseUrl: String): Retrofit =
+        buildRetrofit(okHttpClient, baseUrl)
+
+    @Provides
+    @Singleton
+    fun providePaymentApiService(@PaymentRetrofit retrofit: Retrofit): PaymentApiService =
+        retrofit.create(PaymentApiService::class.java)
+
+    @Provides
+    @Singleton
+    @AnalyticsRetrofit
+    fun provideAnalyticsRetrofit(okHttpClient: OkHttpClient, @AnalyticsBaseUrl baseUrl: String): Retrofit =
+        buildRetrofit(okHttpClient, baseUrl)
+
+    @Provides
+    @Singleton
+    fun provideAnalyticsApiService(@AnalyticsRetrofit retrofit: Retrofit): AnalyticsApiService =
+        retrofit.create(AnalyticsApiService::class.java)
+
+    @Provides
+    @Singleton
+    @PartnerRetrofit
+    fun providePartnerRetrofit(okHttpClient: OkHttpClient, @PartnerBaseUrl baseUrl: String): Retrofit =
+        buildRetrofit(okHttpClient, baseUrl)
+
+    @Provides
+    @Singleton
+    fun providePartnerApiService(@PartnerRetrofit retrofit: Retrofit): PartnerApiService =
+        retrofit.create(PartnerApiService::class.java)
 }

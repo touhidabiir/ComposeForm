@@ -2,6 +2,7 @@ package com.touhid.composeform.network.auth
 
 import okhttp3.Interceptor
 import okhttp3.Response
+import retrofit2.Invocation
 import javax.inject.Inject
 
 internal class AuthInterceptor @Inject constructor(
@@ -9,8 +10,11 @@ internal class AuthInterceptor @Inject constructor(
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val token = tokenProvider.getToken() ?: return chain.proceed(chain.request())
-        val authorizedRequest = chain.request().newBuilder()
+        val request = chain.request()
+        val token = tokenProvider.getToken()
+        val skipAuth = request.tag(Invocation::class.java)?.method()?.isAnnotationPresent(NoAuth::class.java) == true
+        if (token == null || skipAuth) return chain.proceed(request)
+        val authorizedRequest = request.newBuilder()
             .addHeader("Authorization", "Bearer $token")
             .build()
         return chain.proceed(authorizedRequest)

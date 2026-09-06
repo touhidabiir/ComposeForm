@@ -1,6 +1,9 @@
 package com.touhid.composeform.di
 
+import com.touhid.composeform.network.AnalyticsBaseUrl
 import com.touhid.composeform.network.BaseUrl
+import com.touhid.composeform.network.PartnerBaseUrl
+import com.touhid.composeform.network.PaymentBaseUrl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,4 +20,21 @@ object AppNetworkModule {
     @Provides
     @BaseUrl
     fun provideBaseUrl(): String = "https://api.composeform.dummy/"
+
+    // TODO: replace with the real payment service's base URL once one exists.
+    @Provides
+    @PaymentBaseUrl
+    fun providePaymentBaseUrl(): String = "https://payment.composeform.dummy/"
+
+    // TODO: replace with the real analytics service's base URL once one exists.
+    @Provides
+    @AnalyticsBaseUrl
+    fun provideAnalyticsBaseUrl(): String = "https://analytics.composeform.dummy/"
+
+    // TODO: replace with the real partner's base URL once one exists. Third-party backend, not
+    // ours - PartnerApiService's methods are @NoAuth so AuthInterceptor never attaches our app's
+    // bearer token here.
+    @Provides
+    @PartnerBaseUrl
+    fun providePartnerBaseUrl(): String = "https://partner.composeform.dummy/"
 }
