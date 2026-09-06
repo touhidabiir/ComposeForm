@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -386,6 +387,7 @@ private fun WalletInformationCard(walletInfo: WalletInfo) {
 private fun String.toComposeColor(): Color = Color(android.graphics.Color.parseColor(this))
 
 private val PhotoPlaceholderColor = Color(0xFFCFD8DC)
+private val PhotoMinHeight = 180.dp
 
 // Falls back to when the API sends an empty premiumness_score_ranges list - unreachable via
 // today's mock (MockJson.ACQUISITION_DETAIL always supplies 5 populated ranges), but ranges[activeIndex]
@@ -551,6 +553,10 @@ private fun ScoreBandIndicator(ranges: List<PremiumnessScoreRange>, activeIndex:
 
 // A single outlet photo, stacked in a vertical list with the others (not a swipeable carousel -
 // all photos are visible at once in this screen) - caption bottom-left, "n/total" bottom-right.
+// Full width, height driven by the image's own aspect ratio (like XML's adjustViewBounds) rather
+// than a fixed crop, so the whole photo is always visible. The heightIn min floor only matters
+// while placeholder/error's ColorPainter (no intrinsic size) is showing - without it the box would
+// collapse to zero height and then pop to full size once the real image's dimensions are known.
 @Composable
 private fun PhotoBlock(caption: String, counter: String, imageUrl: String) {
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -559,9 +565,9 @@ private fun PhotoBlock(caption: String, counter: String, imageUrl: String) {
             contentDescription = caption,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(180.dp)
+                .heightIn(min = PhotoMinHeight)
                 .clip(RoundedCornerShape(AppSpacing.Small)),
-            contentScale = ContentScale.Crop,
+            contentScale = ContentScale.FillWidth,
             placeholder = ColorPainter(PhotoPlaceholderColor),
             error = ColorPainter(PhotoPlaceholderColor),
         )
