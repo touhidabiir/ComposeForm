@@ -155,6 +155,21 @@ private fun LeadDashboardContent(
         if (result == AppSnackbarResult.ActionPerformed) onAction(LeadDashboardAction.OnRetry)
     }
 
+    // Fires once per successful eKYC submission - invokes the screen's own onSubmitEkyc callback
+    // (unchanged from before this call existed) exactly once, then tells the ViewModel the one-shot
+    // signal has been handled so a later recomposition with the same ViewModel instance (e.g. after
+    // a configuration change) can't re-invoke it.
+    LaunchedEffect(state.submittedEkycLead) {
+        val lead = state.submittedEkycLead ?: return@LaunchedEffect
+        onSubmitEkyc(lead)
+        onAction(LeadDashboardAction.OnEkycSubmitHandled)
+    }
+
+    LaunchedEffect(state.ekycSubmitError) {
+        if (state.ekycSubmitError == null) return@LaunchedEffect
+        snackbarHostState.showMessage(message = state.ekycSubmitError)
+    }
+
     if (state.isLoading) {
         AppProgressDialog()
     }
@@ -266,7 +281,11 @@ private fun LeadDashboardContent(
                         // of ids on every page, so a bare id key would collide once a second page
                         // is appended.
                         itemsIndexed(items = state.leads, key = { index, lead -> "${lead.id}_$index" }) { _, lead ->
-                            LeadListCard(lead = lead, onSubmitEkyc = onSubmitEkyc)
+                            LeadListCard(
+                                lead = lead,
+                                isSubmittingEkyc = lead.id in state.submittingEkycLeadIds,
+                                onSubmitEkycTapped = { onAction(LeadDashboardAction.OnSubmitEkycTapped(lead)) },
+                            )
                         }
                         if (state.isLoadingMore) {
                             item {
@@ -285,7 +304,7 @@ private fun LeadDashboardContent(
 }
 
 @Composable
-private fun LeadListCard(lead: LeadListItem, onSubmitEkyc: (LeadListItem) -> Unit) {
+private fun LeadListCard(lead: LeadListItem, isSubmittingEkyc: Boolean, onSubmitEkycTapped: () -> Unit) {
     val iconModifier = Modifier.size(RowIconSize)
     val (badgeLabel, badgeTone) = when {
         lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> "ই-কেওয়াইসি জমা হয়েছে" to AppStatusTone.Success
@@ -365,7 +384,12 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkyc: (LeadListItem) -> Uni
             }
             lead.status == LeadStatus.Approved && lead.canSubmitEkyc && !lead.isEkycSubmitted -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = { onSubmitEkyc(lead) }, modifier = Modifier.fillMaxWidth())
+                AppStepperButton(
+                    label = "ই-কেওয়াইসি জমা দিন",
+                    onClick = onSubmitEkycTapped,
+                    enabled = !isSubmittingEkyc,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }

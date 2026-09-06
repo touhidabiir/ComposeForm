@@ -46,6 +46,11 @@ data class RejectionReason(
     val reason: String,
 )
 
+data class EkycSubmitResponse(
+    @SerializedName("is_error") val isError: Boolean,
+    val message: String,
+)
+
 data class LeadListItem(
     val id: Long,
     @SerializedName("display_id") val displayId: String,

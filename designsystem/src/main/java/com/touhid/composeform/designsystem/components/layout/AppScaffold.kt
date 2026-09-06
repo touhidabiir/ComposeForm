@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScaffoldDefaults
@@ -37,7 +38,17 @@ fun AppScaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = { topBar?.invoke(AppTopBarScrollBehavior(scrollBehavior)) },
         bottomBar = { bottomBar?.invoke() },
-        snackbarHost = snackbarHost,
+        // Scaffold positions the snackbar host using the same contentWindowInsets as content, so
+        // excluding navigationBars below (when there's no bottomBar) would otherwise leave the
+        // snackbar sitting under the system navigation bar in edge-to-edge mode, same "stray
+        // cutoff" problem the exclusion elsewhere in this file was written to solve for content.
+        // Pad just the snackbar back out here, only for the case that's actually missing a bar to
+        // consume that inset itself - a bottomBar already reserves it via contentWindowInsets.
+        snackbarHost = {
+            Box(modifier = if (bottomBar == null) Modifier.windowInsetsPadding(WindowInsets.navigationBars) else Modifier) {
+                snackbarHost()
+            }
+        },
         // A real AppTopBar/AppBottomActionBar consumes its own edge's system-bar inset itself
         // (see AppBottomActionBar's windowInsetsPadding(WindowInsets.navigationBars)). With no
         // topBar/bottomBar, nothing does - left as the default, that inset still lands in
