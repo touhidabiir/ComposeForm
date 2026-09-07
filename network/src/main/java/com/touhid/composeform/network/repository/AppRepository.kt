@@ -48,6 +48,12 @@ class AppRepository @Inject internal constructor(
     suspend fun getLeadDashboard(status: String?, search: String?, pageNo: Int): NetworkResult<LeadDashboardPage> =
         safeApiCall { apiService.getLeadDashboard(status, search, pageNo).data }
 
+    suspend fun submitEkyc(leadId: Long): NetworkResult<Unit> =
+        when (val result = safeApiCall { apiService.submitEkyc(leadId) }) {
+            is NetworkResult.Success -> NetworkResult.Success(Unit)
+            is NetworkResult.Failure -> result
+        }
+
     suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage> =
         safeApiCall { apiService.getAcquisitionList(search, pageNo).data }
 
