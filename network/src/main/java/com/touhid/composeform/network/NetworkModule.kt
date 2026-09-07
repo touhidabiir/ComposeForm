@@ -5,6 +5,14 @@ import com.touhid.composeform.network.api.AppApiService
 import com.touhid.composeform.network.api.PartnerApiService
 import com.touhid.composeform.network.api.PaymentApiService
 import com.touhid.composeform.network.auth.AuthInterceptor
+import com.touhid.composeform.network.interceptor.HeaderInterceptor
+import com.touhid.composeform.network.qualifier.AnalyticsBaseUrl
+import com.touhid.composeform.network.qualifier.AnalyticsRetrofit
+import com.touhid.composeform.network.qualifier.BaseUrl
+import com.touhid.composeform.network.qualifier.PartnerBaseUrl
+import com.touhid.composeform.network.qualifier.PartnerRetrofit
+import com.touhid.composeform.network.qualifier.PaymentBaseUrl
+import com.touhid.composeform.network.qualifier.PaymentRetrofit
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

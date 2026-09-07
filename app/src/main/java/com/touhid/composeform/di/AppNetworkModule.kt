@@ -1,9 +1,9 @@
 package com.touhid.composeform.di
 
-import com.touhid.composeform.network.AnalyticsBaseUrl
-import com.touhid.composeform.network.BaseUrl
-import com.touhid.composeform.network.PartnerBaseUrl
-import com.touhid.composeform.network.PaymentBaseUrl
+import com.touhid.composeform.network.qualifier.AnalyticsBaseUrl
+import com.touhid.composeform.network.qualifier.BaseUrl
+import com.touhid.composeform.network.qualifier.PartnerBaseUrl
+import com.touhid.composeform.network.qualifier.PaymentBaseUrl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
