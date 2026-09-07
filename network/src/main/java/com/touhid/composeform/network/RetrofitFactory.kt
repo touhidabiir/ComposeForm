@@ -19,6 +19,7 @@ private const val TIMEOUT_SECONDS = 30L
 // interceptors covers anything else that base URL needs (a static header, a bespoke error
 // mapper, ...) without every other client paying for it.
 internal class RetrofitFactory @Inject constructor(
+    private val requestIdInterceptor: RequestIdInterceptor,
     private val loggingInterceptor: HttpLoggingInterceptor,
 ) {
 
@@ -37,6 +38,7 @@ internal class RetrofitFactory @Inject constructor(
             // of failing to reach a real backend. Harmless for base URLs that don't match any of
             // its paths (AppApiService's) - it falls through to the real request.
             .apply { if (BuildConfig.DEBUG) addInterceptor(MockDataInterceptor()) }
+            .addInterceptor(requestIdInterceptor)
             .apply { authInterceptor?.let(::addInterceptor) }
             .apply { interceptors.forEach(::addInterceptor) }
             .addInterceptor(loggingInterceptor)
