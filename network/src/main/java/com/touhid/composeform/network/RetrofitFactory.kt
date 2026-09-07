@@ -1,7 +1,7 @@
 package com.touhid.composeform.network
 
-import com.touhid.composeform.network.interceptor.MockDataInterceptor
 import com.touhid.composeform.network.interceptor.RequestIdInterceptor
+import com.touhid.composeform.network.mock.MockDataInterceptor
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -34,8 +34,9 @@ internal class RetrofitFactory @Inject constructor(
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            // TODO: remove once the real backend is live - also delete MockDataInterceptor.kt and
-            // MockJson.kt (network/) at the same time, they exist solely to back this call.
+            // TODO: remove once the real backend is live - also delete the whole network/mock/
+            // package (MockDataInterceptor.kt, MockJson.kt) at the same time, it exists solely to
+            // back this call.
             // Debug-gated so a release build can never end up silently serving fake data instead
             // of failing to reach a real backend. Harmless for base URLs that don't match any of
             // its paths (AppApiService's) - it falls through to the real request.

@@ -1,4 +1,4 @@
-package com.touhid.composeform.network.interceptor
+package com.touhid.composeform.network.mock
 
 // Canned responses for MockDataInterceptor - the same fixture data the UI previously carried
 // locally (as sample JSON parsed directly in :app) before the lead/acquisition endpoints were
