@@ -20,6 +20,7 @@ internal class MockDataInterceptor : Interceptor {
         val path = request.url.encodedPath
         val json = when {
             path.endsWith("/v1/leads") -> MockJson.LEAD_DASHBOARD
+            path.endsWith("/ekyc") -> MockJson.EKYC_SUBMIT_SUCCESS
             path.endsWith("/v1/forms/specific") -> MockJson.SPECIFIC_FORM
             // Checked before the "/v1/acquisitions/" contains-branch below, since
             // ".../acquisitions/{leadId}/reasons" and ".../decision" would otherwise match that

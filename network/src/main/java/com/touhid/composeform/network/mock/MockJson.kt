@@ -243,6 +243,13 @@ internal object MockJson {
     }
     """.trimIndent()
 
+    val EKYC_SUBMIT_SUCCESS = """
+    {
+      "is_error": false,
+      "message": "success"
+    }
+    """.trimIndent()
+
     val ACQUISITION_LIST = """
     {
       "data": {

@@ -36,6 +36,14 @@ data class LeadDashboardState(
     // Bumped on every successful first-page load (filter switch, search, refresh, retry) - the
     // screen scrolls the list back to the top whenever this changes, but never on a page append.
     val loadedRevision: Int = 0,
+    // Lead ids with an eKYC submission currently in flight - a Set (not a single nullable id) so
+    // tapping one card's submit button doesn't disable another card's, and two different leads can
+    // submit concurrently without one cancelling the other.
+    val submittingEkycLeadIds: Set<Long> = emptySet(),
+    // One-shot: set to the lead just successfully submitted, so the screen can invoke its own
+    // onSubmitEkyc callback exactly once - cleared via OnEkycSubmitHandled right after.
+    val submittedEkycLead: LeadListItem? = null,
+    val ekycSubmitError: String? = null,
 )
 
 sealed interface LeadDashboardAction {
@@ -49,6 +57,11 @@ sealed interface LeadDashboardAction {
     data object OnRetry : LeadDashboardAction
     data object OnRefresh : LeadDashboardAction
     data object OnLoadNextPage : LeadDashboardAction
+    data class OnSubmitEkycTapped(val lead: LeadListItem) : LeadDashboardAction
+    // Dispatched by the screen right after it acts on a successful submittedEkycLead (invoking its
+    // own onSubmitEkyc callback) - clears the one-shot signal so a config-change-driven
+    // recomposition (the ViewModel survives, the Compose slot table doesn't) can't re-fire it.
+    data object OnEkycSubmitHandled : LeadDashboardAction
 }
 
 @HiltViewModel
@@ -101,6 +114,23 @@ class LeadDashboardViewModel @Inject constructor(
             LeadDashboardAction.OnRefresh -> loadFirstPage(isRefresh = true)
             LeadDashboardAction.OnLoadNextPage -> loadNextPage()
             LeadDashboardAction.OnRetry -> if (retryLoadsNextPage) loadNextPage() else loadFirstPage()
+            is LeadDashboardAction.OnSubmitEkycTapped -> submitEkyc(action.lead)
+            LeadDashboardAction.OnEkycSubmitHandled -> _state.update { it.copy(submittedEkycLead = null) }
+        }
+    }
+
+    private fun submitEkyc(lead: LeadListItem) {
+        if (lead.id in _state.value.submittingEkycLeadIds) return
+        _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds + lead.id, ekycSubmitError = null) }
+        viewModelScope.launch {
+            when (val result = repository.submitEkyc(lead.id)) {
+                is NetworkResult.Success -> _state.update {
+                    it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id, submittedEkycLead = lead)
+                }
+                is NetworkResult.Failure -> _state.update {
+                    it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id, ekycSubmitError = result.error.message)
+                }
+            }
         }
     }
 
