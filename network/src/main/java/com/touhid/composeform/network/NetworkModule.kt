@@ -1,21 +1,25 @@
 package com.touhid.composeform.network
 
+import com.touhid.composeform.network.api.AnalyticsApiService
 import com.touhid.composeform.network.api.AppApiService
+import com.touhid.composeform.network.api.PartnerApiService
+import com.touhid.composeform.network.api.PaymentApiService
 import com.touhid.composeform.network.auth.AuthInterceptor
+import com.touhid.composeform.network.interceptor.HeaderInterceptor
+import com.touhid.composeform.network.qualifier.AnalyticsBaseUrl
+import com.touhid.composeform.network.qualifier.AnalyticsRetrofit
+import com.touhid.composeform.network.qualifier.BaseUrl
+import com.touhid.composeform.network.qualifier.PartnerBaseUrl
+import com.touhid.composeform.network.qualifier.PartnerRetrofit
+import com.touhid.composeform.network.qualifier.PaymentBaseUrl
+import com.touhid.composeform.network.qualifier.PaymentRetrofit
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.converter.scalars.ScalarsConverterFactory
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-
-private const val TIMEOUT_SECONDS = 30L
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -30,34 +34,54 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(
-        authInterceptor: AuthInterceptor,
-        loggingInterceptor: HttpLoggingInterceptor,
-    ): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-        // TODO: remove once the real backend is live - also delete MockDataInterceptor.kt and
-        // MockJson.kt (network/) at the same time, they exist solely to back this call. Debug-gated
-        // the same way provideLoggingInterceptor() above is, so a release build can never end up
-        // silently serving fake data instead of failing to reach a real backend.
-        .apply { if (BuildConfig.DEBUG) addInterceptor(MockDataInterceptor()) }
-        .addInterceptor(authInterceptor)
-        .addInterceptor(loggingInterceptor)
-        .build()
-
-    @Provides
-    @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, @BaseUrl baseUrl: String): Retrofit =
-        Retrofit.Builder()
-            .baseUrl(if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/")
-            .client(okHttpClient)
-            .addConverterFactory(ScalarsConverterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create())
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .build()
+    fun provideRetrofit(factory: RetrofitFactory, authInterceptor: AuthInterceptor, @BaseUrl baseUrl: String): Retrofit =
+        factory.create(baseUrl = baseUrl, authInterceptor = authInterceptor)
 
     @Provides
     @Singleton
     fun provideAppApiService(retrofit: Retrofit): AppApiService = retrofit.create(AppApiService::class.java)
+
+    @Provides
+    @Singleton
+    @PaymentRetrofit
+    fun providePaymentRetrofit(factory: RetrofitFactory, authInterceptor: AuthInterceptor, @PaymentBaseUrl baseUrl: String): Retrofit =
+        factory.create(baseUrl = baseUrl, authInterceptor = authInterceptor)
+
+    @Provides
+    @Singleton
+    fun providePaymentApiService(@PaymentRetrofit retrofit: Retrofit): PaymentApiService =
+        retrofit.create(PaymentApiService::class.java)
+
+    @Provides
+    @Singleton
+    @AnalyticsRetrofit
+    fun provideAnalyticsRetrofit(factory: RetrofitFactory, authInterceptor: AuthInterceptor, @AnalyticsBaseUrl baseUrl: String): Retrofit =
+        factory.create(
+            baseUrl = baseUrl,
+            authInterceptor = authInterceptor,
+            interceptors = listOf(HeaderInterceptor(mapOf("X-Client-Id" to "composeform-app"))),
+        )
+
+    @Provides
+    @Singleton
+    fun provideAnalyticsApiService(@AnalyticsRetrofit retrofit: Retrofit): AnalyticsApiService =
+        retrofit.create(AnalyticsApiService::class.java)
+
+    // Partner is a third-party backend, not ours - authInterceptor is omitted entirely (not
+    // just conditionally skipped) so it can never receive our app's bearer token; it gets its
+    // own API key header instead.
+    @Provides
+    @Singleton
+    @PartnerRetrofit
+    fun providePartnerRetrofit(factory: RetrofitFactory, @PartnerBaseUrl baseUrl: String): Retrofit =
+        factory.create(
+            baseUrl = baseUrl,
+            authInterceptor = null,
+            interceptors = listOf(HeaderInterceptor(mapOf("X-Api-Key" to "placeholder-partner-api-key"))),
+        )
+
+    @Provides
+    @Singleton
+    fun providePartnerApiService(@PartnerRetrofit retrofit: Retrofit): PartnerApiService =
+        retrofit.create(PartnerApiService::class.java)
 }

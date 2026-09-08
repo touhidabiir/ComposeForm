@@ -11,5 +11,5 @@ import dagger.hilt.components.SingletonComponent
 abstract class AppTokenModule {
 
     @Binds
-    abstract fun bindTokenProvider(impl: InMemoryTokenProvider): TokenProvider
+    abstract fun bindTokenProvider(impl: EncryptedTokenProvider): TokenProvider
 }
