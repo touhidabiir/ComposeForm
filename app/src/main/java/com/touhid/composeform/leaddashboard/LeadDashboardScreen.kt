@@ -1,5 +1,9 @@
 package com.touhid.composeform.leaddashboard
 
+import android.app.Activity
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -41,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -170,6 +175,28 @@ private fun LeadDashboardContent(
         snackbarHostState.showMessage(message = state.ekycSubmitError)
     }
 
+    // Tapping a card's eKYC button no longer calls the API directly - it launches
+    // EkycVerificationActivity first, and only a RESULT_OK finish (see startEkycVerification
+    // below) dispatches OnSubmitEkycTapped. pendingEkycLead remembers which lead that launch was
+    // for, since the ActivityResultLauncher's result callback has no other way to know - the
+    // launch and its result arrive as two separate events with this screen's own recomposition
+    // in between.
+    val context = LocalContext.current
+    var pendingEkycLead by remember { mutableStateOf<LeadListItem?>(null) }
+    val ekycVerificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        val lead = pendingEkycLead
+        pendingEkycLead = null
+        if (result.resultCode == Activity.RESULT_OK && lead != null) {
+            onAction(LeadDashboardAction.OnSubmitEkycTapped(lead))
+        }
+    }
+    fun startEkycVerification(lead: LeadListItem) {
+        pendingEkycLead = lead
+        ekycVerificationLauncher.launch(Intent(context, EkycVerificationActivity::class.java))
+    }
+
     // isLoading and an in-flight eKYC submission are mutually exclusive in practice (the latter
     // only starts from a fully-loaded list), but checking both rather than assuming that keeps
     // this correct even if that ever changes - either one blocks interaction with its own dialog.
@@ -286,7 +313,7 @@ private fun LeadDashboardContent(
                         itemsIndexed(items = state.leads, key = { index, lead -> "${lead.id}_$index" }) { _, lead ->
                             LeadListCard(
                                 lead = lead,
-                                onSubmitEkycTapped = { onAction(LeadDashboardAction.OnSubmitEkycTapped(lead)) },
+                                onSubmitEkycTapped = { startEkycVerification(lead) },
                             )
                         }
                         if (state.isLoadingMore) {
