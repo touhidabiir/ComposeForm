@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.model.AcquisitionDetail
 import com.touhid.composeform.network.model.AcquisitionReason
-import com.touhid.composeform.network.repository.AppRepository
+import com.touhid.composeform.data.repository.AppRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow

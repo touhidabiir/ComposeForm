@@ -46,6 +46,7 @@ dependencies {
     implementation(project(":designsystem"))
     implementation(project(":formbuilder"))
     implementation(project(":network"))
+    implementation(project(":data"))
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
