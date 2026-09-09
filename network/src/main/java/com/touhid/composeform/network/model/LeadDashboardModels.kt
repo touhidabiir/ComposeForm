@@ -17,10 +17,21 @@ data class LeadDashboardPage(
     val results: List<LeadListItem>,
 )
 
+// The pending/approved/rejected <-> JSON string mapping lives entirely in LeadStatusTypeAdapter
+// (registered on the Gson instance in NetworkModule), not via @SerializedName here - Gson's
+// default enum handling silently maps an unrecognized value to null, which would then sit inside
+// this non-null Kotlin property as an unchecked platform null. The adapter maps anything it
+// doesn't recognize to Unknown instead, so a new backend status is visible/handleable rather than
+// silently breaking Kotlin's null-safety.
 enum class LeadStatus {
-    @SerializedName("pending") Pending,
-    @SerializedName("approved") Approved,
-    @SerializedName("rejected") Rejected,
+    Pending,
+    Approved,
+    Rejected,
+    // Fallback for any status value the backend sends that this app doesn't know about yet -
+    // never itself present in the wire format. Existing LeadStatus checks compare against a
+    // specific known constant inside a when {} with an else/no-match fallthrough, so Unknown
+    // already falls through those safely - add an explicit branch wherever that's not enough.
+    Unknown,
 }
 
 data class Reviewer(

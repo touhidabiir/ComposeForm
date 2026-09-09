@@ -1,7 +1,11 @@
 package com.touhid.composeform.network
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.touhid.composeform.network.api.AppApiService
 import com.touhid.composeform.network.auth.AuthInterceptor
+import com.touhid.composeform.network.model.LeadStatus
+import com.touhid.composeform.network.model.LeadStatusTypeAdapter
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -48,12 +52,18 @@ internal object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient, @BaseUrl baseUrl: String): Retrofit =
+    fun provideGson(): Gson = GsonBuilder()
+        .registerTypeAdapter(LeadStatus::class.java, LeadStatusTypeAdapter)
+        .create()
+
+    @Provides
+    @Singleton
+    fun provideRetrofit(okHttpClient: OkHttpClient, @BaseUrl baseUrl: String, gson: Gson): Retrofit =
         Retrofit.Builder()
             .baseUrl(if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/")
             .client(okHttpClient)
             .addConverterFactory(ScalarsConverterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .build()
 
