@@ -115,9 +115,13 @@ class LeadDashboardViewModel @Inject constructor(
 
     // Success/failure are both silent to the user (no snackbar, no callback) - on success the
     // list still needs to reflect the submitted lead's now-current canSubmitEkyc/isEkycSubmitted,
-    // so it's silently resynced the same way AcquisitionApprovalListViewModel resyncs after a
-    // decision: reload the current page without bumping loadedRevision, so the list doesn't jump
-    // back to the top out from under the user.
+    // so it's resynced via a plain page-1 reload (same as OnRefresh). A resync that tried to
+    // preserve deep pagination (re-fetching every page up to the current one, or reloading just
+    // the current page) either means N network calls for a user N pages deep, or - since the API
+    // only supports fetching by page number, not by item - silently truncating state.leads back
+    // to one page's worth while leaving state.page claiming a depth the list no longer has. A
+    // single page-1 reload plus scrolling back to top is the simplest correct option even though
+    // it loses the user's scroll depth.
     private fun submitEkyc(lead: LeadListItem) {
         if (lead.id in _state.value.submittingEkycLeadIds) return
         _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds + lead.id) }
@@ -125,7 +129,7 @@ class LeadDashboardViewModel @Inject constructor(
             when (val result = repository.submitEkyc(lead.id)) {
                 is NetworkResult.Success -> {
                     _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id) }
-                    loadFirstPage(isRefresh = true, resetScroll = false)
+                    loadFirstPage(isRefresh = true)
                 }
                 is NetworkResult.Failure -> {
                     _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id) }
@@ -135,7 +139,7 @@ class LeadDashboardViewModel @Inject constructor(
         }
     }
 
-    private fun loadFirstPage(isRefresh: Boolean = false, resetScroll: Boolean = true) {
+    private fun loadFirstPage(isRefresh: Boolean = false) {
         val filter = _state.value.selectedFilter
         val search = _state.value.activeSearchQuery
         retryLoadsNextPage = false
@@ -172,7 +176,7 @@ class LeadDashboardViewModel @Inject constructor(
                         totalCount = result.data.count,
                         page = 1,
                         hasMore = 1 < result.data.totalPages,
-                        loadedRevision = if (resetScroll) it.loadedRevision + 1 else it.loadedRevision,
+                        loadedRevision = it.loadedRevision + 1,
                     )
                 }
                 is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, isRefreshing = false, error = result.error.message) }
