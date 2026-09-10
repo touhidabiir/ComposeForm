@@ -317,11 +317,14 @@ private fun LeadDashboardContent(
 @Composable
 private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
     val iconModifier = Modifier.size(RowIconSize)
+    // else only catches a status this app doesn't recognize (Gson silently maps an unrecognized
+    // JSON value to null for this non-null-typed field) - kept distinct from Rejected's own
+    // explicit branch so an unknown status is never mislabeled as rejected.
     val (badgeLabel, badgeTone) = when {
-        lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> "ই-কেওয়াইসি জমা হয়েছে" to AppStatusTone.Success
         lead.status == LeadStatus.Approved -> "অনুমোদিত" to AppStatusTone.Success
         lead.status == LeadStatus.Pending -> "পেন্ডিং" to AppStatusTone.Warning
-        else -> "বাতিল" to AppStatusTone.Error
+        lead.status == LeadStatus.Rejected -> "বাতিল" to AppStatusTone.Error
+        else -> "অজানা" to AppStatusTone.Neutral
     }
     var showRejectionDetails by remember { mutableStateOf(false) }
 
