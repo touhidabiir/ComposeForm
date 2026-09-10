@@ -109,7 +109,6 @@ private val RejectionBannerBackground = Color(0xFFFFF8FB)
 @Composable
 fun LeadDashboardScreen(
     onBack: () -> Unit,
-    onSubmitEkyc: (LeadListItem) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LeadDashboardViewModel = hiltViewModel(),
 ) {
@@ -118,7 +117,6 @@ fun LeadDashboardScreen(
         state = state,
         onBack = onBack,
         onAction = viewModel::onAction,
-        onSubmitEkyc = onSubmitEkyc,
         modifier = modifier,
     )
 }
@@ -128,7 +126,6 @@ private fun LeadDashboardContent(
     state: LeadDashboardState,
     onBack: () -> Unit,
     onAction: (LeadDashboardAction) -> Unit,
-    onSubmitEkyc: (LeadListItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(Unit) { onAction(LeadDashboardAction.OnScreenStart) }
@@ -158,21 +155,6 @@ private fun LeadDashboardContent(
         if (state.error == null) return@LaunchedEffect
         val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
         if (result == AppSnackbarResult.ActionPerformed) onAction(LeadDashboardAction.OnRetry)
-    }
-
-    // Fires once per successful eKYC submission - invokes the screen's own onSubmitEkyc callback
-    // (unchanged from before this call existed) exactly once, then tells the ViewModel the one-shot
-    // signal has been handled so a later recomposition with the same ViewModel instance (e.g. after
-    // a configuration change) can't re-invoke it.
-    LaunchedEffect(state.submittedEkycLead) {
-        val lead = state.submittedEkycLead ?: return@LaunchedEffect
-        onSubmitEkyc(lead)
-        onAction(LeadDashboardAction.OnEkycSubmitHandled)
-    }
-
-    LaunchedEffect(state.ekycSubmitError) {
-        if (state.ekycSubmitError == null) return@LaunchedEffect
-        snackbarHostState.showMessage(message = state.ekycSubmitError)
     }
 
     // Tapping a card's eKYC button no longer calls the API directly - it launches
@@ -570,7 +552,6 @@ private fun LeadDashboardScreenPreview() {
             state = LeadDashboardState(isLoading = false, leads = PreviewLeads, selectedFilter = LeadStatusFilter.Pending),
             onBack = {},
             onAction = {},
-            onSubmitEkyc = {},
         )
     }
 }
