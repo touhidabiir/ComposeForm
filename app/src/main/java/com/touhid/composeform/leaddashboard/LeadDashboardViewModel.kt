@@ -1,5 +1,6 @@
 package com.touhid.composeform.leaddashboard
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.touhid.composeform.network.NetworkResult
@@ -38,12 +39,10 @@ data class LeadDashboardState(
     val loadedRevision: Int = 0,
     // Lead ids with an eKYC submission currently in flight - a Set (not a single nullable id) so
     // tapping one card's submit button doesn't disable another card's, and two different leads can
-    // submit concurrently without one cancelling the other.
+    // submit concurrently without one cancelling the other. Drives the blocking AppProgressDialog;
+    // success/failure are otherwise silent (see submitEkyc) - no snackbar, no callback - so there's
+    // no separate one-shot result field to track here.
     val submittingEkycLeadIds: Set<Long> = emptySet(),
-    // One-shot: set to the lead just successfully submitted, so the screen can invoke its own
-    // onSubmitEkyc callback exactly once - cleared via OnEkycSubmitHandled right after.
-    val submittedEkycLead: LeadListItem? = null,
-    val ekycSubmitError: String? = null,
 )
 
 sealed interface LeadDashboardAction {
@@ -58,10 +57,6 @@ sealed interface LeadDashboardAction {
     data object OnRefresh : LeadDashboardAction
     data object OnLoadNextPage : LeadDashboardAction
     data class OnSubmitEkycTapped(val lead: LeadListItem) : LeadDashboardAction
-    // Dispatched by the screen right after it acts on a successful submittedEkycLead (invoking its
-    // own onSubmitEkyc callback) - clears the one-shot signal so a config-change-driven
-    // recomposition (the ViewModel survives, the Compose slot table doesn't) can't re-fire it.
-    data object OnEkycSubmitHandled : LeadDashboardAction
 }
 
 @HiltViewModel
@@ -115,20 +110,30 @@ class LeadDashboardViewModel @Inject constructor(
             LeadDashboardAction.OnLoadNextPage -> loadNextPage()
             LeadDashboardAction.OnRetry -> if (retryLoadsNextPage) loadNextPage() else loadFirstPage()
             is LeadDashboardAction.OnSubmitEkycTapped -> submitEkyc(action.lead)
-            LeadDashboardAction.OnEkycSubmitHandled -> _state.update { it.copy(submittedEkycLead = null) }
         }
     }
 
+    // Success/failure are both silent to the user (no snackbar, no callback) - on success the
+    // list still needs to reflect the submitted lead's now-current canSubmitEkyc/isEkycSubmitted,
+    // so it's resynced via a plain page-1 reload (same as OnRefresh). A resync that tried to
+    // preserve deep pagination (re-fetching every page up to the current one, or reloading just
+    // the current page) either means N network calls for a user N pages deep, or - since the API
+    // only supports fetching by page number, not by item - silently truncating state.leads back
+    // to one page's worth while leaving state.page claiming a depth the list no longer has. A
+    // single page-1 reload plus scrolling back to top is the simplest correct option even though
+    // it loses the user's scroll depth.
     private fun submitEkyc(lead: LeadListItem) {
         if (lead.id in _state.value.submittingEkycLeadIds) return
-        _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds + lead.id, ekycSubmitError = null) }
+        _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds + lead.id) }
         viewModelScope.launch {
             when (val result = repository.submitEkyc(lead.id)) {
-                is NetworkResult.Success -> _state.update {
-                    it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id, submittedEkycLead = lead)
+                is NetworkResult.Success -> {
+                    _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id) }
+                    loadFirstPage(isRefresh = true)
                 }
-                is NetworkResult.Failure -> _state.update {
-                    it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id, ekycSubmitError = result.error.message)
+                is NetworkResult.Failure -> {
+                    _state.update { it.copy(submittingEkycLeadIds = it.submittingEkycLeadIds - lead.id) }
+                    Log.w(TAG, "eKYC submission failed for lead ${lead.id}: ${result.error.message}")
                 }
             }
         }
@@ -197,5 +202,9 @@ class LeadDashboardViewModel @Inject constructor(
                 is NetworkResult.Failure -> _state.update { it.copy(isLoadingMore = false, error = result.error.message) }
             }
         }
+    }
+
+    private companion object {
+        const val TAG = "LeadDashboard"
     }
 }

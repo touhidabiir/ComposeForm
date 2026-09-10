@@ -26,6 +26,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".leaddashboard.EkycVerificationActivity"
+            android:exported="false"
+            android:label="eKYC Verification"
+            android:theme="@style/Theme.ComposeForm" />
     </application>
 
 </manifest>
