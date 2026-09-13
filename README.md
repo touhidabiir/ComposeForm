@@ -2,7 +2,7 @@
 
 ComposeForm renders a fully interactive form from a JSON schema — no per-screen Compose UI code needed. You write (or fetch from an API) a JSON document describing fields, options, styling, layout, and conditional visibility; `parseFormSchema` turns it into a `FormSchema`, and `FormRenderer` draws it.
 
-The project is split into three modules — `:app` (shell), `:designsystem` (Material3-based UI components), `:formbuilder` (JSON schema + rendering, the subject of this document). See `CLAUDE.md` for the full module architecture and conventions; this document is specifically a reference for **what the JSON schema supports**.
+The project is split into four modules — `:app` (shell), `:designsystem` (Material3-based UI components), `:formbuilder` (JSON schema + rendering, the subject of this document), `:network` (Retrofit/OkHttp networking). See `CLAUDE.md` for the full module architecture and conventions; this document is specifically a reference for **what the JSON schema supports**.
 
 ## Quick start
 
