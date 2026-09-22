@@ -5,6 +5,7 @@ import com.touhid.composeform.network.api.AppApiService
 import com.touhid.composeform.network.api.PartnerApiService
 import com.touhid.composeform.network.api.PaymentApiService
 import com.touhid.composeform.network.auth.AuthInterceptor
+import com.touhid.composeform.network.interceptor.ErrorInterceptor
 import com.touhid.composeform.network.interceptor.HeaderInterceptor
 import com.touhid.composeform.network.qualifier.AnalyticsBaseUrl
 import com.touhid.composeform.network.qualifier.AnalyticsRetrofit
@@ -32,10 +33,18 @@ internal object NetworkModule {
             level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
         }
 
+    // errorInterceptor is scoped to just this base URL, not passed to RetrofitFactory
+    // unconditionally the way requestIdInterceptor is - the {is_error, message, status} envelope
+    // is this app's own backend's shape, not something Payment/Analytics/Partner (unrelated
+    // backends) are guaranteed to return the same way.
     @Provides
     @Singleton
-    fun provideRetrofit(factory: RetrofitFactory, authInterceptor: AuthInterceptor, @BaseUrl baseUrl: String): Retrofit =
-        factory.create(baseUrl = baseUrl, authInterceptor = authInterceptor)
+    fun provideRetrofit(
+        factory: RetrofitFactory,
+        authInterceptor: AuthInterceptor,
+        errorInterceptor: ErrorInterceptor,
+        @BaseUrl baseUrl: String,
+    ): Retrofit = factory.create(baseUrl = baseUrl, authInterceptor = authInterceptor, interceptors = listOf(errorInterceptor))
 
     @Provides
     @Singleton
