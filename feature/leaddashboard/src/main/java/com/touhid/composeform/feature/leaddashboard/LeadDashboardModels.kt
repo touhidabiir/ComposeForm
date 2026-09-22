@@ -1,4 +1,4 @@
-package com.touhid.composeform.leaddashboard
+package com.touhid.composeform.feature.leaddashboard
 
 import com.touhid.composeform.network.model.LeadListItem
 

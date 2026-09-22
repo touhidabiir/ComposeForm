@@ -1,5 +1,6 @@
-package com.touhid.composeform.leaddashboard
+package com.touhid.composeform.feature.leaddashboard
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -49,7 +50,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.OnEndOfListReached
 import com.touhid.composeform.common.copyIconButton
@@ -78,6 +78,7 @@ import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 import com.touhid.composeform.network.model.LeadCloser
@@ -532,13 +533,15 @@ private val PreviewLeads = listOf(
     ),
 )
 
-// Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
-// system setting - that's how this screen actually renders in the real app, so a "Dark" tile
-// here would show something the app never does.
-@Preview(name = "Lead Dashboard", showBackground = true)
+// :app's ComposeFormAppTheme forces light-only at runtime (that's how this screen actually
+// renders in the real app), but this feature module can't depend on :app - that dependency would
+// run backwards, since :app assembles feature modules like this one, not the other way around.
+// Uses :designsystem's own ComposeFormTheme directly instead, with both Light/Dark variants.
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun LeadDashboardScreenPreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         LeadDashboardContent(
             state = LeadDashboardState(isLoading = false, leads = PreviewLeads, selectedFilter = LeadStatusFilter.Pending),
             onBack = {},

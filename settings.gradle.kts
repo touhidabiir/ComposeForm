@@ -28,4 +28,6 @@ include(":designsystem")
 include(":formbuilder")
 include(":network")
 include(":data")
+include(":common")
+include(":feature:leaddashboard")
  
