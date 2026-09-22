@@ -1,5 +1,6 @@
-package com.touhid.composeform.acquisition
+package com.touhid.composeform.feature.acquisition
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -36,7 +37,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.OnEndOfListReached
 import com.touhid.composeform.common.copyIconButton
@@ -61,6 +61,7 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.network.model.AcquisitionListItem
 import com.touhid.composeform.network.model.LeadCloser
@@ -310,13 +311,15 @@ private val PreviewItems = listOf(
     ),
 )
 
-// Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
-// system setting - that's how this screen actually renders in the real app, so a "Dark" tile
-// here would show something the app never does.
-@Preview(name = "Acquisition Approval List", showBackground = true)
+// :app's ComposeFormAppTheme forces light-only at runtime (that's how this screen actually
+// renders in the real app), but this feature module can't depend on :app - that dependency would
+// run backwards, since :app assembles feature modules like this one, not the other way around.
+// Uses :designsystem's own ComposeFormTheme directly instead, with both Light/Dark variants.
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun AcquisitionApprovalListScreenPreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         AcquisitionApprovalListContent(
             state = AcquisitionApprovalListState(isLoading = false, items = PreviewItems),
             onBack = {},

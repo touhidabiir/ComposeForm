@@ -1,5 +1,6 @@
-package com.touhid.composeform.acquisition
+package com.touhid.composeform.feature.acquisition
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -53,7 +54,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.copyIconButton
 import com.touhid.composeform.designsystem.components.button.AppButton
@@ -82,6 +82,7 @@ import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
@@ -857,11 +858,14 @@ private val PreviewRejectReasons = listOf(
 // Rendered directly inside a plain Column (mimicking AppBottomSheet's own white background/
 // padding) rather than through the real sheet, for the same Popup/preview-renderer reason as
 // SurveyResponsesSheetPreview below. heightDp is tall enough to show the full content (Likert
-// scale + all reason rows + text field + confirm button) unclipped.
+// scale + all reason rows + text field + confirm button) unclipped. No Dark variant - the
+// hardcoded Color.White background below (mimicking the real sheet) wouldn't show anything a
+// dark theme actually changes. Uses :designsystem's own ComposeFormTheme, not :app's
+// ComposeFormAppTheme - a feature module can't depend back on :app.
 @Preview(name = "Approval Reason Sheet - Approve", showBackground = true, heightDp = 900)
 @Composable
 private fun ApprovalReasonSheetContentApprovePreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         Column(modifier = Modifier.fillMaxWidth().background(Color.White).padding(AppSpacing.Medium)) {
             ApprovalReasonSheetContent(
                 type = ReasonSheetType.Approve,
@@ -879,7 +883,7 @@ private fun ApprovalReasonSheetContentApprovePreview() {
 @Preview(name = "Approval Reason Sheet - Reject", showBackground = true, heightDp = 900)
 @Composable
 private fun ApprovalReasonSheetContentRejectPreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         Column(modifier = Modifier.fillMaxWidth().background(Color.White).padding(AppSpacing.Medium)) {
             ApprovalReasonSheetContent(
                 type = ReasonSheetType.Reject,
@@ -953,15 +957,18 @@ private val PreviewDetail = AcquisitionDetail(
     ),
 )
 
-// Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
-// system setting - that's how this screen actually renders in the real app, so a "Dark" tile
-// here would show something the app never does. heightDp is tall enough to lay out the whole
-// scrollable column (score section + 3 photos + all info cards) without clipping, since a
-// default-height preview canvas would otherwise just show the top of the screen.
-@Preview(name = "Acquisition Approval Detail", showBackground = true, heightDp = 2000)
+// :app's ComposeFormAppTheme forces light-only at runtime (that's how this screen actually
+// renders in the real app), but this feature module can't depend on :app - that dependency would
+// run backwards, since :app assembles feature modules like this one, not the other way around.
+// Uses :designsystem's own ComposeFormTheme directly instead, with both Light/Dark variants.
+// heightDp is tall enough to lay out the whole scrollable column (score section + 3 photos + all
+// info cards) without clipping, since a default-height preview canvas would otherwise just show
+// the top of the screen.
+@Preview(name = "Light", showBackground = true, heightDp = 2000)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 2000)
 @Composable
 private fun AcquisitionApprovalDetailScreenPreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         AcquisitionApprovalDetailContent(
             state = AcquisitionApprovalDetailState(isLoading = false, detail = PreviewDetail),
             onBack = {},
@@ -977,11 +984,12 @@ private fun AcquisitionApprovalDetailScreenPreview() {
 // window, which Compose's static preview renderer never captures, so a preview wrapping the real
 // sheet call would always render blank. This Column mimics the sheet's own white background/
 // padding (see AppBottomSheet) closely enough for a layout preview. heightDp is tall enough that
-// all five PreviewDetail.surveyResponses rows are visible.
+// all five PreviewDetail.surveyResponses rows are visible. No Dark variant - the hardcoded
+// Color.White background below wouldn't show anything a dark theme actually changes.
 @Preview(name = "Survey Responses Sheet", showBackground = true, heightDp = 700)
 @Composable
 private fun SurveyResponsesSheetPreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         Column(
             modifier = Modifier
                 .fillMaxWidth()

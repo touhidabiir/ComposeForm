@@ -30,4 +30,4 @@ include(":network")
 include(":data")
 include(":common")
 include(":feature:leaddashboard")
- 
+include(":feature:acquisition")

@@ -24,9 +24,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.touhid.composeform.acquisition.AcquisitionApprovalDetailScreen
-import com.touhid.composeform.acquisition.AcquisitionApprovalListScreen
-import com.touhid.composeform.acquisition.ReasonSheetType
+import com.touhid.composeform.feature.acquisition.AcquisitionApprovalDetailScreen
+import com.touhid.composeform.feature.acquisition.AcquisitionApprovalListScreen
+import com.touhid.composeform.feature.acquisition.ReasonSheetType
 import dagger.hilt.android.AndroidEntryPoint
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
