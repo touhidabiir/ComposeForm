@@ -20,9 +20,10 @@ suspend fun <T> safeApiCall(
     } catch (e: ApiException) {
         // Caught ahead of the generic IOException branch below - ApiException is an IOException
         // subtype (see ErrorInterceptor.kt), so without this specific branch first it would fall
-        // through to NoConnection, which is wrong: this is a backend-reported business error, not
-        // a connectivity failure.
-        NetworkResult.Failure(NetworkError.Api(status = e.status, message = e.apiMessage))
+        // through to NoConnection, which is wrong: this is an HTTP failure, not a connectivity one.
+        // Maps onto the same NetworkError.Http case the plain HttpException branch below does -
+        // just with the backend's own message/status instead of the generic HTTP reason phrase.
+        NetworkResult.Failure(NetworkError.Http(code = e.code, errorBody = e.rawBody, status = e.status, message = e.apiMessage))
     } catch (e: HttpException) {
         NetworkResult.Failure(
             NetworkError.Http(

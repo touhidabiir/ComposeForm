@@ -34,7 +34,7 @@ internal object NetworkModule {
         }
 
     // errorInterceptor is scoped to just this base URL, not passed to RetrofitFactory
-    // unconditionally the way requestIdInterceptor is - the {is_error, message, status} envelope
+    // unconditionally the way requestIdInterceptor is - its {message, status} error-body parsing
     // is this app's own backend's shape, not something Payment/Analytics/Partner (unrelated
     // backends) are guaranteed to return the same way.
     @Provides
