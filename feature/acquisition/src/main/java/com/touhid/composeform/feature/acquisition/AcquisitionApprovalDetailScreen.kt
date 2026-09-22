@@ -47,6 +47,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringArrayResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -100,6 +102,7 @@ import com.touhid.composeform.network.model.OutletInfo
 import com.touhid.composeform.network.model.PremiumnessScoreRange
 import com.touhid.composeform.network.model.SurveyResponse
 import com.touhid.composeform.network.model.WalletInfo
+import com.touhid.composeform.common.R as CommonR
 
 private val RowIconSize = 16.dp
 private const val MaxPremiumnessScore = 100
@@ -122,8 +125,11 @@ private val genericRowIcon: @Composable () -> Unit = {
     )
 }
 
-private fun Boolean.toBengaliYesNo(): String = if (this) "হ্যাঁ" else "না"
-private fun Boolean.toYesNo(): String = if (this) "Yes" else "No"
+@Composable
+private fun Boolean.toBengaliYesNo(): String = stringResource(if (this) R.string.acquisition_yes_bn else R.string.acquisition_no_bn)
+
+@Composable
+private fun Boolean.toYesNo(): String = stringResource(if (this) R.string.acquisition_yes else R.string.acquisition_no)
 
 @Composable
 fun AcquisitionApprovalDetailScreen(
@@ -156,9 +162,11 @@ private fun AcquisitionApprovalDetailContent(
     LaunchedEffect(Unit) { onAction(AcquisitionApprovalDetailAction.OnScreenStart) }
 
     val snackbarHostState = rememberAppSnackbarHostState()
+    val retryMessage = stringResource(CommonR.string.common_retry_message)
+    val retryAction = stringResource(CommonR.string.common_retry_action)
     LaunchedEffect(state.error) {
         if (state.error == null) return@LaunchedEffect
-        val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
+        val result = snackbarHostState.showMessage(message = retryMessage, actionLabel = retryAction)
         if (result == AppSnackbarResult.ActionPerformed) onAction(AcquisitionApprovalDetailAction.OnRetry)
     }
     LaunchedEffect(state.submittedDecision) {
@@ -198,14 +206,14 @@ private fun AcquisitionApprovalDetailContent(
                     // own confirm button successfully submits (see the submittedDecision
                     // LaunchedEffect above).
                     AppOutlinedButton(
-                        text = "Reject",
+                        text = stringResource(R.string.acquisition_reject),
                         onClick = { onAction(AcquisitionApprovalDetailAction.OnRejectTapped) },
                         buttonType = AppButtonStyle.Danger,
                         leadingIcon = { AppIcon(icon = Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = StatusError) },
                         modifier = Modifier.weight(1f),
                     )
                     AppButton(
-                        text = "Approve",
+                        text = stringResource(R.string.acquisition_approve),
                         onClick = { onAction(AcquisitionApprovalDetailAction.OnApproveTapped) },
                         buttonType = AppButtonStyle.Success,
                         leadingIcon = { AppIcon(icon = Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = Color.White) },
@@ -224,7 +232,7 @@ private fun AcquisitionApprovalDetailContent(
             }
         } else {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                ListEmptyState(message = "কোনো তথ্য পাওয়া যায়নি")
+                ListEmptyState(message = stringResource(R.string.acquisition_no_detail))
             }
         }
     }
@@ -266,9 +274,9 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
             ScoreSection(score = detail.premiumnessScore, ranges = detail.premiumnessScoreRanges, surveyResponses = detail.surveyResponses)
         }
 
-        PhotoBlock(caption = "আউটলেটের বাহিরের ছবি", counter = "1/3".toBengaliDigits(), imageUrl = detail.images.shopImageOutside)
-        PhotoBlock(caption = "আউটলেটের ভিতরের ছবি", counter = "2/3".toBengaliDigits(), imageUrl = detail.images.shopImageInside)
-        PhotoBlock(caption = "ব্যবসার পরিচয়পত্রের ছবি", counter = "3/3".toBengaliDigits(), imageUrl = detail.images.businessProofImage)
+        PhotoBlock(caption = stringResource(R.string.acquisition_outlet_photo_outside), counter = "1/3".toBengaliDigits(), imageUrl = detail.images.shopImageOutside)
+        PhotoBlock(caption = stringResource(R.string.acquisition_outlet_photo_inside), counter = "2/3".toBengaliDigits(), imageUrl = detail.images.shopImageInside)
+        PhotoBlock(caption = stringResource(R.string.acquisition_business_proof_photo), counter = "3/3".toBengaliDigits(), imageUrl = detail.images.businessProofImage)
 
         AppCard(modifier = Modifier.fillMaxWidth()) {
             val outletOwner = detail.contactInfo.outletOwner
@@ -280,10 +288,10 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
             val ownerName = if (hasOwnerData) outletOwner.name else contactPerson.name
             val ownerPhone = if (hasOwnerData) outletOwner.phoneNumber else contactPerson.phoneNumber
 
-            AppText(text = "Owner & Contact Person Details", style = AppTextStyle.TitleMedium)
+            AppText(text = stringResource(R.string.acquisition_owner_contact_title), style = AppTextStyle.TitleMedium)
             Spacer(modifier = Modifier.height(AppSpacing.Medium))
             AppIconLabelValue(
-                label = "Shop Owner Info",
+                label = stringResource(R.string.acquisition_shop_owner_info),
                 value = ownerName,
                 icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
             )
@@ -295,7 +303,7 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
             if (hasOwnerData) {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 AppIconLabelValue(
-                    label = contactPerson.designation?.let { "Shop Operator Info ($it)" } ?: "Shop Operator Info",
+                    label = contactPerson.designation?.let { stringResource(R.string.acquisition_shop_operator_info_with_designation, it) } ?: stringResource(R.string.acquisition_shop_operator_info),
                     value = contactPerson.name,
                     icon = { AppIcon(icon = Icons.Filled.Groups, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
                 )
@@ -328,56 +336,56 @@ private fun ShopIdentityCard(shopName: String, walletNumber: String) {
 @Composable
 private fun OutletInformationCard(outletInfo: OutletInfo, digitalPayment: DigitalPayment) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
-        AppText(text = "Outlet Information", style = AppTextStyle.TitleMedium)
+        AppText(text = stringResource(R.string.acquisition_outlet_information_title), style = AppTextStyle.TitleMedium)
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
         AppIconLabelValue(
-            label = "রেজিস্টার্ড ঠিকানা",
+            label = stringResource(R.string.acquisition_registered_address),
             value = outletInfo.address,
             icon = { AppIcon(icon = Icons.Filled.LocationOn, contentDescription = null, modifier = Modifier.size(RowIconSize)) },
             labelOverride = AppTextOverride(color = AccentIndigo),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "BMCC",
+            label = stringResource(R.string.acquisition_bmcc),
             value = outletInfo.bmccCode,
             icon = genericRowIcon,
             subValue = outletInfo.bmccName,
         )
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "Product Type",
+            label = stringResource(R.string.acquisition_product_type),
             value = outletInfo.productType,
             icon = genericRowIcon,
             valueOverride = AppTextOverride(color = AccentIndigo, fontWeight = FontWeight.Bold),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppIconLabelValue(label = "Outlet location type", value = outletInfo.outletLocationType, icon = genericRowIcon)
+        AppIconLabelValue(label = stringResource(R.string.acquisition_outlet_location_type), value = outletInfo.outletLocationType, icon = genericRowIcon)
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppIconLabelValue(label = "Outlet Type", value = outletInfo.outletType, icon = genericRowIcon)
+        AppIconLabelValue(label = stringResource(R.string.acquisition_outlet_type), value = outletInfo.outletType, icon = genericRowIcon)
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppIconLabelValue(label = "Card payment available?", value = digitalPayment.cardPaymentAvailable.toYesNo(), icon = genericRowIcon)
+        AppIconLabelValue(label = stringResource(R.string.acquisition_card_payment_available), value = digitalPayment.cardPaymentAvailable.toYesNo(), icon = genericRowIcon)
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppIconLabelValue(label = "Other MFS payment available?", value = digitalPayment.otherMfsAvailable.toYesNo(), icon = genericRowIcon)
+        AppIconLabelValue(label = stringResource(R.string.acquisition_other_mfs_available), value = digitalPayment.otherMfsAvailable.toYesNo(), icon = genericRowIcon)
     }
 }
 
 @Composable
 private fun WalletInformationCard(walletInfo: WalletInfo) {
     AppCard(modifier = Modifier.fillMaxWidth()) {
-        AppText(text = "Wallet Information", style = AppTextStyle.TitleMedium, override = AppTextOverride(color = AccentIndigo))
+        AppText(text = stringResource(R.string.acquisition_wallet_information_title), style = AppTextStyle.TitleMedium, override = AppTextOverride(color = AccentIndigo))
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
         AppIconLabelValue(
-            label = "Proposed Wallet Number",
+            label = stringResource(R.string.acquisition_proposed_wallet_number),
             value = walletInfo.proposedWalletNumber,
             icon = genericRowIcon,
             trailingIcon = copyIconButton(walletInfo.proposedWalletNumber),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppIconLabelValue(label = "SIM Stays At Outlet?", value = walletInfo.simStaysAtOutlet.toBengaliYesNo(), icon = genericRowIcon)
+        AppIconLabelValue(label = stringResource(R.string.acquisition_sim_stays_at_outlet), value = walletInfo.simStaysAtOutlet.toBengaliYesNo(), icon = genericRowIcon)
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppIconLabelValue(label = "SIM Is Used In A Smartphone?", value = walletInfo.simUsedInSmartphone.toBengaliYesNo(), icon = genericRowIcon)
+        AppIconLabelValue(label = stringResource(R.string.acquisition_sim_used_in_smartphone), value = walletInfo.simUsedInSmartphone.toBengaliYesNo(), icon = genericRowIcon)
         Spacer(modifier = Modifier.height(AppSpacing.Small))
-        AppIconLabelValue(label = "SIM Is Owned By Shop Owner?", value = walletInfo.simOwnedByShopOwner.toBengaliYesNo(), icon = genericRowIcon)
+        AppIconLabelValue(label = stringResource(R.string.acquisition_sim_owned_by_shop_owner), value = walletInfo.simOwnedByShopOwner.toBengaliYesNo(), icon = genericRowIcon)
     }
 }
 
@@ -407,9 +415,9 @@ private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>, sur
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
     ) {
-        ScoreCircle(title = "প্রিমিয়ামনেস স্কোর", score = score, maxScore = MaxPremiumnessScore, ringColor = tierColor)
+        ScoreCircle(title = stringResource(R.string.acquisition_premiumness_score_title), score = score, maxScore = MaxPremiumnessScore, ringColor = tierColor)
         ScoreBandIndicator(ranges = ranges, activeIndex = activeIndex, modifier = Modifier.fillMaxWidth())
-        AppStepperButton(label = "বিস্তারিত দেখুন", onClick = { showSurveyResponses = true }, modifier = Modifier.fillMaxWidth())
+        AppStepperButton(label = stringResource(R.string.acquisition_view_details), onClick = { showSurveyResponses = true }, modifier = Modifier.fillMaxWidth())
     }
 
     if (showSurveyResponses) {
@@ -417,8 +425,8 @@ private fun ScoreSection(score: Double, ranges: List<PremiumnessScoreRange>, sur
     }
 }
 
-// The Q&A breakdown behind the premiumness score, opened from ScoreSection's "বিস্তারিত দেখুন"
-// button - one caller, built from AppBottomSheet the same way LeadDashboardScreen's
+// The Q&A breakdown behind the premiumness score, opened from ScoreSection's "view details"
+// (acquisition_view_details) button - one caller, built from AppBottomSheet the same way LeadDashboardScreen's
 // RejectionDetailsSheet is.
 @Composable
 private fun SurveyResponsesSheet(responses: List<SurveyResponse>, onDismissRequest: () -> Unit) {
@@ -444,12 +452,12 @@ private fun ColumnScope.SurveyResponsesSheetContent(responses: List<SurveyRespon
         }
         Spacer(modifier = Modifier.width(AppSpacing.Small))
         AppText(
-            text = "প্রশ্ন অনুযায়ী উত্তর",
+            text = stringResource(R.string.acquisition_qa_breakdown_title),
             style = AppTextStyle.TitleMedium,
             override = AppTextOverride(fontWeight = FontWeight.Bold),
             modifier = Modifier.weight(1f),
         )
-        AppIconButton(icon = Icons.Filled.Close, contentDescription = "Close", onClick = onDismissRequest)
+        AppIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(CommonR.string.common_close), onClick = onDismissRequest)
     }
     Spacer(modifier = Modifier.height(AppSpacing.Medium))
     AppHorizontalDivider()
@@ -460,7 +468,7 @@ private fun ColumnScope.SurveyResponsesSheetContent(responses: List<SurveyRespon
         ) {
             AppText(text = response.question, style = AppTextStyle.BodyMedium, modifier = Modifier.weight(1f))
             AppText(
-                text = "উত্তর: ${response.answer}",
+                text = stringResource(R.string.acquisition_answer_prefix, response.answer),
                 style = AppTextStyle.BodyMedium,
                 override = AppTextOverride(color = BrandPrimary, fontWeight = FontWeight.Bold),
             )
@@ -580,10 +588,10 @@ private fun PhotoBlock(caption: String, counter: String, imageUrl: String) {
     }
 }
 
-private val LikertLabels = listOf("তীব্র দ্বিমত", "দ্বিমত", "নিরপেক্ষ", "একমত", "তীব্র একমত")
-
 // Fixed left-to-right diverging scale (strongly disagree -> strongly agree) - always visible on
-// every step's circle, not just the selected one; index-paired with LikertLabels.
+// every step's circle, not just the selected one; index-paired with the acquisition_likert_labels
+// string-array (resolved inside LikertScaleIndicator, since stringArrayResource needs a
+// @Composable context this top-level val can't provide).
 private val LikertStepColors = listOf(
     Color(0xFFD1544C),
     Color(0xFFE08A3E),
@@ -607,22 +615,23 @@ private data class ReasonSheetCopy(
     val confirmButtonStyle: AppButtonStyle,
 )
 
+@Composable
 private fun reasonSheetCopy(type: ReasonSheetType): ReasonSheetCopy = when (type) {
     ReasonSheetType.Approve -> ReasonSheetCopy(
-        reasonHeading = "অনুমোদনের কারণ",
-        reasonSubtitle = "লিড অনুমোদনের কারণ নির্বাচন করুন।",
+        reasonHeading = stringResource(R.string.acquisition_approval_reason_heading),
+        reasonSubtitle = stringResource(R.string.acquisition_approval_reason_subtitle),
         accentColor = StatusSuccess,
-        confirmLabel = "Approve Lead",
+        confirmLabel = stringResource(R.string.acquisition_approve_lead),
         confirmButtonStyle = AppButtonStyle.Success,
     )
     ReasonSheetType.Reject -> ReasonSheetCopy(
-        reasonHeading = "প্রত্যাখ্যানের কারণ",
-        reasonSubtitle = "লিড প্রত্যাখ্যানের কারণ নির্বাচন করুন।",
+        reasonHeading = stringResource(R.string.acquisition_rejection_reason_heading),
+        reasonSubtitle = stringResource(R.string.acquisition_rejection_reason_subtitle),
         // Reuses BrandPrimary (already this pink/magenta elsewhere in this file, e.g.
         // ShopIdentityCard's Storefront icon) rather than StatusError, since the design's reject
         // accent (card border/checkbox) is a distinct pink from the confirm button's solid red.
         accentColor = BrandPrimary,
-        confirmLabel = "Reject Lead",
+        confirmLabel = stringResource(R.string.acquisition_reject_lead),
         confirmButtonStyle = AppButtonStyle.Danger,
     )
 }
@@ -671,10 +680,10 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     var noteText by remember(type) { mutableStateOf("") }
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
-        AppText(text = "যাচাইকরণ", style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
+        AppText(text = stringResource(R.string.acquisition_verification_title), style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
         Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
         AppText(
-            text = "আপনি কি এই প্রিমিয়ামনেস স্কোরের সাথে একমত?",
+            text = stringResource(R.string.acquisition_score_agreement_question),
             style = AppTextStyle.BodyMedium,
             override = AppTextOverride(color = StatusNeutral),
         )
@@ -717,7 +726,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     AppTextField(
         value = noteText,
         onValueChange = { noteText = it },
-        placeholder = "এখানে কারণ উল্লেখ করুন...",
+        placeholder = stringResource(R.string.acquisition_note_placeholder),
         singleLine = false,
         flatWhenUnfocused = true,
         modifier = Modifier.fillMaxWidth().height(96.dp),
@@ -776,8 +785,9 @@ private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, acc
 // kept separate rather than forcing an awkward shared abstraction.
 @Composable
 private fun LikertScaleIndicator(selectedIndex: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
+    val likertLabels = stringArrayResource(R.array.acquisition_likert_labels)
     Row(modifier = modifier.fillMaxWidth()) {
-        LikertLabels.forEachIndexed { index, label ->
+        likertLabels.forEachIndexed { index, label ->
             val isSelected = index == selectedIndex
             val stepColor = LikertStepColors[index]
             Column(
@@ -790,7 +800,7 @@ private fun LikertScaleIndicator(selectedIndex: Int, onSelect: (Int) -> Unit, mo
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     LikertConnector(visible = index != 0)
                     LikertStepCircle(selected = isSelected, color = stepColor)
-                    LikertConnector(visible = index != LikertLabels.lastIndex)
+                    LikertConnector(visible = index != likertLabels.lastIndex)
                 }
                 Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
                 AppText(

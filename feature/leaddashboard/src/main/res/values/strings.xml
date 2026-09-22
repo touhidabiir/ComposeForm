@@ -1,0 +1,16 @@
+<resources>
+    <!-- Strings shared with :feature:acquisition (identical wording) live in :common's own
+         strings.xml instead - see common_refresh/common_search/etc. there. -->
+    <string name="leaddashboard_title">লিড ড্যাশবোর্ড</string>
+    <string name="leaddashboard_search_placeholder">লিড বেইজ সার্চ করুন...</string>
+    <string name="leaddashboard_no_leads_status">এই স্ট্যাটাসে কোনো লিড পাওয়া যায়নি</string>
+    <string name="leaddashboard_loading_more">আরও লোড হচ্ছে...</string>
+    <string name="leaddashboard_status_ekyc_submitted">ই-কেওয়াইসি জমা হয়েছে</string>
+    <string name="leaddashboard_status_ekyc">ই-কেওয়াইসি</string>
+    <string name="leaddashboard_reviewer">অনুমোদনকারী</string>
+    <string name="leaddashboard_ekyc_submitter">ই-কেওয়াইসি জমাকারী এম. সি. ও.</string>
+    <string name="leaddashboard_lock_lead">লিড লক করুন</string>
+    <string name="leaddashboard_submit_ekyc">ই-কেওয়াইসি জমা দিন</string>
+    <string name="leaddashboard_rejection_reason">বাতিল করার কারণ</string>
+    <string name="leaddashboard_reviewer_label">অনুমোদনকারী: %1$s</string>
+</resources>

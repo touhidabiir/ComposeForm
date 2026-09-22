@@ -1,0 +1,24 @@
+<resources>
+    <!--
+        Strings genuinely duplicated across 2+ feature modules (confirmed by literal comparison
+        of :feature:leaddashboard and :feature:acquisition, not guessed) - a feature-local string
+        with the exact same value in another feature belongs here instead, so translating it once
+        covers every screen that uses it. A string with the same *meaning* but different wording
+        per screen (e.g. two different search placeholders) stays feature-local - don't force a
+        shared entry just because the concept overlaps.
+    -->
+    <string name="common_refresh">Refresh</string>
+    <string name="common_search">Search</string>
+    <string name="common_close">Close</string>
+    <string name="common_retry_message">Please try again</string>
+    <string name="common_retry_action">Retry</string>
+    <string name="common_results_found_count">%1$dটি ফলাফল পাওয়া গেছে</string>
+    <string name="common_no_leads_found">কোনো লিড পাওয়া যায়নি</string>
+    <string name="common_wallet_number">ওয়ালেট নম্বর</string>
+    <string name="common_address">বিস্তারিত ঠিকানা</string>
+    <string name="common_lead_closer">লিড ক্লোজার এ. টি. ও.</string>
+    <string name="common_serving_ma">এম. এ.- %1$s</string>
+    <string name="common_status_approved">অনুমোদিত</string>
+    <string name="common_status_pending">পেন্ডিং</string>
+    <string name="common_status_rejected">বাতিল</string>
+</resources>

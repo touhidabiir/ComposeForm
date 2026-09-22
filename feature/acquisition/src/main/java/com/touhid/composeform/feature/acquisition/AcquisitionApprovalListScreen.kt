@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,6 +66,7 @@ import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.network.model.AcquisitionListItem
 import com.touhid.composeform.network.model.LeadCloser
+import com.touhid.composeform.common.R as CommonR
 import kotlinx.coroutines.launch
 
 private val RowIconSize = 16.dp
@@ -130,9 +132,11 @@ private fun AcquisitionApprovalListContent(
     }
 
     val snackbarHostState = rememberAppSnackbarHostState()
+    val retryMessage = stringResource(CommonR.string.common_retry_message)
+    val retryAction = stringResource(CommonR.string.common_retry_action)
     LaunchedEffect(state.error) {
         if (state.error == null) return@LaunchedEffect
-        val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
+        val result = snackbarHostState.showMessage(message = retryMessage, actionLabel = retryAction)
         if (result == AppSnackbarResult.ActionPerformed) onAction(AcquisitionApprovalListAction.OnRetry)
     }
     // Tied to the composable's own lifecycle, not decisionResult - showMessage() suspends until
@@ -140,6 +144,8 @@ private fun AcquisitionApprovalListContent(
     // (onDecisionResultConsumed below), which would cancel a LaunchedEffect(decisionResult)-scoped
     // coroutine mid-display. Launching it here instead lets it keep running independently.
     val coroutineScope = rememberCoroutineScope()
+    val approvedMessage = stringResource(R.string.acquisition_decision_approved_message)
+    val rejectedMessage = stringResource(R.string.acquisition_decision_rejected_message)
     LaunchedEffect(decisionResult) {
         if (decisionResult == null) return@LaunchedEffect
         // Resync and consume immediately - not after the snackbar dismisses - so the stale,
@@ -148,7 +154,7 @@ private fun AcquisitionApprovalListContent(
         // to the top of a list they may have been scrolled through.
         onAction(AcquisitionApprovalListAction.OnReturnedWithDecision)
         onDecisionResultConsumed()
-        val message = if (decisionResult == ReasonSheetType.Approve.name) "Lead approved successfully" else "Lead rejected successfully"
+        val message = if (decisionResult == ReasonSheetType.Approve.name) approvedMessage else rejectedMessage
         coroutineScope.launch { snackbarHostState.showMessage(message = message) }
     }
 
@@ -160,12 +166,12 @@ private fun AcquisitionApprovalListContent(
         modifier = modifier.fillMaxSize(),
         topBar = { scrollBehavior ->
             AppTopBar(
-                title = "Acquisition Approval",
+                title = stringResource(R.string.acquisition_title),
                 navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = onBack,
                 scrollBehavior = scrollBehavior,
                 actions = listOf(
-                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = "Refresh", onClick = { onAction(AcquisitionApprovalListAction.OnRefresh) }),
+                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = stringResource(CommonR.string.common_refresh), onClick = { onAction(AcquisitionApprovalListAction.OnRefresh) }),
                 ),
             )
         },
@@ -176,7 +182,7 @@ private fun AcquisitionApprovalListContent(
                 AppSearchField(
                     value = state.searchQuery,
                     onValueChange = { onAction(AcquisitionApprovalListAction.OnSearchQueryChanged(it)) },
-                    placeholder = "মার্চেন্ট সার্চ করুন...",
+                    placeholder = stringResource(R.string.acquisition_search_placeholder),
                     modifier = Modifier.fillMaxWidth(),
                     // AppSearchField's keyboardOptions already default to imeAction = Search -
                     // only the action handler needs wiring here so the IME's search key submits
@@ -185,7 +191,7 @@ private fun AcquisitionApprovalListContent(
                     trailingIcon = {
                         AppIconButton(
                             icon = Icons.Filled.Search,
-                            contentDescription = "Search",
+                            contentDescription = stringResource(CommonR.string.common_search),
                             onClick = { onAction(AcquisitionApprovalListAction.OnSearchSubmitted) },
                             tint = AccentIndigo,
                         )
@@ -204,7 +210,7 @@ private fun AcquisitionApprovalListContent(
                             tint = StatusNeutral,
                         )
                         AppText(
-                            text = "${state.totalCount}টি ফলাফল পাওয়া গেছে",
+                            text = stringResource(CommonR.string.common_results_found_count, state.totalCount),
                             style = AppTextStyle.Label,
                             override = AppTextOverride(color = StatusNeutral),
                         )
@@ -222,7 +228,7 @@ private fun AcquisitionApprovalListContent(
                     // empty state underneath it while that first load is still in flight. Unlike
                     // Lead Dashboard, this screen uses the same message for search and non-search.
                     if (!state.isLoading) {
-                        ListEmptyState(message = "কোনো লিড পাওয়া যায়নি", modifier = Modifier.align(Alignment.Center))
+                        ListEmptyState(message = stringResource(CommonR.string.common_no_leads_found), modifier = Modifier.align(Alignment.Center))
                     }
                 } else {
                     LazyColumn(
@@ -244,7 +250,7 @@ private fun AcquisitionApprovalListContent(
                         if (state.isLoadingMore) {
                             item {
                                 AppText(
-                                    text = "Loading more…",
+                                    text = stringResource(R.string.acquisition_loading_more),
                                     modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
                                     textAlign = TextAlign.Center,
                                 )
@@ -264,12 +270,12 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
     AppCard(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             AppText(text = item.shopName, style = AppTextStyle.TitleMedium)
-            AppStatusBadge(text = "পেন্ডিং", tone = AppStatusTone.Warning)
+            AppStatusBadge(text = stringResource(CommonR.string.common_status_pending), tone = AppStatusTone.Warning)
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "ওয়ালেট নম্বর",
+            label = stringResource(CommonR.string.common_wallet_number),
             value = item.walletNumber,
             icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
             trailingIcon = copyIconButton(item.walletNumber),
@@ -277,23 +283,23 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "বিস্তারিত ঠিকানা",
+            label = stringResource(CommonR.string.common_address),
             value = item.address,
             icon = { AppIcon(icon = Icons.Filled.LocationOn, contentDescription = null, modifier = iconModifier) },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "লিড ক্লোজার এ. টি. ও.",
+            label = stringResource(CommonR.string.common_lead_closer),
             value = "${item.leadCloser.name} (${item.leadCloser.employeeId})",
             icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
             trailingIcon = copyIconButton(item.leadCloser.employeeId),
-            subValue = "এম. এ.- ${item.leadCloser.servingMa}",
+            subValue = stringResource(CommonR.string.common_serving_ma, item.leadCloser.servingMa),
         )
 
         if (item.canReview) {
             Spacer(modifier = Modifier.height(AppSpacing.Medium))
-            AppStepperButton(label = "Review", onClick = onReview, modifier = Modifier.fillMaxWidth())
+            AppStepperButton(label = stringResource(R.string.acquisition_review), onClick = onReview, modifier = Modifier.fillMaxWidth())
         }
     }
 }
