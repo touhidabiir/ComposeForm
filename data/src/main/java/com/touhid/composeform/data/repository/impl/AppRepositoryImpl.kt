@@ -1,5 +1,6 @@
-package com.touhid.composeform.data.repository
+package com.touhid.composeform.data.repository.impl
 
+import com.touhid.composeform.data.repository.AppRepository
 import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.api.AppApiService
 import com.touhid.composeform.network.auth.TokenProvider
@@ -17,7 +18,7 @@ import com.touhid.composeform.network.model.SpecificFormPayload
 import com.touhid.composeform.network.safeApiCall
 import javax.inject.Inject
 
-class DefaultAppRepository @Inject constructor(
+class AppRepositoryImpl @Inject constructor(
     private val apiService: AppApiService,
     private val tokenProvider: TokenProvider,
 ) : AppRepository {

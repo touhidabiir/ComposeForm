@@ -1,12 +1,13 @@
-package com.touhid.composeform.data.repository
+package com.touhid.composeform.data.repository.impl
 
+import com.touhid.composeform.data.repository.AnalyticsRepository
 import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.api.AnalyticsApiService
 import com.touhid.composeform.network.model.AnalyticsEventRequest
 import com.touhid.composeform.network.safeApiCall
 import javax.inject.Inject
 
-class DefaultAnalyticsRepository @Inject constructor(
+class AnalyticsRepositoryImpl @Inject constructor(
     private val apiService: AnalyticsApiService,
 ) : AnalyticsRepository {
 

@@ -11,8 +11,8 @@ import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
 import com.touhid.composeform.network.model.SpecificFormPayload
 
-// The contract consumers should inject - DefaultAppRepository is the only implementation today,
-// but declaring this as an interface (rather than injecting DefaultAppRepository directly) lets a
+// The contract consumers should inject - impl.AppRepositoryImpl is the only implementation today,
+// but declaring this as an interface (rather than injecting AppRepositoryImpl directly) lets a
 // ViewModel test substitute a fake implementation instead of a real AppApiService/TokenProvider.
 interface AppRepository {
 
