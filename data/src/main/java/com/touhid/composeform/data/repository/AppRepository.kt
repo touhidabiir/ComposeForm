@@ -1,63 +1,40 @@
 package com.touhid.composeform.data.repository
 
 import com.touhid.composeform.network.NetworkResult
-import com.touhid.composeform.network.api.AppApiService
-import com.touhid.composeform.network.auth.TokenProvider
-import com.touhid.composeform.network.model.AcquisitionDecisionRequest
 import com.touhid.composeform.network.model.AcquisitionDetail
 import com.touhid.composeform.network.model.AcquisitionListPage
 import com.touhid.composeform.network.model.AcquisitionReason
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
 import com.touhid.composeform.network.model.LeadDashboardPage
-import com.touhid.composeform.network.model.LoginRequest
 import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
 import com.touhid.composeform.network.model.SpecificFormPayload
-import com.touhid.composeform.network.safeApiCall
-import javax.inject.Inject
 
-class AppRepository @Inject constructor(
-    private val apiService: AppApiService,
-    private val tokenProvider: TokenProvider,
-) {
+// The contract consumers should inject - DefaultAppRepository is the only implementation today,
+// but declaring this as an interface (rather than injecting DefaultAppRepository directly) lets a
+// ViewModel test substitute a fake implementation instead of a real AppApiService/TokenProvider.
+interface AppRepository {
 
-    suspend fun login(username: String, password: String): NetworkResult<LoginResponse> =
-        safeApiCall { apiService.login(LoginRequest(username, password)) }.also { result ->
-            if (result is NetworkResult.Success) {
-                tokenProvider.setToken(result.data.token)
-            }
-        }
+    suspend fun login(username: String, password: String): NetworkResult<LoginResponse>
 
-    suspend fun getManagerList(): NetworkResult<List<ManagerSummary>> =
-        safeApiCall { apiService.getManagerList() }
+    suspend fun getManagerList(): NetworkResult<List<ManagerSummary>>
 
-    suspend fun getAdminList(): NetworkResult<List<AdminSummary>> =
-        safeApiCall { apiService.getAdminList() }
+    suspend fun getAdminList(): NetworkResult<List<AdminSummary>>
 
-    suspend fun getAdminDetails(id: String): NetworkResult<AdminDetails> =
-        safeApiCall { apiService.getAdminDetails(id) }
+    suspend fun getAdminDetails(id: String): NetworkResult<AdminDetails>
 
-    suspend fun getSpecificForm(): NetworkResult<SpecificFormPayload> =
-        safeApiCall { apiService.getSpecificForm().data }
+    suspend fun getSpecificForm(): NetworkResult<SpecificFormPayload>
 
-    suspend fun getLeadDashboard(status: String?, search: String?, pageNo: Int): NetworkResult<LeadDashboardPage> =
-        safeApiCall { apiService.getLeadDashboard(status, search, pageNo).data }
+    suspend fun getLeadDashboard(status: String?, search: String?, pageNo: Int): NetworkResult<LeadDashboardPage>
 
-    suspend fun submitEkyc(leadId: Long): NetworkResult<Unit> =
-        when (val result = safeApiCall { apiService.submitEkyc(leadId) }) {
-            is NetworkResult.Success -> NetworkResult.Success(Unit)
-            is NetworkResult.Failure -> result
-        }
+    suspend fun submitEkyc(leadId: Long): NetworkResult<Unit>
 
-    suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage> =
-        safeApiCall { apiService.getAcquisitionList(search, pageNo).data }
+    suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage>
 
-    suspend fun getAcquisitionDetail(leadId: String): NetworkResult<AcquisitionDetail> =
-        safeApiCall { apiService.getAcquisitionDetail(leadId).data }
+    suspend fun getAcquisitionDetail(leadId: String): NetworkResult<AcquisitionDetail>
 
-    suspend fun getAcquisitionReasons(leadId: String, type: String): NetworkResult<List<AcquisitionReason>> =
-        safeApiCall { apiService.getAcquisitionReasons(leadId, type).data.reasons }
+    suspend fun getAcquisitionReasons(leadId: String, type: String): NetworkResult<List<AcquisitionReason>>
 
     suspend fun submitAcquisitionDecision(
         leadId: String,
@@ -65,11 +42,5 @@ class AppRepository @Inject constructor(
         reasonIds: List<Int>,
         note: String,
         scoreAgreement: String,
-    ): NetworkResult<Unit> {
-        val request = AcquisitionDecisionRequest(type = type, reasonIds = reasonIds, note = note, scoreAgreement = scoreAgreement)
-        return when (val result = safeApiCall { apiService.submitAcquisitionDecision(leadId, request) }) {
-            is NetworkResult.Success -> NetworkResult.Success(Unit)
-            is NetworkResult.Failure -> result
-        }
-    }
+    ): NetworkResult<Unit>
 }
