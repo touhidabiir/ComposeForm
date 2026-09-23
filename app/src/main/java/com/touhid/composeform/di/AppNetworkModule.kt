@@ -1,6 +1,6 @@
 package com.touhid.composeform.di
 
-import android.content.Context
+import android.content.SharedPreferences
 import com.touhid.composeform.network.qualifier.AnalyticsBaseUrl
 import com.touhid.composeform.network.qualifier.BaseUrl
 import com.touhid.composeform.network.qualifier.PartnerBaseUrl
@@ -8,13 +8,12 @@ import com.touhid.composeform.network.qualifier.PaymentBaseUrl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 
-// Base URLs are read from plain SharedPreferences - not EncryptedSharedPreferences the way the
-// auth token is (EncryptedTokenProvider.kt), since a base URL isn't a secret and doesn't need the
-// MasterKey/crypto overhead on every cold start. Whatever writes them (a config/admin screen, a
-// setup flow) is expected to do so before these @Provides functions are first resolved.
+// Base URLs are read from the app's one shared encrypted preferences store (prefs, injected -
+// same instance AppPreferencesModule.kt provides to EncryptedTokenProvider) rather than a
+// dedicated file of their own. Whatever writes them (a config/admin screen, a setup flow) is
+// expected to do so before these @Provides functions are first resolved.
 //
 // Read once, here, when Hilt's SingletonComponent first resolves these - Retrofit/OkHttpClient
 // (NetworkModule) are then built once as @Singletons from that value, so a base URL saved after
@@ -29,31 +28,27 @@ import dagger.hilt.components.SingletonComponent
 @InstallIn(SingletonComponent::class)
 object AppNetworkModule {
 
-    private const val PREFS_FILE_NAME = "base_url_prefs"
     private const val KEY_BASE_URL = "base_url"
     private const val KEY_PAYMENT_BASE_URL = "payment_base_url"
     private const val KEY_ANALYTICS_BASE_URL = "analytics_base_url"
     private const val KEY_PARTNER_BASE_URL = "partner_base_url"
 
-    private fun Context.readBaseUrl(key: String): String =
-        getSharedPreferences(PREFS_FILE_NAME, Context.MODE_PRIVATE).getString(key, "").orEmpty()
-
     @Provides
     @BaseUrl
-    fun provideBaseUrl(@ApplicationContext context: Context): String = context.readBaseUrl(KEY_BASE_URL)
+    fun provideBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_BASE_URL, "").orEmpty()
 
     @Provides
     @PaymentBaseUrl
-    fun providePaymentBaseUrl(@ApplicationContext context: Context): String = context.readBaseUrl(KEY_PAYMENT_BASE_URL)
+    fun providePaymentBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_PAYMENT_BASE_URL, "").orEmpty()
 
     @Provides
     @AnalyticsBaseUrl
-    fun provideAnalyticsBaseUrl(@ApplicationContext context: Context): String = context.readBaseUrl(KEY_ANALYTICS_BASE_URL)
+    fun provideAnalyticsBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_ANALYTICS_BASE_URL, "").orEmpty()
 
     // Third-party backend, not ours - NetworkModule builds this base URL's Retrofit with
     // authInterceptor = null, so our app's bearer token is never attached here regardless of
     // where this URL comes from.
     @Provides
     @PartnerBaseUrl
-    fun providePartnerBaseUrl(@ApplicationContext context: Context): String = context.readBaseUrl(KEY_PARTNER_BASE_URL)
+    fun providePartnerBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_PARTNER_BASE_URL, "").orEmpty()
 }
