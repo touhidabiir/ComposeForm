@@ -1,4 +1,4 @@
-package com.touhid.composeform.network
+package com.touhid.composeform.network.mock
 
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -12,8 +12,8 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 // page_no) and path args (leadId) entirely - except the reasons endpoint below, which is the one
 // case that needs its "type" query param inspected to pick the right canned list - so the full
 // Retrofit/OkHttp/safeApiCall pipeline still runs for real, only the transport is faked.
-// TODO: delete this whole file (and its wiring in NetworkModule.provideOkHttpClient) once a real
-// backend is live - see MockJson.kt too, it only exists to back this class.
+// TODO: delete this whole file (and its wiring in RetrofitFactory.create) once a real backend is
+// live - see MockJson.kt too, it only exists to back this class.
 internal class MockDataInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()

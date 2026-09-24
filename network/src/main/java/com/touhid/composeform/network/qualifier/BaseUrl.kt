@@ -1,5 +1,6 @@
-package com.touhid.composeform.network
+package com.touhid.composeform.network.qualifier
 
+import com.touhid.composeform.network.NetworkModule
 import javax.inject.Qualifier
 
 /**
