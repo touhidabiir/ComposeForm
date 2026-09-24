@@ -143,9 +143,7 @@ private fun AcquisitionApprovalListContent(
         if (decisionResult == null) return@LaunchedEffect
         // Resync and consume immediately - not after the snackbar dismisses - so the stale,
         // already-decided list item can't be tapped again while the snackbar is still showing.
-        // OnReturnedWithDecision (not OnRefresh) so this silent resync doesn't yank the user back
-        // to the top of a list they may have been scrolled through.
-        onAction(AcquisitionApprovalListAction.OnReturnedWithDecision)
+        onAction(AcquisitionApprovalListAction.OnRefresh)
         onDecisionResultConsumed()
         val message = if (decisionResult == ReasonSheetType.Approve.name) "Lead approved successfully" else "Lead rejected successfully"
         coroutineScope.launch { snackbarHostState.showMessage(message = message) }

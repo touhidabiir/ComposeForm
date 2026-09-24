@@ -46,13 +46,6 @@ sealed interface AcquisitionApprovalListAction {
     data object OnRetry : AcquisitionApprovalListAction
     data object OnRefresh : AcquisitionApprovalListAction
     data object OnLoadNextPage : AcquisitionApprovalListAction
-    // Dispatched after returning from the detail screen with a just-submitted decision - reloads
-    // the current page's data (so the approved/rejected item's status is current) without
-    // resetting the user's scroll position the way OnRefresh does. OnRefresh is a user-initiated
-    // pull, which by definition starts from the top already, so resetting scroll there is a no-op
-    // in practice; this silent resync can happen from anywhere in the list, so it must not yank
-    // the user back to the top of a list they were scrolled through.
-    data object OnReturnedWithDecision : AcquisitionApprovalListAction
 }
 
 @HiltViewModel
@@ -100,11 +93,10 @@ class AcquisitionApprovalListViewModel @Inject constructor(
             AcquisitionApprovalListAction.OnRefresh -> loadFirstPage(isRefresh = true)
             AcquisitionApprovalListAction.OnLoadNextPage -> loadNextPage()
             AcquisitionApprovalListAction.OnRetry -> if (retryLoadsNextPage) loadNextPage() else loadFirstPage()
-            AcquisitionApprovalListAction.OnReturnedWithDecision -> loadFirstPage(isRefresh = true, resetScroll = false)
         }
     }
 
-    private fun loadFirstPage(isRefresh: Boolean = false, resetScroll: Boolean = true) {
+    private fun loadFirstPage(isRefresh: Boolean = false) {
         val search = _state.value.activeSearchQuery
         retryLoadsNextPage = false
         loadJob?.cancel()
@@ -138,7 +130,7 @@ class AcquisitionApprovalListViewModel @Inject constructor(
                         totalCount = result.data.count,
                         page = 1,
                         hasMore = 1 < result.data.totalPages,
-                        loadedRevision = if (resetScroll) it.loadedRevision + 1 else it.loadedRevision,
+                        loadedRevision = it.loadedRevision + 1,
                     )
                 }
                 is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, isRefreshing = false, error = result.error.message) }
