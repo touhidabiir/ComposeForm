@@ -25,7 +25,6 @@ android {
 }
 
 dependencies {
-    implementation(libs.squareup.okio)
     implementation(libs.squareup.okhttp)
     implementation(libs.squareup.okhttp.logging.interceptor)
     implementation(libs.squareup.retrofit)

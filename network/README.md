@@ -4,7 +4,7 @@ An Android library module (namespace `com.touhid.composeform.network`) owning Ok
 
 ## Network boundary (same pattern as the design system boundary)
 
-`:network` depends on `okio`, `okhttp` (+ `logging-interceptor`), and `retrofit2` (+ `converter-scalars`, `converter-gson`, `adapter-rxjava2`) as `implementation` (not `api`). `:app` does not declare any of these itself, so `okhttp3.*`/`retrofit2.*`/`okio.*` are not on its compile classpath — importing them there fails to compile. All API/network work belongs inside `:network`; the repository layer that's the actual thing `:app` calls lives in `:data` instead.
+`:network` depends on `okhttp` (+ `logging-interceptor`) and `retrofit2` (+ `converter-scalars`, `converter-gson`, `adapter-rxjava2`) as `implementation` (not `api`). `:app` does not declare either itself, so `okhttp3.*`/`retrofit2.*` are not on its compile classpath — importing them there fails to compile. All API/network work belongs inside `:network`; the repository layer that's the actual thing `:app` calls lives in `:data` instead.
 
 ## Internal structure
 
