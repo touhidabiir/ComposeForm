@@ -30,7 +30,6 @@ dependencies {
     implementation(libs.squareup.retrofit)
     implementation(libs.squareup.retrofit.converter.scalars)
     implementation(libs.squareup.retrofit.converter.gson)
-    implementation(libs.squareup.retrofit.adapter.rxjava2)
     implementation(libs.google.dagger.hilt.android)
     implementation(libs.kotlinx.coroutines.core)
     ksp(libs.google.dagger.hilt.compiler)
