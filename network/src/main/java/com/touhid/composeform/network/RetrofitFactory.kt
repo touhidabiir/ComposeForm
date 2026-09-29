@@ -2,6 +2,7 @@ package com.touhid.composeform.network
 
 import com.touhid.composeform.network.interceptor.RequestIdInterceptor
 import com.touhid.composeform.network.mock.MockDataInterceptor
+import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -18,7 +19,8 @@ private const val TIMEOUT_SECONDS = 30L
 // every client through one fixed shared chain. authInterceptor is nullable so a base URL that
 // must never carry this app's bearer token (e.g. a third-party partner backend) simply omits it;
 // interceptors covers anything else that base URL needs (a static header, a bespoke error
-// mapper, ...) without every other client paying for it.
+// mapper, ...) without every other client paying for it. authenticator likewise defaults to none -
+// only a base URL whose backend actually issues refresh tokens passes one.
 internal class RetrofitFactory @Inject constructor(
     private val requestIdInterceptor: RequestIdInterceptor,
     private val loggingInterceptor: HttpLoggingInterceptor,
@@ -28,6 +30,7 @@ internal class RetrofitFactory @Inject constructor(
         baseUrl: String,
         authInterceptor: Interceptor?,
         interceptors: List<Interceptor> = emptyList(),
+        authenticator: Authenticator? = null,
     ): Retrofit {
         val okHttpClient = OkHttpClient.Builder()
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
@@ -44,6 +47,7 @@ internal class RetrofitFactory @Inject constructor(
             .apply { authInterceptor?.let(::addInterceptor) }
             .apply { interceptors.forEach(::addInterceptor) }
             .addInterceptor(loggingInterceptor)
+            .apply { authenticator?.let { this.authenticator(it) } }
             .build()
 
         return Retrofit.Builder()

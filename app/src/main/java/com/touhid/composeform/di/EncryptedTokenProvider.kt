@@ -18,7 +18,14 @@ class EncryptedTokenProvider @Inject constructor(
         prefs.edit().putString(KEY_TOKEN, token).apply()
     }
 
+    override fun getRefreshToken(): String? = prefs.getString(KEY_REFRESH_TOKEN, null)
+
+    override fun setRefreshToken(refreshToken: String?) {
+        prefs.edit().putString(KEY_REFRESH_TOKEN, refreshToken).apply()
+    }
+
     private companion object {
         const val KEY_TOKEN = "auth_token"
+        const val KEY_REFRESH_TOKEN = "refresh_token"
     }
 }
