@@ -1,5 +1,6 @@
 package com.touhid.composeform.common
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,12 +16,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.icon.AppIcon
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 
 // Shared by Lead Dashboard and Acquisition Approval List's empty states (status-filtered,
@@ -55,12 +56,15 @@ fun ListEmptyState(
     }
 }
 
-// Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
-// system setting - that's how this composable actually renders in the real app.
-@Preview(name = "List Empty State", showBackground = true)
+// :app's ComposeFormAppTheme forces light-only at runtime, but :common can't depend on :app (that
+// dependency would run backwards - :app assembles modules like this one, not the other way
+// around), so this preview uses :designsystem's own ComposeFormTheme directly instead, with both
+// Light/Dark variants like every other :designsystem-adjacent preview.
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun ListEmptyStatePreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         ListEmptyState(message = "কোনো লিড পাওয়া যায়নি")
     }
 }

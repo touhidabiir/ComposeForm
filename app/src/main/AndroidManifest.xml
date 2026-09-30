@@ -27,7 +27,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".leaddashboard.EkycVerificationActivity"
+            android:name="com.touhid.composeform.feature.leaddashboard.EkycVerificationActivity"
             android:exported="false"
             android:label="eKYC Verification"
             android:theme="@style/Theme.ComposeForm" />

@@ -1,4 +1,4 @@
-package com.touhid.composeform.acquisition
+package com.touhid.composeform.feature.acquisition
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel

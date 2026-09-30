@@ -22,9 +22,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.touhid.composeform.acquisition.AcquisitionApprovalDetailScreen
-import com.touhid.composeform.acquisition.AcquisitionApprovalListScreen
-import com.touhid.composeform.acquisition.ReasonSheetType
+import com.touhid.composeform.feature.acquisition.AcquisitionApprovalDetailScreen
+import com.touhid.composeform.feature.acquisition.AcquisitionApprovalListScreen
+import com.touhid.composeform.feature.acquisition.ReasonSheetType
 import dagger.hilt.android.AndroidEntryPoint
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
@@ -40,7 +40,7 @@ import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.formbuilder.withOptions
 import com.touhid.composeform.home.DemoHomeScreen
-import com.touhid.composeform.leaddashboard.LeadDashboardScreen
+import com.touhid.composeform.feature.leaddashboard.LeadDashboardScreen
 
 // Mirrors FormFlowState but scoped to the picker destination, since picker schemas aren't
 // ViewModel-backed today. Only :app interprets a field's optionsUrl - FormRenderer never does.

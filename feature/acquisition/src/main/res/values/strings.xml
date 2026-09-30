@@ -1,0 +1,64 @@
+<resources>
+    <!-- Strings shared with :feature:leaddashboard (identical wording) live in :common's own
+         strings.xml instead - see common_refresh/common_search/common_results_found_count/etc.
+         there. Everything below is acquisition-specific wording, even where the concept overlaps
+         (e.g. this screen's own search placeholder text differs from the dashboard's). -->
+
+    <!-- AcquisitionApprovalListScreen -->
+    <string name="acquisition_title">Acquisition Approval</string>
+    <string name="acquisition_search_placeholder">মার্চেন্ট সার্চ করুন...</string>
+    <string name="acquisition_decision_approved_message">Lead approved successfully</string>
+    <string name="acquisition_decision_rejected_message">Lead rejected successfully</string>
+    <string name="acquisition_loading_more">Loading more…</string>
+    <string name="acquisition_review">Review</string>
+
+    <!-- AcquisitionApprovalDetailScreen -->
+    <string name="acquisition_no_detail">কোনো তথ্য পাওয়া যায়নি</string>
+    <string name="acquisition_reject">Reject</string>
+    <string name="acquisition_approve">Approve</string>
+    <string name="acquisition_owner_contact_title">Owner &amp; Contact Person Details</string>
+    <string name="acquisition_shop_owner_info">Shop Owner Info</string>
+    <string name="acquisition_shop_operator_info">Shop Operator Info</string>
+    <string name="acquisition_shop_operator_info_with_designation">Shop Operator Info (%1$s)</string>
+    <string name="acquisition_outlet_photo_outside">আউটলেটের বাহিরের ছবি</string>
+    <string name="acquisition_outlet_photo_inside">আউটলেটের ভিতরের ছবি</string>
+    <string name="acquisition_business_proof_photo">ব্যবসার পরিচয়পত্রের ছবি</string>
+    <string name="acquisition_outlet_information_title">Outlet Information</string>
+    <string name="acquisition_registered_address">রেজিস্টার্ড ঠিকানা</string>
+    <string name="acquisition_bmcc">BMCC</string>
+    <string name="acquisition_product_type">Product Type</string>
+    <string name="acquisition_outlet_location_type">Outlet location type</string>
+    <string name="acquisition_outlet_type">Outlet Type</string>
+    <string name="acquisition_card_payment_available">Card payment available?</string>
+    <string name="acquisition_other_mfs_available">Other MFS payment available?</string>
+    <string name="acquisition_wallet_information_title">Wallet Information</string>
+    <string name="acquisition_proposed_wallet_number">Proposed Wallet Number</string>
+    <string name="acquisition_sim_stays_at_outlet">SIM Stays At Outlet?</string>
+    <string name="acquisition_sim_used_in_smartphone">SIM Is Used In A Smartphone?</string>
+    <string name="acquisition_sim_owned_by_shop_owner">SIM Is Owned By Shop Owner?</string>
+    <string name="acquisition_premiumness_score_title">প্রিমিয়ামনেস স্কোর</string>
+    <string name="acquisition_view_details">বিস্তারিত দেখুন</string>
+    <string name="acquisition_qa_breakdown_title">প্রশ্ন অনুযায়ী উত্তর</string>
+    <string name="acquisition_answer_prefix">উত্তর: %1$s</string>
+    <string name="acquisition_approval_reason_heading">অনুমোদনের কারণ</string>
+    <string name="acquisition_approval_reason_subtitle">লিড অনুমোদনের কারণ নির্বাচন করুন।</string>
+    <string name="acquisition_approve_lead">Approve Lead</string>
+    <string name="acquisition_rejection_reason_heading">প্রত্যাখ্যানের কারণ</string>
+    <string name="acquisition_rejection_reason_subtitle">লিড প্রত্যাখ্যানের কারণ নির্বাচন করুন।</string>
+    <string name="acquisition_reject_lead">Reject Lead</string>
+    <string name="acquisition_verification_title">যাচাইকরণ</string>
+    <string name="acquisition_score_agreement_question">আপনি কি এই প্রিমিয়ামনেস স্কোরের সাথে একমত?</string>
+    <string name="acquisition_note_placeholder">এখানে কারণ উল্লেখ করুন...</string>
+    <string name="acquisition_yes_bn">হ্যাঁ</string>
+    <string name="acquisition_no_bn">না</string>
+    <string name="acquisition_yes">Yes</string>
+    <string name="acquisition_no">No</string>
+
+    <string-array name="acquisition_likert_labels">
+        <item>তীব্র দ্বিমত</item>
+        <item>দ্বিমত</item>
+        <item>নিরপেক্ষ</item>
+        <item>একমত</item>
+        <item>তীব্র একমত</item>
+    </string-array>
+</resources>

@@ -1,4 +1,4 @@
-package com.touhid.composeform.leaddashboard
+package com.touhid.composeform.feature.leaddashboard
 
 import android.app.Activity
 import android.os.Bundle
@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
 import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
@@ -20,6 +19,7 @@ import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 
 // Stands in for a real eKYC verification flow (e.g. a third-party SDK's own Activity) - this
 // codebase has no such SDK yet, so LeadDashboardScreen launches this via
@@ -32,7 +32,7 @@ class EkycVerificationActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            ComposeFormAppTheme {
+            ComposeFormTheme {
                 AppScaffold {
                     Column(
                         modifier = Modifier

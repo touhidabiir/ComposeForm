@@ -1,7 +1,8 @@
-package com.touhid.composeform.leaddashboard
+package com.touhid.composeform.feature.leaddashboard
 
 import android.app.Activity
 import android.content.Intent
+import android.content.res.Configuration
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -46,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,7 +56,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.OnEndOfListReached
 import com.touhid.composeform.common.copyIconButton
@@ -83,6 +84,7 @@ import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 import com.touhid.composeform.network.model.LeadCloser
@@ -91,6 +93,7 @@ import com.touhid.composeform.network.model.LeadStatus
 import com.touhid.composeform.network.model.Rejection
 import com.touhid.composeform.network.model.RejectionReason
 import com.touhid.composeform.network.model.Reviewer
+import com.touhid.composeform.common.R as CommonR
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -151,9 +154,11 @@ private fun LeadDashboardContent(
     }
 
     val snackbarHostState = rememberAppSnackbarHostState()
+    val retryMessage = stringResource(CommonR.string.common_retry_message)
+    val retryAction = stringResource(CommonR.string.common_retry_action)
     LaunchedEffect(state.error) {
         if (state.error == null) return@LaunchedEffect
-        val result = snackbarHostState.showMessage(message = "Please try again", actionLabel = "Retry")
+        val result = snackbarHostState.showMessage(message = retryMessage, actionLabel = retryAction)
         if (result == AppSnackbarResult.ActionPerformed) onAction(LeadDashboardAction.OnRetry)
     }
 
@@ -190,12 +195,12 @@ private fun LeadDashboardContent(
         modifier = modifier.fillMaxSize(),
         topBar = { scrollBehavior ->
             AppTopBar(
-                title = "লিড ড্যাশবোর্ড",
+                title = stringResource(R.string.leaddashboard_title),
                 navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
                 onNavigationClick = onBack,
                 scrollBehavior = scrollBehavior,
                 actions = listOf(
-                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = "Refresh", onClick = { onAction(LeadDashboardAction.OnRefresh) }),
+                    AppTopBarAction(icon = Icons.Filled.Refresh, contentDescription = stringResource(CommonR.string.common_refresh), onClick = { onAction(LeadDashboardAction.OnRefresh) }),
                 ),
             )
         },
@@ -206,7 +211,7 @@ private fun LeadDashboardContent(
                 AppSearchField(
                     value = state.searchQuery,
                     onValueChange = { onAction(LeadDashboardAction.OnSearchQueryChanged(it)) },
-                    placeholder = "লিড বেইজ সার্চ করুন...",
+                    placeholder = stringResource(R.string.leaddashboard_search_placeholder),
                     modifier = Modifier.fillMaxWidth(),
                     // AppSearchField's keyboardOptions already default to imeAction = Search -
                     // only the action handler needs wiring here so the IME's search key submits
@@ -215,7 +220,7 @@ private fun LeadDashboardContent(
                     trailingIcon = {
                         AppIconButton(
                             icon = Icons.Filled.Search,
-                            contentDescription = "Search",
+                            contentDescription = stringResource(CommonR.string.common_search),
                             onClick = { onAction(LeadDashboardAction.OnSearchSubmitted) },
                             tint = AccentIndigo,
                         )
@@ -231,7 +236,7 @@ private fun LeadDashboardContent(
                     ) {
                         LeadStatusFilter.entries.forEach { filter ->
                             AppChip(
-                                text = filter.label,
+                                text = stringResource(filter.labelRes),
                                 selected = filter == state.selectedFilter,
                                 onClick = { onAction(LeadDashboardAction.OnFilterSelected(filter)) },
                             )
@@ -250,7 +255,7 @@ private fun LeadDashboardContent(
                             tint = StatusNeutral,
                         )
                         AppText(
-                            text = "${state.totalCount}টি ফলাফল পাওয়া গেছে",
+                            text = stringResource(CommonR.string.common_results_found_count, state.totalCount),
                             style = AppTextStyle.Label,
                             override = AppTextOverride(color = StatusNeutral),
                         )
@@ -271,9 +276,9 @@ private fun LeadDashboardContent(
                         // status has nothing" from "this search matched nothing".
                         ListEmptyState(
                             message = if (state.activeSearchQuery != null) {
-                                "কোনো লিড পাওয়া যায়নি"
+                                stringResource(CommonR.string.common_no_leads_found)
                             } else {
-                                "এই স্ট্যাটাসে কোনো লিড পাওয়া যায়নি"
+                                stringResource(R.string.leaddashboard_no_leads_status)
                             },
                             modifier = Modifier.align(Alignment.Center),
                         )
@@ -301,7 +306,7 @@ private fun LeadDashboardContent(
                         if (state.isLoadingMore) {
                             item {
                                 AppText(
-                                    text = "আরও লোড হচ্ছে...",
+                                    text = stringResource(R.string.leaddashboard_loading_more),
                                     modifier = Modifier.fillMaxWidth().padding(AppSpacing.Medium),
                                     textAlign = TextAlign.Center,
                                 )
@@ -321,10 +326,10 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
     // JSON value to null for this non-null-typed field) - kept distinct from Rejected's own
     // explicit branch so an unknown status is never mislabeled as rejected.
     val (badgeLabel, badgeTone) = when {
-        lead.status == LeadStatus.Approved -> "অনুমোদিত" to AppStatusTone.Success
-        lead.status == LeadStatus.Pending -> "পেন্ডিং" to AppStatusTone.Warning
-        lead.status == LeadStatus.Rejected -> "বাতিল" to AppStatusTone.Error
-        else -> "অজানা" to AppStatusTone.Neutral
+        lead.status == LeadStatus.Approved -> stringResource(CommonR.string.common_status_approved) to AppStatusTone.Success
+        lead.status == LeadStatus.Pending -> stringResource(CommonR.string.common_status_pending) to AppStatusTone.Warning
+        lead.status == LeadStatus.Rejected -> stringResource(CommonR.string.common_status_rejected) to AppStatusTone.Error
+        else -> stringResource(CommonR.string.common_status_unknown) to AppStatusTone.Neutral
     }
     var showRejectionDetails by remember { mutableStateOf(false) }
 
@@ -341,7 +346,7 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "ওয়ালেট নম্বর",
+            label = stringResource(CommonR.string.common_wallet_number),
             value = lead.walletNumber,
             icon = { AppIcon(icon = Icons.Filled.Phone, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
             trailingIcon = copyIconButton(lead.walletNumber),
@@ -349,24 +354,24 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "বিস্তারিত ঠিকানা",
+            label = stringResource(CommonR.string.common_address),
             value = lead.address,
             icon = { AppIcon(icon = Icons.Filled.LocationOn, contentDescription = null, modifier = iconModifier) },
         )
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         AppIconLabelValue(
-            label = "লিড ক্লোজার এ. টি. ও.",
+            label = stringResource(CommonR.string.common_lead_closer),
             value = "${lead.leadCloser.name} (${lead.leadCloser.employeeId})",
             icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
             trailingIcon = copyIconButton(lead.leadCloser.employeeId),
-            subValue = "এম. এ.- ${lead.leadCloser.servingMa}",
+            subValue = stringResource(CommonR.string.common_serving_ma, lead.leadCloser.servingMa),
         )
 
         lead.reviewer?.let { reviewer ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
             AppIconLabelValue(
-                label = "অনুমোদনকারী",
+                label = stringResource(R.string.leaddashboard_reviewer),
                 value = "${reviewer.name} (${reviewer.designation})",
                 icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
                 valueOverride = AppTextOverride(color = AccentIndigo),
@@ -377,7 +382,7 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
         lead.ekycSubmitter?.let { submitter ->
             Spacer(modifier = Modifier.height(AppSpacing.Small))
             AppIconLabelValue(
-                label = "ই-কেওয়াইসি জমাকারী এম. সি. ও.",
+                label = stringResource(R.string.leaddashboard_ekyc_submitter),
                 value = submitter.name,
                 icon = { AppIcon(icon = Icons.Filled.Person, contentDescription = null, modifier = iconModifier, tint = AccentIndigo) },
                 valueOverride = AppTextOverride(color = AccentIndigo),
@@ -388,7 +393,7 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
             lead.status == LeadStatus.Pending -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
                 AppButton(
-                    text = "লিড লক করুন",
+                    text = stringResource(R.string.leaddashboard_lock_lead),
                     onClick = {},
                     modifier = Modifier.fillMaxWidth(),
                     containerColor = StatusNeutralContainer,
@@ -398,7 +403,7 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
             }
             lead.status == LeadStatus.Approved && lead.canSubmitEkyc && !lead.isEkycSubmitted -> {
                 Spacer(modifier = Modifier.height(AppSpacing.Medium))
-                AppStepperButton(label = "ই-কেওয়াইসি জমা দিন", onClick = onSubmitEkycTapped, modifier = Modifier.fillMaxWidth())
+                AppStepperButton(label = stringResource(R.string.leaddashboard_submit_ekyc), onClick = onSubmitEkycTapped, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -427,7 +432,7 @@ private fun RejectionBanner(reason: String, onClick: () -> Unit, modifier: Modif
                 .background(BrandPrimary, RoundedCornerShape(percent = 50))
                 .padding(horizontal = AppSpacing.Small, vertical = 2.dp),
         ) {
-            AppText(text = "বাতিল করার কারণ", style = AppTextStyle.Label, color = Color.White)
+            AppText(text = stringResource(R.string.leaddashboard_rejection_reason), style = AppTextStyle.Label, color = Color.White)
         }
         Spacer(modifier = Modifier.height(AppSpacing.Small))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -464,14 +469,14 @@ private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Un
                 override = AppTextOverride(fontSize = 24.sp, fontWeight = FontWeight.Bold),
                 modifier = Modifier.weight(1f),
             )
-            AppIconButton(icon = Icons.Filled.Close, contentDescription = "Close", onClick = onDismissRequest)
+            AppIconButton(icon = Icons.Filled.Close, contentDescription = stringResource(CommonR.string.common_close), onClick = onDismissRequest)
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
         Row(verticalAlignment = Alignment.CenterVertically) {
             AppIcon(icon = Icons.Filled.Close, contentDescription = null, modifier = Modifier.size(RowIconSize), tint = BrandPrimary)
             Spacer(modifier = Modifier.width(AppSpacing.ExtraSmall))
-            AppText(text = "বাতিল করার কারণ", style = AppTextStyle.Label, color = StatusNeutral)
+            AppText(text = stringResource(R.string.leaddashboard_rejection_reason), style = AppTextStyle.Label, color = StatusNeutral)
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.Small))
@@ -493,7 +498,7 @@ private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Un
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             AppText(
-                text = "অনুমোদনকারী: ${lead.reviewer?.name ?: "-"}",
+                text = stringResource(R.string.leaddashboard_reviewer_label, lead.reviewer?.name ?: "-"),
                 style = AppTextStyle.Label,
                 color = StatusNeutral,
             )
@@ -544,13 +549,15 @@ private val PreviewLeads = listOf(
     ),
 )
 
-// Single preview (no Dark variant) since ComposeFormAppTheme forces light theme regardless of
-// system setting - that's how this screen actually renders in the real app, so a "Dark" tile
-// here would show something the app never does.
-@Preview(name = "Lead Dashboard", showBackground = true)
+// :app's ComposeFormAppTheme forces light-only at runtime (that's how this screen actually
+// renders in the real app), but this feature module can't depend on :app - that dependency would
+// run backwards, since :app assembles feature modules like this one, not the other way around.
+// Uses :designsystem's own ComposeFormTheme directly instead, with both Light/Dark variants.
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true)
 @Composable
 private fun LeadDashboardScreenPreview() {
-    ComposeFormAppTheme {
+    ComposeFormTheme {
         LeadDashboardContent(
             state = LeadDashboardState(isLoading = false, leads = PreviewLeads, selectedFilter = LeadStatusFilter.Pending),
             onBack = {},
