@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,6 +63,7 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
+import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.network.model.AcquisitionListItem
@@ -295,6 +297,18 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
             subValue = stringResource(CommonR.string.common_serving_ma, item.leadCloser.servingMa),
         )
 
+        if (item.rejectionCount > 0) {
+            Spacer(modifier = Modifier.height(AppSpacing.Medium))
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppSpacing.ExtraSmall)) {
+                AppIcon(icon = Icons.Outlined.ErrorOutline, contentDescription = null, modifier = iconModifier, tint = BrandPrimary)
+                AppText(
+                    text = stringResource(R.string.acquisition_previously_rejected_count, item.rejectionCount.toString().toBengaliDigits()),
+                    style = AppTextStyle.Label,
+                    color = BrandPrimary,
+                )
+            }
+        }
+
         if (item.canReview) {
             Spacer(modifier = Modifier.height(AppSpacing.Medium))
             AppStepperButton(label = stringResource(R.string.acquisition_review), onClick = onReview, modifier = Modifier.fillMaxWidth())
@@ -312,6 +326,7 @@ private val PreviewItems = listOf(
         leadCloser = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "01930119876", servingMa = "01930198765"),
         submittedAt = "2026-07-13T14:30:00+06:00",
         canReview = true,
+        rejectionCount = 2,
     ),
 )
 

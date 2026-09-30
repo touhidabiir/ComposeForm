@@ -59,6 +59,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.OnEndOfListReached
 import com.touhid.composeform.common.copyIconButton
+import com.touhid.composeform.common.formatRejectionTimestamp
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppStepperButton
 import com.touhid.composeform.designsystem.components.icon.AppIcon
@@ -94,8 +95,6 @@ import com.touhid.composeform.network.model.Rejection
 import com.touhid.composeform.network.model.RejectionReason
 import com.touhid.composeform.network.model.Reviewer
 import com.touhid.composeform.common.R as CommonR
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 private val RowIconSize = 16.dp
 
@@ -498,7 +497,7 @@ private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Un
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             AppText(
-                text = stringResource(R.string.leaddashboard_reviewer_label, lead.reviewer?.name ?: "-"),
+                text = stringResource(CommonR.string.common_reviewer_label, lead.reviewer?.name ?: "-"),
                 style = AppTextStyle.Label,
                 color = StatusNeutral,
             )
@@ -510,11 +509,6 @@ private fun RejectionDetailsSheet(lead: LeadListItem, onDismissRequest: () -> Un
         }
     }
 }
-
-private fun formatRejectionTimestamp(reviewedAt: String): String = runCatching {
-    val parsed = SimpleDateFormat("yyyy/MM/dd hh:mm:ss a", Locale.US).parse(reviewedAt)
-    SimpleDateFormat("d MMM yyyy; h:mm a", Locale.US).format(parsed!!)
-}.getOrDefault(reviewedAt)
 
 private val PreviewLeads = listOf(
     LeadListItem(

@@ -26,6 +26,9 @@ data class AcquisitionListItem(
     @SerializedName("lead_closer") val leadCloser: LeadCloser,
     @SerializedName("submitted_at") val submittedAt: String,
     @SerializedName("can_review") val canReview: Boolean,
+    // How many times this lead was rejected before its current submission - 0 for a first-time
+    // submission, in which case the list card shows no "previously rejected" line at all.
+    @SerializedName("rejection_count") val rejectionCount: Int = 0,
 )
 
 // Mirrors the backend's acquisition detail response shape 1:1, same Gson-reflected pattern as
@@ -52,6 +55,10 @@ data class AcquisitionDetail(
     @SerializedName("wallet_info") val walletInfo: WalletInfo,
     @SerializedName("survey_responses") val surveyResponses: List<SurveyResponse>,
     val audit: AcquisitionAudit,
+    // The lead's earlier rejections, oldest first (index 0 is the 1st rejection) - nullable since a
+    // first-time submission may omit the key entirely rather than send an empty list, and Gson
+    // would otherwise leave null in a non-null List field.
+    @SerializedName("rejection_reasons") val rejectionReasons: List<Rejection>? = null,
 )
 
 // One tier of the premiumness score gauge - min/max score, whether this detail's score falls in
