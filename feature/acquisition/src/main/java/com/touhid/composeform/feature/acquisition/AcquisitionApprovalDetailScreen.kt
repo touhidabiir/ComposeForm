@@ -53,8 +53,11 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -423,8 +426,16 @@ private fun RejectionAttemptBlock(rejection: Rejection, attemptLabel: String?) {
             }
         }
         if (rejection.note.isNotBlank()) {
+            val noteLabel = stringResource(R.string.acquisition_rejection_note_label)
             AppText(
-                text = stringResource(R.string.acquisition_rejection_note, rejection.note),
+                // Only the "নোট:" label takes the accent color (matching the card's title) - the
+                // note itself stays muted. One AnnotatedString, not a Row of two AppTexts, so a
+                // multi-line note wraps back under the label rather than in a column beside it.
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(color = BrandPrimary)) { append(noteLabel) }
+                    append(" ")
+                    append(rejection.note)
+                },
                 style = AppTextStyle.Label,
                 color = StatusNeutral,
                 modifier = Modifier

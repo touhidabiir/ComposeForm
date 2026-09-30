@@ -54,7 +54,7 @@
     <string name="acquisition_no_bn">না</string>
     <string name="acquisition_previous_rejections_title">পূর্বে বাতিলের কারণ</string>
     <string name="acquisition_rejection_attempt">%1$s বার</string>
-    <string name="acquisition_rejection_note">নোট: %1$s</string>
+    <string name="acquisition_rejection_note_label">নোট:</string>
     <string name="acquisition_expand">Expand</string>
     <string name="acquisition_collapse">Collapse</string>
     <string name="acquisition_yes">Yes</string>

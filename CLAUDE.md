@@ -41,7 +41,8 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
 ├── theme/                  # Color.kt (incl. semantic Status*/Status*Container tones), Theme.kt (ComposeFormTheme),
 │                            # Type.kt, Spacing.kt (AppSpacing)
 └── components/
-    ├── text/               # AppText + AppTextStyle enum + AppTextOverride (size/weight/color override),
+    ├── text/               # AppText (String, or AnnotatedString for per-span color/weight, e.g. a colored
+    │                        # prefix) + AppTextStyle enum + AppTextOverride (size/weight/color override),
     │                        # AppIconLabelValue (icon + value, or label caption stacked above value;
     │                        # AppIconPosition: Start/End/Top/Bottom decides which side the icon sits on;
     │                        # optional subValue renders a second, smaller/muted caption below the value;
