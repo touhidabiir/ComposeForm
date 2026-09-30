@@ -17,13 +17,15 @@ import dagger.hilt.components.SingletonComponent
 //
 // Read once, here, when Hilt's SingletonComponent first resolves these - Retrofit/OkHttpClient
 // (NetworkModule) are then built once as @Singletons from that value, so a base URL saved after
-// that point takes effect on the next app/process restart, not live. Defaults to "" when unset.
-// Note this means Retrofit.Builder().baseUrl("") - via RetrofitFactory's trailing-slash
-// normalization, effectively baseUrl("/") - will throw IllegalArgumentException the first time
-// any of these are actually resolved (i.e. the first screen that injects AppRepository or an
-// equivalent repository) if a real URL hasn't been saved yet. Acceptable for now since this is a
-// deliberate simplification, not an oversight - flagging it here since it's the one sharp edge of
-// keeping "default to empty" this simple.
+// that point takes effect on the next app/process restart, not live.
+//
+// Falls back to a placeholder URL when nothing has been saved yet (nothing in the app writes
+// these keys today). The fallback must be a syntactically valid http(s) URL: an empty string
+// becomes baseUrl("/") after RetrofitFactory's trailing-slash normalization, and Retrofit throws
+// "Expected URL scheme 'http' or 'https'" the first time any repository is injected. The
+// @RefreshRetrofit client is usually where that surfaces, only because Hilt builds it first
+// (TokenAuthenticator needs it before provideRetrofit runs). In debug builds MockDataInterceptor
+// answers the mocked paths regardless of host, so the placeholders are enough to run the app.
 @Module
 @InstallIn(SingletonComponent::class)
 object AppNetworkModule {
@@ -33,22 +35,32 @@ object AppNetworkModule {
     private const val KEY_ANALYTICS_BASE_URL = "analytics_base_url"
     private const val KEY_PARTNER_BASE_URL = "partner_base_url"
 
+    private const val DEFAULT_BASE_URL = "https://api.composeform.dummy/"
+    private const val DEFAULT_PAYMENT_BASE_URL = "https://payment.composeform.dummy/"
+    private const val DEFAULT_ANALYTICS_BASE_URL = "https://analytics.composeform.dummy/"
+    private const val DEFAULT_PARTNER_BASE_URL = "https://partner.composeform.dummy/"
+
+    // ifBlank, not just getString's default - that default only covers a missing key, and a key
+    // saved as "" (or whitespace) would crash Retrofit exactly the same way.
+    private fun SharedPreferences.baseUrl(key: String, default: String): String =
+        getString(key, null).orEmpty().trim().ifBlank { default }
+
     @Provides
     @BaseUrl
-    fun provideBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_BASE_URL, "").orEmpty()
+    fun provideBaseUrl(prefs: SharedPreferences): String = prefs.baseUrl(KEY_BASE_URL, DEFAULT_BASE_URL)
 
     @Provides
     @PaymentBaseUrl
-    fun providePaymentBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_PAYMENT_BASE_URL, "").orEmpty()
+    fun providePaymentBaseUrl(prefs: SharedPreferences): String = prefs.baseUrl(KEY_PAYMENT_BASE_URL, DEFAULT_PAYMENT_BASE_URL)
 
     @Provides
     @AnalyticsBaseUrl
-    fun provideAnalyticsBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_ANALYTICS_BASE_URL, "").orEmpty()
+    fun provideAnalyticsBaseUrl(prefs: SharedPreferences): String = prefs.baseUrl(KEY_ANALYTICS_BASE_URL, DEFAULT_ANALYTICS_BASE_URL)
 
     // Third-party backend, not ours - NetworkModule builds this base URL's Retrofit with
     // authInterceptor = null, so our app's bearer token is never attached here regardless of
     // where this URL comes from.
     @Provides
     @PartnerBaseUrl
-    fun providePartnerBaseUrl(prefs: SharedPreferences): String = prefs.getString(KEY_PARTNER_BASE_URL, "").orEmpty()
+    fun providePartnerBaseUrl(prefs: SharedPreferences): String = prefs.baseUrl(KEY_PARTNER_BASE_URL, DEFAULT_PARTNER_BASE_URL)
 }
