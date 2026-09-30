@@ -27,6 +27,7 @@ class AppRepositoryImpl @Inject constructor(
         safeApiCall { apiService.login(LoginRequest(username, password)) }.also { result ->
             if (result is NetworkResult.Success) {
                 tokenProvider.setToken(result.data.token)
+                tokenProvider.setRefreshToken(result.data.refreshToken)
             }
         }
 

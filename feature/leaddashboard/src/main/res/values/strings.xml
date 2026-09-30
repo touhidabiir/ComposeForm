@@ -5,7 +5,6 @@
     <string name="leaddashboard_search_placeholder">লিড বেইজ সার্চ করুন...</string>
     <string name="leaddashboard_no_leads_status">এই স্ট্যাটাসে কোনো লিড পাওয়া যায়নি</string>
     <string name="leaddashboard_loading_more">আরও লোড হচ্ছে...</string>
-    <string name="leaddashboard_status_ekyc_submitted">ই-কেওয়াইসি জমা হয়েছে</string>
     <string name="leaddashboard_status_ekyc">ই-কেওয়াইসি</string>
     <string name="leaddashboard_reviewer">অনুমোদনকারী</string>
     <string name="leaddashboard_ekyc_submitter">ই-কেওয়াইসি জমাকারী এম. সি. ও.</string>

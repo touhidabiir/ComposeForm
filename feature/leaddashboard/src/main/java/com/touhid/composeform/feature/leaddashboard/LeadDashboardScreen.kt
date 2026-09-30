@@ -1,6 +1,10 @@
 package com.touhid.composeform.feature.leaddashboard
 
+import android.app.Activity
+import android.content.Intent
 import android.content.res.Configuration
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -42,6 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -107,7 +112,6 @@ private val RejectionBannerBackground = Color(0xFFFFF8FB)
 @Composable
 fun LeadDashboardScreen(
     onBack: () -> Unit,
-    onSubmitEkyc: (LeadListItem) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LeadDashboardViewModel = hiltViewModel(),
 ) {
@@ -116,7 +120,6 @@ fun LeadDashboardScreen(
         state = state,
         onBack = onBack,
         onAction = viewModel::onAction,
-        onSubmitEkyc = onSubmitEkyc,
         modifier = modifier,
     )
 }
@@ -126,7 +129,6 @@ private fun LeadDashboardContent(
     state: LeadDashboardState,
     onBack: () -> Unit,
     onAction: (LeadDashboardAction) -> Unit,
-    onSubmitEkyc: (LeadListItem) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LaunchedEffect(Unit) { onAction(LeadDashboardAction.OnScreenStart) }
@@ -160,19 +162,26 @@ private fun LeadDashboardContent(
         if (result == AppSnackbarResult.ActionPerformed) onAction(LeadDashboardAction.OnRetry)
     }
 
-    // Fires once per successful eKYC submission - invokes the screen's own onSubmitEkyc callback
-    // (unchanged from before this call existed) exactly once, then tells the ViewModel the one-shot
-    // signal has been handled so a later recomposition with the same ViewModel instance (e.g. after
-    // a configuration change) can't re-invoke it.
-    LaunchedEffect(state.submittedEkycLead) {
-        val lead = state.submittedEkycLead ?: return@LaunchedEffect
-        onSubmitEkyc(lead)
-        onAction(LeadDashboardAction.OnEkycSubmitHandled)
+    // Tapping a card's eKYC button no longer calls the API directly - it launches
+    // EkycVerificationActivity first, and only a RESULT_OK finish (see startEkycVerification
+    // below) dispatches OnSubmitEkycTapped. pendingEkycLead remembers which lead that launch was
+    // for, since the ActivityResultLauncher's result callback has no other way to know - the
+    // launch and its result arrive as two separate events with this screen's own recomposition
+    // in between.
+    val context = LocalContext.current
+    var pendingEkycLead by remember { mutableStateOf<LeadListItem?>(null) }
+    val ekycVerificationLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        val lead = pendingEkycLead
+        pendingEkycLead = null
+        if (result.resultCode == Activity.RESULT_OK && lead != null) {
+            onAction(LeadDashboardAction.OnSubmitEkycTapped(lead))
+        }
     }
-
-    LaunchedEffect(state.ekycSubmitError) {
-        if (state.ekycSubmitError == null) return@LaunchedEffect
-        snackbarHostState.showMessage(message = state.ekycSubmitError)
+    fun startEkycVerification(lead: LeadListItem) {
+        pendingEkycLead = lead
+        ekycVerificationLauncher.launch(Intent(context, EkycVerificationActivity::class.java))
     }
 
     // isLoading and an in-flight eKYC submission are mutually exclusive in practice (the latter
@@ -291,7 +300,7 @@ private fun LeadDashboardContent(
                         itemsIndexed(items = state.leads, key = { index, lead -> "${lead.id}_$index" }) { _, lead ->
                             LeadListCard(
                                 lead = lead,
-                                onSubmitEkycTapped = { onAction(LeadDashboardAction.OnSubmitEkycTapped(lead)) },
+                                onSubmitEkycTapped = { startEkycVerification(lead) },
                             )
                         }
                         if (state.isLoadingMore) {
@@ -313,11 +322,14 @@ private fun LeadDashboardContent(
 @Composable
 private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
     val iconModifier = Modifier.size(RowIconSize)
+    // else only catches a status this app doesn't recognize (Gson silently maps an unrecognized
+    // JSON value to null for this non-null-typed field) - kept distinct from Rejected's own
+    // explicit branch so an unknown status is never mislabeled as rejected.
     val (badgeLabel, badgeTone) = when {
-        lead.status == LeadStatus.Approved && lead.isEkycSubmitted -> stringResource(R.string.leaddashboard_status_ekyc_submitted) to AppStatusTone.Success
         lead.status == LeadStatus.Approved -> stringResource(CommonR.string.common_status_approved) to AppStatusTone.Success
         lead.status == LeadStatus.Pending -> stringResource(CommonR.string.common_status_pending) to AppStatusTone.Warning
-        else -> stringResource(CommonR.string.common_status_rejected) to AppStatusTone.Error
+        lead.status == LeadStatus.Rejected -> stringResource(CommonR.string.common_status_rejected) to AppStatusTone.Error
+        else -> stringResource(CommonR.string.common_status_unknown) to AppStatusTone.Neutral
     }
     var showRejectionDetails by remember { mutableStateOf(false) }
 
@@ -550,7 +562,6 @@ private fun LeadDashboardScreenPreview() {
             state = LeadDashboardState(isLoading = false, leads = PreviewLeads, selectedFilter = LeadStatusFilter.Pending),
             onBack = {},
             onAction = {},
-            onSubmitEkyc = {},
         )
     }
 }
