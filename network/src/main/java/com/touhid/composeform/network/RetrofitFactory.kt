@@ -36,17 +36,22 @@ internal class RetrofitFactory @Inject constructor(
             .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
-            // TODO: remove once the real backend is live - also delete the whole network/mock/
-            // package (MockDataInterceptor.kt, MockJson.kt) at the same time, it exists solely to
-            // back this call.
-            // Debug-gated so a release build can never end up silently serving fake data instead
-            // of failing to reach a real backend. Harmless for base URLs that don't match any of
-            // its paths (AppApiService's) - it falls through to the real request.
-            .apply { if (BuildConfig.DEBUG) addInterceptor(MockDataInterceptor()) }
             .addInterceptor(requestIdInterceptor)
             .apply { authInterceptor?.let(::addInterceptor) }
             .apply { interceptors.forEach(::addInterceptor) }
             .addInterceptor(loggingInterceptor)
+            // TODO: remove once the real backend is live - also delete the whole network/mock/
+            // package (MockDataInterceptor.kt, MockJson.kt) at the same time, it exists solely to
+            // back this call.
+            // Debug-gated so a release build can never end up silently serving fake data instead
+            // of failing to reach a real backend. Harmless for paths it doesn't mock - it falls
+            // through to the real request.
+            // Must stay the LAST application interceptor: for a mocked path it returns a canned
+            // response without calling chain.proceed(), so any interceptor added after it never
+            // runs. Placed here it stands in for only the network transport - the request-id/auth
+            // headers are still added, the error mapping still runs, and loggingInterceptor
+            // still logs both the request and the mocked response to logcat.
+            .apply { if (BuildConfig.DEBUG) addInterceptor(MockDataInterceptor()) }
             .apply { authenticator?.let { this.authenticator(it) } }
             .build()
 

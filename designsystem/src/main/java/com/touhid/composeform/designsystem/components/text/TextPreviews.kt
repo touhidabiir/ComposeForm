@@ -12,6 +12,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.theme.AppSpacing
@@ -35,6 +38,14 @@ private fun TextPreview() {
                 AppText("Body Large", style = AppTextStyle.BodyLarge)
                 AppText("Body Medium", style = AppTextStyle.BodyMedium)
                 AppText("Label", style = AppTextStyle.Label)
+                AppText(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(color = Color(0xFFE2136E))) { append("Note:") }
+                        append(" only the prefix is colored, and a long line still wraps as one paragraph.")
+                    },
+                    style = AppTextStyle.Label,
+                    color = Color(0xFF616161),
+                )
                 AppIconLabelValue(
                     value = "01208-567890",
                     icon = { Icon(Icons.Filled.Phone, contentDescription = null, modifier = Modifier.size(16.dp)) },

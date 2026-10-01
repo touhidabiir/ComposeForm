@@ -22,4 +22,5 @@
     <string name="common_status_pending">পেন্ডিং</string>
     <string name="common_status_rejected">বাতিল</string>
     <string name="common_status_unknown">অজানা</string>
+    <string name="common_reviewer_label">অনুমোদনকারী: %1$s</string>
 </resources>

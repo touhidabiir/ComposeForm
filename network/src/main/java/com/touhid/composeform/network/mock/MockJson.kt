@@ -271,7 +271,8 @@ internal object MockJson {
               "serving_ma": "01930198765"
             },
             "submitted_at": "2026-07-13T14:30:00+06:00",
-            "can_review": true
+            "can_review": true,
+            "rejection_count": 2
           },
           {
             "id": 100238472,
@@ -286,7 +287,8 @@ internal object MockJson {
               "serving_ma": "01930198765"
             },
             "submitted_at": "2026-07-12T11:15:00+06:00",
-            "can_review": true
+            "can_review": true,
+            "rejection_count": 0
           }
         ]
       }
@@ -397,7 +399,41 @@ internal object MockJson {
             "whitelisting_number": "1930119876",
             "serving_ma": "1930198765"
           }
-        }
+        },
+        "rejection_reasons": [
+          {
+            "reasons": [
+              {"id": 13, "reason": "লেনদেন নিয়মিত করে না"},
+              {"id": 14, "reason": "ব্যবসা ভালো চলছে না"},
+              {"id": 15, "reason": "দোকান সবসময় খোলা থাকে না"}
+            ],
+            "note": "ডকুমেন্ট সংগ্রহে অস্পষ্টতা রয়েছে এবং নেটওয়ার্ক সমস্যা থাকায় এটি একটি লো ইমপ্যাক্ট লিড হিসেবে গণ্য হচ্ছে।",
+            "reviewed_at": "2026/06/12 01:13:00 PM",
+              "reviewer": {
+                "name": "আকমল হোসেন",
+                "designation": "OM",
+                "serving_ma": "01930198765",
+                "hierarchy_key": "territory",
+                "hierarchy_value": "Bakalia"
+              }
+          },
+          {
+            "reasons": [
+              {"id": 13, "reason": "লেনদেন নিয়মিত করে না"},
+              {"id": 14, "reason": "ব্যবসা ভালো চলছে না"},
+              {"id": 15, "reason": "দোকান সবসময় খোলা থাকে না"}
+            ],
+            "note": "",
+            "reviewed_at": "2026/07/02 01:13:00 PM",
+              "reviewer": {
+                "name": "আকমল হোসেন",
+                "designation": "OM",
+                "serving_ma": "01930198765",
+                "hierarchy_key": "territory",
+                "hierarchy_value": "Bakalia"
+              }
+          }
+        ]
       }
     }
     """.trimIndent()

@@ -11,6 +11,7 @@
     <string name="acquisition_decision_rejected_message">Lead rejected successfully</string>
     <string name="acquisition_loading_more">Loading more…</string>
     <string name="acquisition_review">Review</string>
+    <string name="acquisition_previously_rejected_count">%1$s বার পূর্বে বাতিল হয়েছে</string>
 
     <!-- AcquisitionApprovalDetailScreen -->
     <string name="acquisition_no_detail">কোনো তথ্য পাওয়া যায়নি</string>
@@ -51,6 +52,11 @@
     <string name="acquisition_note_placeholder">এখানে কারণ উল্লেখ করুন...</string>
     <string name="acquisition_yes_bn">হ্যাঁ</string>
     <string name="acquisition_no_bn">না</string>
+    <string name="acquisition_previous_rejections_title">পূর্বে বাতিলের কারণ</string>
+    <string name="acquisition_rejection_attempt">%1$s বার</string>
+    <string name="acquisition_rejection_note_label">নোট:</string>
+    <string name="acquisition_expand">Expand</string>
+    <string name="acquisition_collapse">Collapse</string>
     <string name="acquisition_yes">Yes</string>
     <string name="acquisition_no">No</string>
 
@@ -60,5 +66,20 @@
         <item>নিরপেক্ষ</item>
         <item>একমত</item>
         <item>তীব্র একমত</item>
+    </string-array>
+
+    <!-- Bengali ordinals for the previous-rejections card's "১ম বার"/"২য় বার" attempt badges -
+         index 0 is the 1st rejection. Past the 10th, the badge falls back to plain Bengali digits. -->
+    <string-array name="acquisition_rejection_ordinals">
+        <item>১ম</item>
+        <item>২য়</item>
+        <item>৩য়</item>
+        <item>৪র্থ</item>
+        <item>৫ম</item>
+        <item>৬ষ্ঠ</item>
+        <item>৭ম</item>
+        <item>৮ম</item>
+        <item>৯ম</item>
+        <item>১০ম</item>
     </string-array>
 </resources>

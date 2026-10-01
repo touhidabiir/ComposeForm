@@ -1,6 +1,7 @@
 package com.touhid.composeform.feature.acquisition
 
 import android.content.res.Configuration
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -30,15 +31,18 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material.icons.outlined.ErrorOutline
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,8 +53,11 @@ import androidx.compose.ui.graphics.painter.ColorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -58,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.touhid.composeform.common.ListEmptyState
 import com.touhid.composeform.common.copyIconButton
+import com.touhid.composeform.common.formatRejectionTimestamp
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
 import com.touhid.composeform.designsystem.components.button.AppOutlinedButton
@@ -100,6 +108,9 @@ import com.touhid.composeform.network.model.Facility
 import com.touhid.composeform.network.model.LeadCloser
 import com.touhid.composeform.network.model.OutletInfo
 import com.touhid.composeform.network.model.PremiumnessScoreRange
+import com.touhid.composeform.network.model.Rejection
+import com.touhid.composeform.network.model.RejectionReason
+import com.touhid.composeform.network.model.Reviewer
 import com.touhid.composeform.network.model.SurveyResponse
 import com.touhid.composeform.network.model.WalletInfo
 import com.touhid.composeform.common.R as CommonR
@@ -110,9 +121,6 @@ private const val MaxPremiumnessScore = 100
 // Same brand secondary accent as the list screens - one caller here too, kept local rather than
 // promoted into :designsystem's theme (see LeadDashboardScreen.kt for the fuller rationale).
 private val AccentIndigo = Color(0xFF675C92)
-
-private val BengaliDigits = arrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
-private fun String.toBengaliDigits(): String = map { c -> if (c in '0'..'9') BengaliDigits[c - '0'] else c }.joinToString("")
 
 // The generic marker icon most Outlet/Wallet Information rows use in the design - only the
 // phone and address rows get a semantically distinct icon (phone/location glyphs).
@@ -270,6 +278,11 @@ private fun AcquisitionDetailBody(detail: AcquisitionDetail) {
     ) {
         ShopIdentityCard(shopName = detail.shopName, walletNumber = detail.walletNumber)
 
+        val rejections = detail.rejectionReasons.orEmpty()
+        if (rejections.isNotEmpty()) {
+            PreviousRejectionsCard(rejections = rejections)
+        }
+
         AppCard(modifier = Modifier.fillMaxWidth()) {
             ScoreSection(score = detail.premiumnessScore, ranges = detail.premiumnessScoreRanges, surveyResponses = detail.surveyResponses)
         }
@@ -332,6 +345,118 @@ private fun ShopIdentityCard(shopName: String, walletNumber: String) {
         }
     }
 }
+
+// The lead's earlier rejection history, collapsible from its header row and expanded by default.
+// Each attempt gets its own bordered block; the "১ম বার"/"২য় বার" badge only appears when there's
+// more than one attempt to tell apart. Expanded state is rememberSaveable so a rotation doesn't
+// reopen a card the user deliberately collapsed.
+@Composable
+private fun PreviousRejectionsCard(rejections: List<Rejection>) {
+    var expanded by rememberSaveable { mutableStateOf(true) }
+    val ordinals = stringArrayResource(R.array.acquisition_rejection_ordinals)
+
+    AppCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small),
+        ) {
+            AppIcon(icon = Icons.Outlined.ErrorOutline, contentDescription = null, modifier = Modifier.size(20.dp), tint = BrandPrimary)
+            AppText(
+                text = stringResource(R.string.acquisition_previous_rejections_title),
+                style = AppTextStyle.TitleMedium,
+                color = BrandPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            AppIcon(
+                icon = if (expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown,
+                contentDescription = stringResource(if (expanded) R.string.acquisition_collapse else R.string.acquisition_expand),
+                tint = StatusNeutral,
+            )
+        }
+        AnimatedVisibility(visible = expanded) {
+            Column(
+                modifier = Modifier.padding(top = AppSpacing.Medium),
+                verticalArrangement = Arrangement.spacedBy(AppSpacing.Medium),
+            ) {
+                rejections.forEachIndexed { index, rejection ->
+                    val attemptLabel = if (rejections.size > 1) {
+                        ordinals.getOrNull(index) ?: (index + 1).toString().toBengaliDigits()
+                    } else {
+                        null
+                    }
+                    RejectionAttemptBlock(rejection = rejection, attemptLabel = attemptLabel)
+                }
+            }
+        }
+    }
+}
+
+private val RejectionBulletSize = 6.dp
+
+@Composable
+private fun RejectionAttemptBlock(rejection: Rejection, attemptLabel: String?) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(width = 1.dp, color = StatusNeutralContainer, shape = RoundedCornerShape(AppSpacing.Small))
+            .padding(AppSpacing.Medium),
+        verticalArrangement = Arrangement.spacedBy(AppSpacing.Small),
+    ) {
+        if (attemptLabel != null) {
+            Box(
+                modifier = Modifier
+                    .background(color = StatusNeutralContainer, shape = RoundedCornerShape(AppSpacing.ExtraSmall))
+                    .padding(horizontal = AppSpacing.Small, vertical = 2.dp),
+            ) {
+                AppText(text = stringResource(R.string.acquisition_rejection_attempt, attemptLabel), style = AppTextStyle.Label, color = StatusNeutral)
+            }
+        }
+        rejection.reasons.forEach { reason ->
+            Row(horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+                // Top-aligned with a nudge down to the first text line's center, so a reason that
+                // wraps onto a second line keeps its bullet beside the first line, not the middle.
+                Box(
+                    modifier = Modifier
+                        .padding(top = 7.dp)
+                        .size(RejectionBulletSize)
+                        .background(color = StatusNeutral, shape = CircleShape),
+                )
+                AppText(text = reason.reason, style = AppTextStyle.BodyMedium)
+            }
+        }
+        if (rejection.note.isNotBlank()) {
+            val noteLabel = stringResource(R.string.acquisition_rejection_note_label)
+            AppText(
+                // Only the "নোট:" label takes the accent color (matching the card's title) - the
+                // note itself stays muted. One AnnotatedString, not a Row of two AppTexts, so a
+                // multi-line note wraps back under the label rather than in a column beside it.
+                text = buildAnnotatedString {
+                    withStyle(SpanStyle(color = BrandPrimary)) { append(noteLabel) }
+                    append(" ")
+                    append(rejection.note)
+                },
+                style = AppTextStyle.Label,
+                color = StatusNeutral,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = RejectionNoteBackgroundColor, shape = RoundedCornerShape(AppSpacing.Small))
+                    .padding(AppSpacing.Small),
+            )
+        }
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+            AppText(
+                text = stringResource(CommonR.string.common_reviewer_label, rejection.reviewer?.name ?: "-"),
+                style = AppTextStyle.Label,
+                color = StatusNeutral,
+                modifier = Modifier.weight(1f),
+            )
+            AppText(text = formatRejectionTimestamp(rejection.reviewedAt), style = AppTextStyle.Label, color = StatusNeutral)
+        }
+    }
+}
+
+private val RejectionNoteBackgroundColor = Color(0xFFF5F5F5)
 
 @Composable
 private fun OutletInformationCard(outletInfo: OutletInfo, digitalPayment: DigitalPayment) {
@@ -908,6 +1033,20 @@ private fun ApprovalReasonSheetContentRejectPreview() {
     }
 }
 
+private val PreviewRejectionReasons = listOf(
+    RejectionReason(id = 13, reason = "লেনদেন নিয়মিত করে না"),
+    RejectionReason(id = 14, reason = "ব্যবসা ভালো চলছে না"),
+    RejectionReason(id = 15, reason = "দোকান সবসময় খোলা থাকে না"),
+)
+
+private val PreviewReviewer = Reviewer(
+    name = "আকমল হোসেন",
+    designation = "OM",
+    servingMa = "01930198765",
+    hierarchyKey = "territory",
+    hierarchyValue = "Bakalia",
+)
+
 private val PreviewDetail = AcquisitionDetail(
     id = 100238471,
     displayId = "LEAD-2026-100238471",
@@ -965,17 +1104,26 @@ private val PreviewDetail = AcquisitionDetail(
         submittedAt = "2026-07-15T10:35:00+06:00",
         submittedBy = LeadCloser(name = "Jamal Bhuiyan", employeeId = "A11002912", whitelistingNumber = "1930119876", servingMa = "1930198765"),
     ),
+    rejectionReasons = listOf(
+        Rejection(
+            reasons = PreviewRejectionReasons,
+            note = "ডকুমেন্ট সংগ্রহে অস্পষ্টতা রয়েছে এবং নেটওয়ার্ক সমস্যা থাকায় এটি একটি লো ইমপ্যাক্ট লিড হিসেবে গণ্য হচ্ছে।",
+            reviewedAt = "2026/06/12 01:13:00 PM",
+            reviewer = PreviewReviewer,
+        ),
+        Rejection(reasons = PreviewRejectionReasons, note = "", reviewedAt = "2026/07/02 01:13:00 PM", reviewer = PreviewReviewer),
+    ),
 )
 
 // :app's ComposeFormAppTheme forces light-only at runtime (that's how this screen actually
 // renders in the real app), but this feature module can't depend on :app - that dependency would
 // run backwards, since :app assembles feature modules like this one, not the other way around.
 // Uses :designsystem's own ComposeFormTheme directly instead, with both Light/Dark variants.
-// heightDp is tall enough to lay out the whole scrollable column (score section + 3 photos + all
+// heightDp is tall enough to lay out the whole scrollable column (previous rejections + score section + 3 photos + all
 // info cards) without clipping, since a default-height preview canvas would otherwise just show
 // the top of the screen.
-@Preview(name = "Light", showBackground = true, heightDp = 2000)
-@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 2000)
+@Preview(name = "Light", showBackground = true, heightDp = 2500)
+@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, showBackground = true, heightDp = 2500)
 @Composable
 private fun AcquisitionApprovalDetailScreenPreview() {
     ComposeFormTheme {
