@@ -2,6 +2,8 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+A narrative, no-class-names walkthrough of this same module architecture — written for sharing with people who don't need file-level detail (what each module owns, how they connect, the enforced boundaries, a couple of worked request walkthroughs, alternatives considered and why they were set aside) — lives in `docs/architecture.docx`. This file (`CLAUDE.md`) stays the precise, up-to-date source of truth; the docx is a snapshot and won't be kept in sync automatically, so prefer this file when the two disagree.
+
 ## Commands
 
 - Build everything: `./gradlew build`
