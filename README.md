@@ -32,41 +32,8 @@ The project is split into eight Gradle modules:
 
 ### Dependency graph
 
-```mermaid
-flowchart TD
-    app[":app"]
+![Module dependency graph](docs/module-graph.png)
 
-    subgraph features["feature/"]
-        lead[":feature:leaddashboard"]
-        acq[":feature:acquisition"]
-    end
-
-    common[":common"]
-    ds[":designsystem"]
-    fb[":formbuilder"]
-    data[":data"]
-    net[":network"]
-    db[":database"]
-
-    m3[["Material3"]]
-    sq[["OkHttp / Retrofit"]]
-    room[["Room"]]
-
-    app --> lead & acq & common & ds & fb & data
-    app -. config only .-> net
-    lead & acq --> data & ds & common
-    common --> ds
-    fb --> ds
-    data -- api --> net
-    data --> db
-    ds --> m3
-    net --> sq
-    db --> room
-
-    classDef external fill:#eee,stroke:#999,color:#333
-    class m3,sq,room external
-```
-
-Arrows point from a module to what it depends on. Grey boxes are external libraries, each reachable from exactly one module — the compiler-enforced boundaries. `:data`'s dependency on `:network` is `api`, so feature modules see `:network`'s result/model types through `:data` without depending on `:network` themselves; `:app`'s direct `:network` dependency exists only to configure it (base URLs, token storage), not to fetch data. `:database` (on-device storage) is planned and not created yet — it's drawn here where it will slot in.
+Arrows point from a module to what it depends on. Grey boxes are external libraries, each reachable from exactly one module — the compiler-enforced boundaries. `:data`'s dependency on `:network` is `api`, so feature modules see `:network`'s result/model types through `:data` without depending on `:network` themselves; `:app`'s direct `:network` dependency exists only to configure it (base URLs, token storage), not to fetch data. `:database` (on-device storage) is planned and not created yet — it's drawn here where it will slot in. The image is rendered from [`docs/module-graph.mmd`](docs/module-graph.mmd) (regeneration command inside), not drawn by hand.
 
 See [`CLAUDE.md`](CLAUDE.md) for the full architecture, build/test commands, and the compiler-enforced module boundaries.
