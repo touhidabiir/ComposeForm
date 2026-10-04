@@ -1,7 +1,12 @@
+---
+config:
+  layout: elk
+---
 %% Source for docs/module-graph.png, shown in README.md (Gradle module paths).
 %% docs/architecture-diagram.mmd is the same graph in the architecture docx's own vocabulary.
-%% Regenerate with the latest Mermaid CLI (rendered with Mermaid 12, which draws right-angle
-%% connectors - GitHub's built-in Mermaid draws this same source with curved lines):
+%% `layout: elk` above is what gives the right-angle connectors - without it Mermaid's default
+%% dagre layout draws curves. Needs Mermaid 11+ (e.g. the live editor); GitHub's built-in
+%% Mermaid isn't guaranteed to honour it, which is why README.md embeds the rendered PNG. Regenerate with:
 %%   npx -p @mermaid-js/mermaid-cli mmdc -i docs/module-graph.mmd -o docs/module-graph.png -s 2 -b white
 flowchart TD
     app[":app"]
