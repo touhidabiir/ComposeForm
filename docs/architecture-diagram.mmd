@@ -1,0 +1,34 @@
+%% Source for the dependency diagram embedded in docs/architecture.docx.
+%% Uses the docx's own vocabulary (no Gradle paths). README.md has the same graph with module paths.
+flowchart TD
+    app["App shell"]
+
+    subgraph features["Feature modules"]
+        lead["Lead dashboard"]
+        acq["Acquisition approval"]
+    end
+
+    common["Shared feature helpers"]
+    ds["Design system"]
+    fb["Form builder"]
+    data["Data"]
+    net["Network"]
+    db["Database"]
+
+    ui[["UI toolkit"]]
+    netlib[["Networking libraries"]]
+    storage[["On-device storage library"]]
+
+    app --> lead & acq & common & ds & fb & data
+    app -. config only .-> net
+    lead & acq --> data & ds & common
+    common --> ds
+    fb --> ds
+    data -- re-exports --> net
+    data --> db
+    ds --> ui
+    net --> netlib
+    db --> storage
+
+    classDef external fill:#eee,stroke:#999,color:#333
+    class ui,netlib,storage external
