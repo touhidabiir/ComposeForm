@@ -74,7 +74,10 @@ designsystem/src/main/java/com/touhid/composeform/designsystem/
                              # non-dismissable spinner overlay - for a reload with existing content behind
                              # it worth protecting from interaction) and AppProgressIndicator (a plain
                              # non-blocking inline spinner - for a screen's very first load, before there's
-                             # any content yet)
+                             # any content yet), AppAlertDialog (wraps Material3's AlertDialog: title + message +
+                             # confirm action with an AppButtonStyle tone, e.g. Danger for a destructive confirm, plus
+                             # an optional dismiss action - null dismissText gives an acknowledge-only alert;
+                             # dismissible=false blocks back press/outside tap)
 ```
 
 Components are organized by category (not a flat package) — when adding a new component, put it under the matching category subpackage, creating a new one if it doesn't fit an existing one.
@@ -86,8 +89,6 @@ Conventions established by existing components:
 - Each category subpackage has its own `*Previews.kt` file (not one global previews file) with a private composable carrying stacked `@Preview(name = "Light", ...)` / `@Preview(name = "Dark", uiMode = Configuration.UI_MODE_NIGHT_YES, ...)` annotations, wrapped in `ComposeFormTheme`.
 - Modules outside `:designsystem` (e.g. `:app`) can reference `ImageVector` constants from `androidx.compose.material:material-icons-core` (or its superset, `material-icons-extended` — `:app` uses the extended artifact since it needs glyphs like `ContentCopy` outside the curated core set; both are separate artifacts with no Material3 dependency) directly and pass them into a designsystem component (`AppIcon`, `AppIconButton`, `AppTopBarAction`, `AppButton`'s `leadingIcon` slot, etc.) — but any `@Composable` slot lambda a caller *writes* (e.g. `AppIconLabelValue`'s `icon` param) still compiles as part of that caller's own module, so its body must only call designsystem-exposed composables (`AppIcon`, not raw Material3 `Icon`), never Material3 directly.
 - Not everything a screen renders belongs in `:designsystem`, even when it's visually involved and looks reusable in principle. The boundary's purpose is specifically wrapping Material3 access `:app`/`:formbuilder` can't otherwise reach — a composition already buildable from exposed primitives (`AppText`, `AppIcon`, Foundation `Row`/`Column`/`Box`/`border`/`background`) has no Material3-wrapping reason to move, and "some other screen might want this shape someday" isn't a reason either - that's the same speculative-reuse trap the rest of this doc argues against for ordinary code. Ask two concrete questions instead of a hypothetical one: (1) does it have an *actual* second caller today, not an imagined future one? (2) does it use a Material3-derived default (`MaterialTheme.colorScheme...`) that its real caller(s) actually rely on, rather than always overriding? `AcquisitionApprovalDetailScreen`'s score-band step indicator and its score circle both answer no to both - one caller, always-explicit colors - so both live in `:app`, built from `AppText`/`AppIcon`/`AppTextOverride` plus plain Foundation shapes.
-
-**Not yet built**: a generic Material3 `AlertDialog` wrapper (title/message/confirm-cancel buttons) — `AppProgressDialog` (spinner-only) and `AppBottomSheet` (modal bottom sheet) exist and cover their own specific cases, but nothing wraps a plain confirm/alert dialog yet. Follow the same wrapping conventions above when implementing it.
 
 ### Network boundary (same pattern as the design system boundary)
 
