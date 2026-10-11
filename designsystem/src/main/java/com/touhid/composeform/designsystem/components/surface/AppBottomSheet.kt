@@ -2,7 +2,11 @@ package com.touhid.composeform.designsystem.components.surface
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BottomSheetDefaults
@@ -28,6 +32,12 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 // the sheet's max height (e.g. a long reason/response list) simply overflows, pushing anything
 // below it (a confirm button, an error message) off-screen with no way to reach it. verticalScroll
 // here is the one place that needs to know that, so every caller gets a scrollable sheet for free.
+// Window insets are applied as fixed padding here (status bar gap above the sheet, navigation bar
+// gap below the content) with Material3's own contentWindowInsets zeroed out. Left to Material3,
+// a sheet whose content is almost exactly the screen's height jumps up and down in an endless
+// loop (seen on the acquisition Approve/Reject sheet on some screen sizes): the sheet's top-inset
+// handling keeps flipping between two positions about a status bar's height apart. Fixed padding
+// gives the sheet the same max height on every layout pass, so there's nothing left to flip.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBottomSheet(
@@ -41,13 +51,15 @@ fun AppBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
         sheetState = sheetState,
-        modifier = modifier,
+        modifier = modifier.windowInsetsPadding(WindowInsets.statusBars),
         containerColor = Color.White,
         dragHandle = if (showDragHandle) { { BottomSheetDefaults.DragHandle() } } else null,
+        contentWindowInsets = { WindowInsets(0) },
     ) {
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
+                .windowInsetsPadding(WindowInsets.navigationBars)
                 .padding(AppSpacing.Medium),
             content = content,
         )
