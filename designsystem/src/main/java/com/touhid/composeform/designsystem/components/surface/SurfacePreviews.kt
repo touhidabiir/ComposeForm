@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.touhid.composeform.designsystem.components.button.AppButtonStyle
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
@@ -66,5 +67,22 @@ private fun CardDividerBadgePreview() {
                 AppText(text = "Card body content")
             }
         }
+    }
+}
+
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun AlertDialogPreview() {
+    ComposeFormTheme {
+        AppAlertDialog(
+            title = "Reject application?",
+            message = "This lead will be marked as rejected. You can't undo this action.",
+            confirmText = "Reject",
+            onConfirm = {},
+            onDismissRequest = {},
+            dismissText = "Cancel",
+            confirmButtonType = AppButtonStyle.Danger,
+        )
     }
 }
