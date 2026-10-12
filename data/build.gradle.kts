@@ -1,24 +1,10 @@
 plugins {
-    alias(libs.plugins.android.library)
-    alias(libs.plugins.ksp)
+    id("composeform.android.library")
+    id("composeform.hilt")
 }
 
 android {
     namespace = "com.touhid.composeform.data"
-    compileSdk {
-        version = release(36) {
-            minorApiLevel = 1
-        }
-    }
-
-    defaultConfig {
-        minSdk = 24
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
 }
 
 dependencies {
@@ -30,7 +16,5 @@ dependencies {
     // config) - a future module depending on :data alone (e.g. a :feature:leaddashboard with no
     // reason to configure the network client) would otherwise fail to resolve NetworkResult.
     api(project(":network"))
-    implementation(libs.google.dagger.hilt.android)
-    ksp(libs.google.dagger.hilt.compiler)
     testImplementation(libs.junit)
 }

@@ -19,7 +19,7 @@ A narrative, no-class-names walkthrough of this same module architecture — wri
 
 ## Architecture
 
-Eight-module Gradle project, no `build-logic`/convention-plugin infrastructure — each module's `build.gradle.kts` is configured directly (this is intentional; see below).
+Eight-module Gradle project. Shared build configuration lives in convention plugins under `build-logic/` — see "Build logic" below.
 
 - **`:app`** — the application shell. `MainActivity.kt` (`@AndroidEntryPoint`) hosts a single `NavHost` with the app's real destinations — `home` (`home/DemoHomeScreen.kt`, the launcher picking between the demos below), `leadDashboard` (`:feature:leaddashboard` — see below), `acquisitionApprovalList`/`acquisitionApprovalDetail` (`:feature:acquisition` — see below), plus `form`/`picker` (the `flow` package's demo server-driven form flow, backed by `DemoFormApi`'s in-memory mock — not real network calls). `specificform/` is another `AppRepository`-backed screen/ViewModel pair, still in `:app`. `ComposeFormApplication.kt` is the `@HiltAndroidApp` entry point, and `di/` holds the Hilt modules `:app` owns to configure `:network` — base URL(s), debug-logging flag, token storage — per the deferral pattern described below. `:app` hosts Compose content and is **not permitted to depend on Material3 or Foundation directly** — see "Design system boundary" below — and is **not permitted to depend on Square's networking libraries directly** — see "Network boundary" below.
 - **`:designsystem`** — an Android library module (namespace `com.touhid.composeform.designsystem`) owning all Material3-based UI. `:app` depends on it via `implementation(project(":designsystem"))`.
@@ -29,6 +29,20 @@ Eight-module Gradle project, no `build-logic`/convention-plugin infrastructure �
 - **`:common`** — an Android library module (namespace `com.touhid.composeform.common`) holding small Compose UI helpers used by more than one screen: `copyIconButton` (a "copy to clipboard" trailing-icon slot), `LazyListState.OnEndOfListReached` (the shared infinite-scroll pagination trigger), `ListEmptyState`, `formatRejectionTimestamp` (both features render the same `Rejection.reviewedAt` field). Exists because these are genuinely cross-feature — both `:feature:leaddashboard` and `:feature:acquisition` use them — so they can't live inside either one specifically; putting them in `:app` (as before either feature module existed) would have forced the feature modules to depend back on `:app`, which runs the dependency graph backwards. Depends only on `:designsystem` + Compose.
 - **`:feature:leaddashboard`** — an Android library module (namespace `com.touhid.composeform.feature.leaddashboard`, nested under a `feature/` parent folder — see "Feature modules" below) holding the lead-dashboard screen end to end: `LeadDashboardScreen.kt`, `LeadDashboardViewModel.kt` (`@HiltViewModel`, injects `AppRepository`), `LeadDashboardModels.kt` (the screen-local `LeadStatusFilter` enum). `:app` depends on it and wires it into `MainActivity`'s `NavHost`; nothing depends on `:app`. See "Feature modules" below for what this demonstrates and depends on.
 - **`:feature:acquisition`** — an Android library module (namespace `com.touhid.composeform.feature.acquisition`, the second module under `feature/`) holding the acquisition approval list + detail/decision flow end to end: `AcquisitionApprovalListScreen.kt`/`AcquisitionApprovalListViewModel.kt` and `AcquisitionApprovalDetailScreen.kt`/`AcquisitionApprovalDetailViewModel.kt` (both `@HiltViewModel`, injecting `AppRepository`). Also depends on Coil (`libs.coil.compose`) for `AsyncImage`, used by the detail screen — the only feature module or `:app` code that still needs it, so `:app`'s own `coil.compose` dependency was removed once this moved out. `:app` depends on it and wires both screens into `MainActivity`'s `NavHost`; nothing depends on `:app`. See "Feature modules" below.
+
+### Build logic (convention plugins)
+
+`build-logic/` is an included build (`pluginManagement { includeBuild("build-logic") }` in `settings.gradle.kts`) holding the shared Gradle setup as convention plugins, so a module's `build.gradle.kts` states only its namespace and what is specific to it. SDK levels live in one place, `SdkLevels` in `build-logic/convention/src/main/kotlin/ProjectExtensions.kt` — change `compileSdk`/`minSdk`/`targetSdk` there, never in a module.
+
+| Plugin id | Applies | Used by |
+| --- | --- | --- |
+| `composeform.android.application` | `com.android.application` + Compose compiler, SDK levels, Java 11, `buildFeatures.compose`, Compose BOM + `ui`/`foundation`/`ui-tooling-preview` (+ `ui-tooling` for debug) | `:app` |
+| `composeform.android.library` | `com.android.library`, SDK levels, Java 11 | `:network`, `:data` |
+| `composeform.android.library.compose` | `composeform.android.library` + Compose compiler, `buildFeatures.compose`, the same Compose dependencies | `:designsystem`, `:formbuilder`, `:common` |
+| `composeform.hilt` | KSP + `hilt-android` + `hilt-compiler` (not the Hilt Gradle plugin — only `:app` applies that, per Hilt's multi-module guidance) | `:app`, `:network`, `:data`, feature modules |
+| `composeform.android.feature` | `composeform.android.library.compose` + `composeform.hilt`, `:designsystem`, `:common`, `material-icons-extended`, lifecycle ViewModel/runtime Compose, `hilt-navigation-compose` | `:feature:leaddashboard`, `:feature:acquisition` |
+
+The plugins depend on AGP as `compileOnly` (`libs.android.gradlePlugin`): the root `build.gradle.kts` already puts AGP, KSP and the Compose compiler on the build classpath with `apply false`, and the plugins apply them by id. Keep those `apply false` entries — removing one makes the matching convention plugin fail to apply. Adding a module: pick the one plugin that matches its kind, then add only its own dependencies.
 
 ### Design system boundary (important, easy to violate accidentally)
 
