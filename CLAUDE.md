@@ -42,7 +42,7 @@ Eight-module Gradle project. Shared build configuration lives in convention plug
 | `composeform.hilt` | KSP + `hilt-android` + `hilt-compiler` (not the Hilt Gradle plugin — only `:app` applies that, per Hilt's multi-module guidance) | `:app`, `:network`, `:data`, feature modules |
 | `composeform.android.feature` | `composeform.android.library.compose` + `composeform.hilt`, `:designsystem`, `:common`, `material-icons-extended`, lifecycle ViewModel/runtime Compose, `hilt-navigation-compose` | `:feature:leaddashboard`, `:feature:acquisition` |
 
-The plugins depend on AGP as `compileOnly` (`libs.android.gradlePlugin`): the root `build.gradle.kts` already puts AGP, KSP and the Compose compiler on the build classpath with `apply false`, and the plugins apply them by id. Keep those `apply false` entries — removing one makes the matching convention plugin fail to apply. Adding a module: pick the one plugin that matches its kind, then add only its own dependencies.
+The plugins depend on AGP as `compileOnly` (`libs.android.gradlePlugin`): the root `build.gradle.kts` already puts AGP, KSP and the Compose compiler on the build classpath with `apply false`, and the plugins apply them by id. Keep those `apply false` entries — removing one makes the matching convention plugin fail to apply. Adding a module: pick the one plugin that matches its kind, then add only its own dependencies. `build-logic`'s own `clean` is deliberately a no-op (see `build-logic/convention/build.gradle.kts`): without that, Android Studio's "Clean and Assemble Project with Tests"/"Rebuild" deadlocks with "Unable to make progress running work", because it cleans the plugin jar the same invocation already loaded.
 
 ### Design system boundary (important, easy to violate accidentally)
 

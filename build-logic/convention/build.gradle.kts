@@ -47,3 +47,13 @@ gradlePlugin {
         }
     }
 }
+
+// Android Studio's "Clean and Assemble Project with Tests" (and "Rebuild") also runs this included
+// build's own clean in the same invocation, after its plugin jar was already built and loaded to
+// configure the main build. Gradle then can't order that clean against the jar it destroys and stops
+// with "Unable to make progress running work". Our clean therefore deletes nothing; a stale
+// build-logic is rebuilt automatically whenever its sources change, and
+// `rm -rf build-logic/convention/build` clears it by hand if ever needed.
+tasks.named<Delete>("clean") {
+    setDelete(emptyList<Any>())
+}
