@@ -802,7 +802,12 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     val copy = reasonSheetCopy(type)
     var likertIndex by remember(type) { mutableStateOf(2) }
     var selectedReasonIds by remember(type) { mutableStateOf(setOf<Int>()) }
+    // The hardcoded "অন্যান্য" (Other) option appended after the API's reasons - tracked apart from
+    // selectedReasonIds since it has no backend reason id; the note itself carries what "other"
+    // means, so selecting it makes the note mandatory instead of contributing an id.
+    var otherSelected by remember(type) { mutableStateOf(false) }
     var noteText by remember(type) { mutableStateOf("") }
+    val noteMissing = otherSelected && noteText.isBlank()
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
         AppText(text = stringResource(R.string.acquisition_verification_title), style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
@@ -835,7 +840,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
                 reasons.forEach { reason ->
                     val isSelected = reason.id in selectedReasonIds
                     ReasonCheckboxCard(
-                        reason = reason,
+                        label = reason.reason,
                         selected = isSelected,
                         accentColor = copy.accentColor,
                         onToggle = {
@@ -843,6 +848,12 @@ private fun ColumnScope.ApprovalReasonSheetContent(
                         },
                     )
                 }
+                ReasonCheckboxCard(
+                    label = stringResource(R.string.acquisition_reason_other),
+                    selected = otherSelected,
+                    accentColor = copy.accentColor,
+                    onToggle = { otherSelected = !otherSelected },
+                )
             }
         }
     }
@@ -856,6 +867,14 @@ private fun ColumnScope.ApprovalReasonSheetContent(
         flatWhenUnfocused = true,
         modifier = Modifier.fillMaxWidth().height(96.dp),
     )
+    if (noteMissing) {
+        Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+        AppText(
+            text = stringResource(R.string.acquisition_note_required_for_other),
+            style = AppTextStyle.BodyMedium,
+            override = AppTextOverride(color = StatusError),
+        )
+    }
     Spacer(modifier = Modifier.height(AppSpacing.Medium))
 
     if (submitError != null) {
@@ -867,7 +886,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
         text = copy.confirmLabel,
         onClick = { onConfirm(selectedReasonIds.toList(), noteText, likertIndex) },
         buttonType = copy.confirmButtonStyle,
-        enabled = selectedReasonIds.isNotEmpty() && !submitting,
+        enabled = (selectedReasonIds.isNotEmpty() || otherSelected) && !noteMissing && !submitting,
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -880,7 +899,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
 // its own click handling too (tapping directly on it still works), but since it's the innermost
 // handler for its own bounds, only one of the two ever fires per tap.
 @Composable
-private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, accentColor: Color, onToggle: () -> Unit) {
+private fun ReasonCheckboxCard(label: String, selected: Boolean, accentColor: Color, onToggle: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -895,7 +914,7 @@ private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, acc
         AppCheckbox(
             checked = selected,
             onCheckedChange = { onToggle() },
-            label = reason.reason,
+            label = label,
             checkedColor = accentColor,
             position = AppCheckboxPosition.End,
         )
