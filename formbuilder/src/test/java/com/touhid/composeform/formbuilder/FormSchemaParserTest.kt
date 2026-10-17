@@ -143,13 +143,13 @@ class FormSchemaParserTest {
     }
 
     @Test
-    fun `option margin defaults to a small symmetric gap, padding defaults to zero`() {
+    fun `option margin and padding default to zero`() {
         val interests = parseFormSchema(sampleJson).fields[4] as FormField.CheckboxGroup
         val music = interests.options[0]
-        assertEquals(4, music.margin.top)
-        assertEquals(4, music.margin.bottom)
-        assertEquals(4, music.margin.left)
-        assertEquals(4, music.margin.right)
+        assertEquals(0, music.margin.top)
+        assertEquals(0, music.margin.bottom)
+        assertEquals(0, music.margin.left)
+        assertEquals(0, music.margin.right)
         assertEquals(0, music.padding.top)
     }
 
