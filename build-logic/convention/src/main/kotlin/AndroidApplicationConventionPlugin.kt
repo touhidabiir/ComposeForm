@@ -1,5 +1,4 @@
 import com.android.build.api.dsl.ApplicationExtension
-import org.gradle.api.JavaVersion
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
@@ -16,17 +15,17 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<ApplicationExtension> {
                 compileSdk {
-                    version = release(SdkLevels.COMPILE_SDK) {
-                        minorApiLevel = SdkLevels.COMPILE_SDK_MINOR
+                    version = release(ProjectConfig.COMPILE_SDK) {
+                        minorApiLevel = ProjectConfig.COMPILE_SDK_MINOR
                     }
                 }
                 defaultConfig {
-                    minSdk = SdkLevels.MIN_SDK
-                    targetSdk = SdkLevels.TARGET_SDK
+                    minSdk = ProjectConfig.MIN_SDK
+                    targetSdk = ProjectConfig.TARGET_SDK
                 }
                 compileOptions {
-                    sourceCompatibility = JavaVersion.VERSION_11
-                    targetCompatibility = JavaVersion.VERSION_11
+                    sourceCompatibility = ProjectConfig.JAVA_VERSION
+                    targetCompatibility = ProjectConfig.JAVA_VERSION
                 }
                 buildFeatures {
                     compose = true

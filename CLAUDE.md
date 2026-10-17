@@ -32,7 +32,7 @@ Eight-module Gradle project. Shared build configuration lives in convention plug
 
 ### Build logic (convention plugins)
 
-`build-logic/` is an included build (`pluginManagement { includeBuild("build-logic") }` in `settings.gradle.kts`) holding the shared Gradle setup as convention plugins, so a module's `build.gradle.kts` states only its namespace and what is specific to it. SDK levels live in one place, `SdkLevels` in `build-logic/convention/src/main/kotlin/ProjectExtensions.kt` — change `compileSdk`/`minSdk`/`targetSdk` there, never in a module.
+`build-logic/` is an included build (`pluginManagement { includeBuild("build-logic") }` in `settings.gradle.kts`) holding the shared Gradle setup as convention plugins, so a module's `build.gradle.kts` states only its namespace and what is specific to it. SDK levels and the Java version live in one place, `ProjectConfig` in `build-logic/convention/src/main/kotlin/ProjectExtensions.kt` — change `compileSdk`/`minSdk`/`targetSdk`/Java version there, never in a module.
 
 | Plugin id | Applies | Used by |
 | --- | --- | --- |
