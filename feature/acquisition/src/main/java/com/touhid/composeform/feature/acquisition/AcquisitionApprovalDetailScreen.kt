@@ -802,12 +802,11 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     val copy = reasonSheetCopy(type)
     var likertIndex by remember(type) { mutableStateOf(2) }
     var selectedReasonIds by remember(type) { mutableStateOf(setOf<Int>()) }
-    // The hardcoded "অন্যান্য" (Other) option appended after the API's reasons - tracked apart from
-    // selectedReasonIds since it has no backend reason id; the note itself carries what "other"
-    // means, so selecting it makes the note mandatory instead of contributing an id.
-    var otherSelected by remember(type) { mutableStateOf(false) }
     var noteText by remember(type) { mutableStateOf("") }
-    val noteMissing = otherSelected && noteText.isBlank()
+    // The note becomes mandatory once any selected reason is flagged is_note_required by the API
+    // (e.g. its "অন্যান্য"/Other entry) - which reasons need it is the backend's call, not the app's.
+    val noteRequired = reasons.any { it.isNoteRequired && it.id in selectedReasonIds }
+    val noteMissing = noteRequired && noteText.isBlank()
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
         AppText(text = stringResource(R.string.acquisition_verification_title), style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
@@ -848,12 +847,6 @@ private fun ColumnScope.ApprovalReasonSheetContent(
                         },
                     )
                 }
-                ReasonCheckboxCard(
-                    label = stringResource(R.string.acquisition_reason_other),
-                    selected = otherSelected,
-                    accentColor = copy.accentColor,
-                    onToggle = { otherSelected = !otherSelected },
-                )
             }
         }
     }
@@ -870,7 +863,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     if (noteMissing) {
         Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
         AppText(
-            text = stringResource(R.string.acquisition_note_required_for_other),
+            text = stringResource(R.string.acquisition_note_required),
             style = AppTextStyle.BodyMedium,
             override = AppTextOverride(color = StatusError),
         )
@@ -886,7 +879,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
         text = copy.confirmLabel,
         onClick = { onConfirm(selectedReasonIds.toList(), noteText, likertIndex) },
         buttonType = copy.confirmButtonStyle,
-        enabled = (selectedReasonIds.isNotEmpty() || otherSelected) && !noteMissing && !submitting,
+        enabled = selectedReasonIds.isNotEmpty() && !noteMissing && !submitting,
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -999,6 +992,7 @@ private val PreviewApproveReasons = listOf(
     AcquisitionReason(id = 5, reason = "দোকান সবসময় খোলা থাকে"),
     AcquisitionReason(id = 6, reason = "আগের ঋণ ঠিকমতো শোধ করেছে"),
     AcquisitionReason(id = 7, reason = "পেমেন্ট নিতে আগ্রহী"),
+    AcquisitionReason(id = 16, reason = "অন্যান্য", isNoteRequired = true),
 )
 
 private val PreviewRejectReasons = listOf(
@@ -1007,6 +1001,7 @@ private val PreviewRejectReasons = listOf(
     AcquisitionReason(id = 10, reason = "প্রিমিয়ামনেস স্কোর প্রত্যাশিত মানের কম"),
     AcquisitionReason(id = 11, reason = "যোগাযোগের তথ্যে অসামঞ্জস্য"),
     AcquisitionReason(id = 12, reason = "একই ওয়ালেট নম্বর ইতিমধ্যে নিবন্ধিত"),
+    AcquisitionReason(id = 17, reason = "অন্যান্য", isNoteRequired = true),
 )
 
 // Rendered directly inside a plain Column (mimicking AppBottomSheet's own white background/
