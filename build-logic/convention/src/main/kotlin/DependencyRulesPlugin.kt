@@ -39,6 +39,10 @@ private class Module(val path: String) {
 
 /** Why [from] may not depend on [to], or null when the dependency is allowed. */
 internal fun dependencyRuleViolation(from: String, to: String): String? {
+    // Plugins add a module to some of its own internal configurations (e.g. AGP/Hilt in :app's
+    // test setup). That's not an edge between two modules, so no rule applies.
+    if (from == to) return null
+
     val source = Module(from)
     val target = Module(to)
 
