@@ -1,4 +1,4 @@
-package com.touhid.composeform.feature.acquisition
+package com.touhid.composeform.feature.acquisition.ui
 
 import android.content.res.Configuration
 import androidx.compose.foundation.layout.Arrangement
@@ -66,8 +66,8 @@ import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.designsystem.theme.StatusNeutral
-import com.touhid.composeform.network.model.AcquisitionListItem
-import com.touhid.composeform.network.model.LeadCloser
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionListItem
+import com.touhid.composeform.lead.domain.LeadCloser
 import com.touhid.composeform.common.R as CommonR
 import kotlinx.coroutines.launch
 

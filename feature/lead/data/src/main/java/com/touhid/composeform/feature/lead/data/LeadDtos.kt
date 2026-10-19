@@ -1,13 +1,13 @@
 package com.touhid.composeform.feature.lead.data
 
 import com.google.gson.annotations.SerializedName
-import com.touhid.composeform.network.model.LeadCloser
-import com.touhid.composeform.network.model.Rejection
-import com.touhid.composeform.network.model.Reviewer
+import com.touhid.composeform.lead.data.LeadCloserDto
+import com.touhid.composeform.lead.data.RejectionDto
+import com.touhid.composeform.lead.data.ReviewerDto
 
 // Mirror the backend's lead list response 1:1 (snake_case via @SerializedName), Gson-reflected.
 // internal: nothing outside this module ever sees a DTO - LeadRepositoryImpl maps them to the
-// domain models first. lead_closer/reviewer/rejection reuse :core:network's shared wire models,
+// domain models first. lead_closer/reviewer/rejection reuse :core:lead:data's shared DTOs,
 // which the acquisition responses embed too.
 
 internal data class LeadDashboardResponseDto(
@@ -46,9 +46,9 @@ internal data class LeadListItemDto(
     val status: LeadStatusDto,
     @SerializedName("premiumness_score") val premiumnessScore: Double,
     @SerializedName("can_submit_ekyc") val canSubmitEkyc: Boolean,
-    @SerializedName("lead_closer") val leadCloser: LeadCloser,
-    val reviewer: Reviewer? = null,
+    @SerializedName("lead_closer") val leadCloser: LeadCloserDto,
+    val reviewer: ReviewerDto? = null,
     @SerializedName("ekyc_submitter") val ekycSubmitter: EkycSubmitterDto? = null,
-    val rejection: Rejection? = null,
+    val rejection: RejectionDto? = null,
     @SerializedName("created_at") val createdAt: String,
 )

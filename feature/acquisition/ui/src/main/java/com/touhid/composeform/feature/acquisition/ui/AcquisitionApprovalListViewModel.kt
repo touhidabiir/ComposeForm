@@ -1,10 +1,10 @@
-package com.touhid.composeform.feature.acquisition
+package com.touhid.composeform.feature.acquisition.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.touhid.composeform.network.NetworkResult
-import com.touhid.composeform.network.model.AcquisitionListItem
-import com.touhid.composeform.data.repository.AppRepository
+import com.touhid.composeform.model.AppResult
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionListItem
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,7 +50,7 @@ sealed interface AcquisitionApprovalListAction {
 
 @HiltViewModel
 class AcquisitionApprovalListViewModel @Inject constructor(
-    private val repository: AppRepository,
+    private val repository: AcquisitionRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(AcquisitionApprovalListState())
@@ -122,7 +122,7 @@ class AcquisitionApprovalListViewModel @Inject constructor(
                 )
             }
             when (val result = repository.getAcquisitionList(search, 1)) {
-                is NetworkResult.Success -> _state.update {
+                is AppResult.Success -> _state.update {
                     it.copy(
                         isLoading = false,
                         isRefreshing = false,
@@ -133,7 +133,7 @@ class AcquisitionApprovalListViewModel @Inject constructor(
                         loadedRevision = it.loadedRevision + 1,
                     )
                 }
-                is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, isRefreshing = false, error = result.error.message) }
+                is AppResult.Failure -> _state.update { it.copy(isLoading = false, isRefreshing = false, error = result.error.message) }
             }
         }
     }
@@ -148,10 +148,10 @@ class AcquisitionApprovalListViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             _state.update { it.copy(isLoadingMore = true, error = null) }
             when (val result = repository.getAcquisitionList(search, nextPage)) {
-                is NetworkResult.Success -> _state.update {
+                is AppResult.Success -> _state.update {
                     it.copy(isLoadingMore = false, items = it.items + result.data.results, page = nextPage, hasMore = nextPage < result.data.totalPages)
                 }
-                is NetworkResult.Failure -> _state.update { it.copy(isLoadingMore = false, error = result.error.message) }
+                is AppResult.Failure -> _state.update { it.copy(isLoadingMore = false, error = result.error.message) }
             }
         }
     }

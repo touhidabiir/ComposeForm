@@ -1,5 +1,5 @@
 <resources>
-    <!-- Strings shared with :feature:acquisition (identical wording) live in :common's own
+    <!-- Strings shared with :feature:acquisition:ui (identical wording) live in :common's own
          strings.xml instead - see common_refresh/common_search/etc. there. -->
     <string name="leaddashboard_title">লিড ড্যাশবোর্ড</string>
     <string name="leaddashboard_search_placeholder">লিড বেইজ সার্চ করুন...</string>
