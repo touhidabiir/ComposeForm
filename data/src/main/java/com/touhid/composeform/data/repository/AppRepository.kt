@@ -1,9 +1,6 @@
 package com.touhid.composeform.data.repository
 
 import com.touhid.composeform.network.NetworkResult
-import com.touhid.composeform.network.model.AcquisitionDetail
-import com.touhid.composeform.network.model.AcquisitionListPage
-import com.touhid.composeform.network.model.AcquisitionReason
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
 import com.touhid.composeform.network.model.LoginResponse
@@ -24,18 +21,4 @@ interface AppRepository {
     suspend fun getAdminDetails(id: String): NetworkResult<AdminDetails>
 
     suspend fun getSpecificForm(): NetworkResult<SpecificFormPayload>
-
-    suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage>
-
-    suspend fun getAcquisitionDetail(leadId: String): NetworkResult<AcquisitionDetail>
-
-    suspend fun getAcquisitionReasons(leadId: String, type: String): NetworkResult<List<AcquisitionReason>>
-
-    suspend fun submitAcquisitionDecision(
-        leadId: String,
-        type: String,
-        reasonIds: List<Int>,
-        note: String,
-        scoreAgreement: String,
-    ): NetworkResult<Unit>
 }

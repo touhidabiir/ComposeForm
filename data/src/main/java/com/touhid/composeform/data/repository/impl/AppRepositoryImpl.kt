@@ -4,10 +4,6 @@ import com.touhid.composeform.data.repository.AppRepository
 import com.touhid.composeform.network.NetworkResult
 import com.touhid.composeform.network.api.AppApiService
 import com.touhid.composeform.network.auth.TokenProvider
-import com.touhid.composeform.network.model.AcquisitionDecisionRequest
-import com.touhid.composeform.network.model.AcquisitionDetail
-import com.touhid.composeform.network.model.AcquisitionListPage
-import com.touhid.composeform.network.model.AcquisitionReason
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
 import com.touhid.composeform.network.model.LoginRequest
@@ -41,27 +37,4 @@ class AppRepositoryImpl @Inject constructor(
 
     override suspend fun getSpecificForm(): NetworkResult<SpecificFormPayload> =
         safeApiCall { apiService.getSpecificForm().data }
-
-    override suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage> =
-        safeApiCall { apiService.getAcquisitionList(search, pageNo).data }
-
-    override suspend fun getAcquisitionDetail(leadId: String): NetworkResult<AcquisitionDetail> =
-        safeApiCall { apiService.getAcquisitionDetail(leadId).data }
-
-    override suspend fun getAcquisitionReasons(leadId: String, type: String): NetworkResult<List<AcquisitionReason>> =
-        safeApiCall { apiService.getAcquisitionReasons(leadId, type).data.reasons }
-
-    override suspend fun submitAcquisitionDecision(
-        leadId: String,
-        type: String,
-        reasonIds: List<Int>,
-        note: String,
-        scoreAgreement: String,
-    ): NetworkResult<Unit> {
-        val request = AcquisitionDecisionRequest(type = type, reasonIds = reasonIds, note = note, scoreAgreement = scoreAgreement)
-        return when (val result = safeApiCall { apiService.submitAcquisitionDecision(leadId, request) }) {
-            is NetworkResult.Success -> NetworkResult.Success(Unit)
-            is NetworkResult.Failure -> result
-        }
-    }
 }

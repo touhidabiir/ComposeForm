@@ -1,12 +1,12 @@
-package com.touhid.composeform.feature.acquisition
+package com.touhid.composeform.feature.acquisition.ui
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.touhid.composeform.network.NetworkResult
-import com.touhid.composeform.network.model.AcquisitionDetail
-import com.touhid.composeform.network.model.AcquisitionReason
-import com.touhid.composeform.data.repository.AppRepository
+import com.touhid.composeform.model.AppResult
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionDetail
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionReason
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,7 +55,7 @@ sealed interface AcquisitionApprovalDetailAction {
 @HiltViewModel
 class AcquisitionApprovalDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val repository: AppRepository,
+    private val repository: AcquisitionRepository,
 ) : ViewModel() {
 
     private val leadId: String = checkNotNull(savedStateHandle["leadId"]) { "acquisitionApprovalDetail route requires a leadId arg" }
@@ -109,8 +109,8 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
                 ReasonSheetType.Reject -> "reject"
             }
             when (val result = repository.getAcquisitionReasons(leadId, apiType)) {
-                is NetworkResult.Success -> _state.update { it.copy(reasonsLoading = false, reasons = result.data) }
-                is NetworkResult.Failure -> _state.update { it.copy(reasonsLoading = false, reasonsError = result.error.message) }
+                is AppResult.Success -> _state.update { it.copy(reasonsLoading = false, reasons = result.data) }
+                is AppResult.Failure -> _state.update { it.copy(reasonsLoading = false, reasonsError = result.error.message) }
             }
         }
     }
@@ -137,10 +137,10 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
                 else -> "neutral"
             }
             when (val result = repository.submitAcquisitionDecision(leadId, apiType, reasonIds, note, scoreAgreement)) {
-                is NetworkResult.Success -> _state.update {
+                is AppResult.Success -> _state.update {
                     it.copy(submitting = false, openReasonSheet = null, submittedDecision = type)
                 }
-                is NetworkResult.Failure -> _state.update { it.copy(submitting = false, submitError = result.error.message) }
+                is AppResult.Failure -> _state.update { it.copy(submitting = false, submitError = result.error.message) }
             }
         }
     }
@@ -150,8 +150,8 @@ class AcquisitionApprovalDetailViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             _state.update { it.copy(isLoading = true, error = null) }
             when (val result = repository.getAcquisitionDetail(leadId)) {
-                is NetworkResult.Success -> _state.update { it.copy(isLoading = false, detail = result.data) }
-                is NetworkResult.Failure -> _state.update { it.copy(isLoading = false, error = result.error.message) }
+                is AppResult.Success -> _state.update { it.copy(isLoading = false, detail = result.data) }
+                is AppResult.Failure -> _state.update { it.copy(isLoading = false, error = result.error.message) }
             }
         }
     }
