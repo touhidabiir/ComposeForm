@@ -23,7 +23,7 @@ import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppText
-import com.touhid.composeform.designsystem.theme.ComposeFormTheme
+import com.touhid.composeform.designsystem.theme.ComposeFormAppTheme
 import com.touhid.composeform.formbuilder.FormRenderer
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -47,9 +47,7 @@ class SpecificFormFragment : Hilt_SpecificFormFragment() {
         val totalCount = arguments?.getInt(ArgTotalCount, 1) ?: 1
         return ComposeView(requireContext()).apply {
             setContent {
-                // :app's ComposeFormAppTheme can't be imported from a feature module, so its
-                // light-only policy is spelled out here directly.
-                ComposeFormTheme(darkTheme = false, dynamicColor = false) {
+                ComposeFormAppTheme {
                     LaunchedEffect(Unit) { viewModel.onScreenStart(position, totalCount) }
 
                     val state by viewModel.state.collectAsStateWithLifecycle()

@@ -109,7 +109,7 @@ private val AccentIndigo = Color(0xFF675C92)
 private val RejectionBannerBackground = Color(0xFFFFF8FB)
 
 @Composable
-fun LeadDashboardScreen(
+internal fun LeadDashboardScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: LeadDashboardViewModel = hiltViewModel(),

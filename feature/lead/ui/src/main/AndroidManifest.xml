@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- No android:theme here: both inherit the <application> theme from :app's manifest. -->
+    <application>
+        <activity
+            android:name=".LeadActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".EkycVerificationActivity"
+            android:exported="false"
+            android:label="eKYC Verification" />
+    </application>
+
+</manifest>

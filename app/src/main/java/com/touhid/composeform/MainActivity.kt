@@ -17,19 +17,18 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.touhid.composeform.feature.acquisition.ui.AcquisitionApprovalDetailScreen
-import com.touhid.composeform.feature.acquisition.ui.AcquisitionApprovalListScreen
-import com.touhid.composeform.feature.acquisition.ui.ReasonSheetType
 import dagger.hilt.android.AndroidEntryPoint
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.theme.ComposeFormAppTheme
+import com.touhid.composeform.feature.acquisition.navigation.AcquisitionApprovalListDestination
+import com.touhid.composeform.feature.lead.navigation.LeadDashboardDestination
 import com.touhid.composeform.flow.DemoFormApi
 import com.touhid.composeform.flow.FormFlowState
 import com.touhid.composeform.flow.FormFlowViewModel
@@ -40,7 +39,8 @@ import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.formbuilder.withOptions
 import com.touhid.composeform.home.DemoHomeScreen
-import com.touhid.composeform.feature.lead.ui.LeadDashboardScreen
+import com.touhid.composeform.navigation.Navigator
+import javax.inject.Inject
 
 // Mirrors FormFlowState but scoped to the picker destination, since picker schemas aren't
 // ViewModel-backed today. Only :app interprets a field's optionsUrl - FormRenderer never does.
@@ -52,6 +52,11 @@ private sealed interface PickerLoadState {
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    // Opens other features' screens (each in its own host Activity) by Destination.
+    @Inject
+    lateinit var navigator: Navigator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -66,41 +71,8 @@ class MainActivity : ComponentActivity() {
                     composable("home") {
                         DemoHomeScreen(
                             onOpenFormDemo = { navController.navigate("form") },
-                            onOpenLeadDashboard = { navController.navigate("leadDashboard") },
-                            onOpenAcquisitionApproval = { navController.navigate("acquisitionApprovalList") },
-                        )
-                    }
-
-                    composable("leadDashboard") {
-                        LeadDashboardScreen(onBack = { navController.popBackStack() })
-                    }
-
-                    composable("acquisitionApprovalList") { backStackEntry ->
-                        // Set by the detail screen's onApprove/onReject just before popping back
-                        // here - the list reacts by refreshing and showing a success snackbar,
-                        // then clears it so it doesn't re-fire on a later recomposition.
-                        val decisionResult by backStackEntry.savedStateHandle
-                            .getStateFlow<String?>("acquisitionDecisionResult", null)
-                            .collectAsStateWithLifecycle()
-                        AcquisitionApprovalListScreen(
-                            onBack = { navController.popBackStack() },
-                            onReview = { leadId -> navController.navigate("acquisitionApprovalDetail/$leadId") },
-                            decisionResult = decisionResult,
-                            onDecisionResultConsumed = { backStackEntry.savedStateHandle["acquisitionDecisionResult"] = null },
-                        )
-                    }
-
-                    composable("acquisitionApprovalDetail/{leadId}") {
-                        AcquisitionApprovalDetailScreen(
-                            onBack = { navController.popBackStack() },
-                            onApprove = {
-                                navController.previousBackStackEntry?.savedStateHandle?.set("acquisitionDecisionResult", ReasonSheetType.Approve.name)
-                                navController.popBackStack()
-                            },
-                            onReject = {
-                                navController.previousBackStackEntry?.savedStateHandle?.set("acquisitionDecisionResult", ReasonSheetType.Reject.name)
-                                navController.popBackStack()
-                            },
+                            onOpenLeadDashboard = { navigator.navigate(LeadDashboardDestination) },
+                            onOpenAcquisitionApproval = { navigator.navigate(AcquisitionApprovalListDestination) },
                         )
                     }
 
