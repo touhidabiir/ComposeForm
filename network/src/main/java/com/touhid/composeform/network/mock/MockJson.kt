@@ -448,11 +448,12 @@ internal object MockJson {
       "data": {
         "type": "accept",
         "reasons": [
-          {"id": 3, "reason": "লেনদেন নিয়মিত করে"},
-          {"id": 4, "reason": "ব্যবসা ভালো চলছে"},
-          {"id": 5, "reason": "দোকান সবসময় খোলা থাকে"},
-          {"id": 6, "reason": "আগের ঋণ ঠিকমতো শোধ করেছে"},
-          {"id": 7, "reason": "পেমেন্ট নিতে আগ্রহী"}
+          {"id": 3, "reason": "লেনদেন নিয়মিত করে", "is_note_required": false},
+          {"id": 4, "reason": "ব্যবসা ভালো চলছে", "is_note_required": false},
+          {"id": 5, "reason": "দোকান সবসময় খোলা থাকে", "is_note_required": false},
+          {"id": 6, "reason": "আগের ঋণ ঠিকমতো শোধ করেছে", "is_note_required": false},
+          {"id": 7, "reason": "পেমেন্ট নিতে আগ্রহী", "is_note_required": false},
+          {"id": 16, "reason": "অন্যান্য", "is_note_required": true}
         ]
       }
     }
@@ -465,11 +466,12 @@ internal object MockJson {
       "data": {
         "type": "reject",
         "reasons": [
-          {"id": 8, "reason": "প্রয়োজনীয় কাগজপত্র অসম্পূর্ণ"},
-          {"id": 9, "reason": "ঠিকানা যাচাই করা যায়নি"},
-          {"id": 10, "reason": "প্রিমিয়ামনেস স্কোর প্রত্যাশিত মানের কম"},
-          {"id": 11, "reason": "যোগাযোগের তথ্যে অসামঞ্জস্য"},
-          {"id": 12, "reason": "একই ওয়ালেট নম্বর ইতিমধ্যে নিবন্ধিত"}
+          {"id": 8, "reason": "প্রয়োজনীয় কাগজপত্র অসম্পূর্ণ", "is_note_required": false},
+          {"id": 9, "reason": "ঠিকানা যাচাই করা যায়নি", "is_note_required": false},
+          {"id": 10, "reason": "প্রিমিয়ামনেস স্কোর প্রত্যাশিত মানের কম", "is_note_required": false},
+          {"id": 11, "reason": "যোগাযোগের তথ্যে অসামঞ্জস্য", "is_note_required": false},
+          {"id": 12, "reason": "একই ওয়ালেট নম্বর ইতিমধ্যে নিবন্ধিত", "is_note_required": false},
+          {"id": 17, "reason": "অন্যান্য", "is_note_required": true}
         ]
       }
     }

@@ -143,9 +143,13 @@ data class AcquisitionReasonsData(
     val reasons: List<AcquisitionReason>,
 )
 
+// isNoteRequired: selecting a reason flagged true (e.g. the backend's own "অন্যান্য"/Other entry)
+// makes the sheet's note field mandatory. A missing key reads as false - Gson leaves an absent
+// primitive Boolean at its JVM default rather than failing.
 data class AcquisitionReason(
     val id: Int,
     val reason: String,
+    @SerializedName("is_note_required") val isNoteRequired: Boolean = false,
 )
 
 // Request body for submitting an approve/reject decision - "type" here is "approve"/"reject",
