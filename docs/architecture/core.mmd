@@ -1,0 +1,43 @@
+%%{init: {"flowchart": {"wrappingWidth": 260, "nodeSpacing": 30, "rankSpacing": 110}} }%%
+flowchart LR
+    subgraph layers["Any feature slice or core slice"]
+        ui["<b>ui</b>"]
+        nav["<b>navigation</b>"]
+        data["<b>data</b>"]
+        dom["<b>domain</b>"]
+    end
+
+    subgraph core["core infrastructure"]
+        cds["designsystem<br/>Material3 wrappers"]
+        ccom["common<br/>shared Compose helpers"]
+        cnav["navigation<br/>Destination, Navigator"]
+        cnet["network<br/>Retrofit, auth, safeAppCall"]
+        cmodel["model<br/>AppResult, AppError"]
+    end
+
+    ui --> cds
+    ui --> ccom
+    ui --> cnav
+    nav --> cnav
+    data --> cnet
+    dom --> cmodel
+
+    classDef ui fill:#BBDEFB,stroke:#1565C0,color:#0D2A4A
+    classDef nav fill:#E1BEE7,stroke:#6A1B9A,color:#2E0A3A
+    classDef data fill:#FFE0B2,stroke:#E65100,color:#4A1E00
+    classDef domain fill:#C8E6C9,stroke:#2E7D32,color:#0F3311
+    classDef core fill:#ECEFF1,stroke:#78909C,color:#263238
+
+    class ui ui
+    class nav nav
+    class data data
+    class dom domain
+    class cds,ccom,cnav,cnet,cmodel core
+
+    style layers fill:#FAFAFA,stroke:#9E9E9E
+    style core fill:#F5F5F5,stroke:#9E9E9E
+
+    linkStyle 0,1,2 stroke:#1565C0,stroke-width:2px
+    linkStyle 3 stroke:#6A1B9A,stroke-width:2px
+    linkStyle 4 stroke:#E65100,stroke-width:2px
+    linkStyle 5 stroke:#2E7D32,stroke-width:2px
