@@ -33,8 +33,13 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":data"))
     implementation(project(":core:common"))
-    // The feature :data modules are needed only so Hilt sees their @Modules (repository
-    // bindings) when it builds the app's component; :app code never imports from them.
+    implementation(project(":core:navigation"))
+    // Destinations the home screen opens.
+    implementation(project(":feature:lead:navigation"))
+    implementation(project(":feature:acquisition:navigation"))
+    // The feature :data and :ui modules are needed only so Hilt sees their @Modules (repository
+    // bindings, DestinationHandlers) and the APK merges their manifests; :app code never imports
+    // from them.
     implementation(project(":feature:lead:data"))
     implementation(project(":feature:lead:ui"))
     implementation(project(":feature:acquisition:data"))
