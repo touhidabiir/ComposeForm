@@ -1,5 +1,6 @@
 package com.touhid.composeform.network
 
+import com.touhid.composeform.network.interceptor.AppVersionInterceptor
 import com.touhid.composeform.network.interceptor.RequestIdInterceptor
 import com.touhid.composeform.network.mock.MockDataInterceptor
 import okhttp3.Authenticator
@@ -23,6 +24,7 @@ private const val TIMEOUT_SECONDS = 30L
 // only a base URL whose backend actually issues refresh tokens passes one.
 internal class RetrofitFactory @Inject constructor(
     private val requestIdInterceptor: RequestIdInterceptor,
+    private val appVersionInterceptor: AppVersionInterceptor,
     private val loggingInterceptor: HttpLoggingInterceptor,
 ) {
 
@@ -37,6 +39,7 @@ internal class RetrofitFactory @Inject constructor(
             .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .addInterceptor(requestIdInterceptor)
+            .addInterceptor(appVersionInterceptor)
             .apply { authInterceptor?.let(::addInterceptor) }
             .apply { interceptors.forEach(::addInterceptor) }
             .addInterceptor(loggingInterceptor)
@@ -48,7 +51,7 @@ internal class RetrofitFactory @Inject constructor(
             // through to the real request.
             // Must stay the LAST application interceptor: for a mocked path it returns a canned
             // response without calling chain.proceed(), so any interceptor added after it never
-            // runs. Placed here it stands in for only the network transport - the request-id/auth
+            // runs. Placed here it stands in for only the network transport - the request-id/version/auth
             // headers are still added, the error mapping still runs, and loggingInterceptor
             // still logs both the request and the mocked response to logcat.
             .apply { if (BuildConfig.DEBUG) addInterceptor(MockDataInterceptor()) }
