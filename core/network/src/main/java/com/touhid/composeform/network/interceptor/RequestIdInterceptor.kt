@@ -7,11 +7,10 @@ import javax.inject.Inject
 
 internal const val REQUEST_ID_HEADER = "X-Request-Id"
 
-// Unlike HeaderInterceptor's fixed header map, a request ID must be regenerated for every
-// request rather than fixed once when the client is built - so it needs its own Interceptor,
-// with the UUID generated inside intercept() itself. Stateless and not per-client configuration,
-// so RetrofitFactory adds it to every base URL rather than it being passed through the
-// interceptors list.
+// A request ID must be regenerated for every request rather than fixed once when the client is
+// built - so it needs its own Interceptor, with the UUID generated inside intercept() itself.
+// Stateless and not per-client configuration, so RetrofitFactory adds it to every client rather
+// than it being passed through the interceptors list.
 internal class RequestIdInterceptor @Inject constructor() : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {

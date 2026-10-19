@@ -31,13 +31,12 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":formbuilder"))
     implementation(project(":core:network"))
-    implementation(project(":data"))
     implementation(project(":core:common"))
     implementation(project(":core:navigation"))
     // Destinations the home screen opens.
     implementation(project(":feature:lead:navigation"))
     implementation(project(":feature:acquisition:navigation"))
-    // The feature :data and :ui modules are needed only so Hilt sees their @Modules (repository
+    // The feature data and ui modules are needed only so Hilt sees their @Modules (repository
     // bindings, DestinationHandlers) and the APK merges their manifests; :app code never imports
     // from them.
     implementation(project(":feature:lead:data"))
@@ -46,7 +45,7 @@ dependencies {
     implementation(project(":feature:acquisition:ui"))
     implementation(project(":feature:specificform:data"))
     implementation(project(":feature:specificform:ui"))
-    // Same reason as the feature :data modules: only the SessionRepository binding, for Hilt.
+    // Same reason as the feature data modules: only the SessionRepository binding, for Hilt.
     implementation(project(":core:session:data"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
