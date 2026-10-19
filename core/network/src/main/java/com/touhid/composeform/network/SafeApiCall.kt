@@ -9,7 +9,7 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
 
-suspend fun <T> safeApiCall(
+internal suspend fun <T> safeApiCall(
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
     apiCall: suspend () -> T,
 ): NetworkResult<T> = withContext(dispatcher) {

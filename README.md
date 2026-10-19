@@ -32,6 +32,5 @@ The main Gradle modules:
 | `:core:session:{domain,data}` | Sign-in: `SessionRepository.login` plus storing the tokens. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:navigation` | `Destination`/`Navigator`/`DestinationHandler`: how one feature opens another's screens without depending on its `ui`. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:lead:{domain,data}` | Lead types both features use: the value types (`domain`) and their wire DTOs + mappers (`data`). | [`CLAUDE.md`](CLAUDE.md) |
-| `:data` | Owns the repository layer (`AppRepository`/`PaymentRepository`/`AnalyticsRepository`/`PartnerRepository`) — the actual thing screens inject, wrapping `:core:network`'s raw API calls. | [`data/README.md`](data/README.md) |
 
 See [`CLAUDE.md`](CLAUDE.md) for the full architecture, build/test commands, and the compiler-enforced module boundaries.

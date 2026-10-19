@@ -5,10 +5,9 @@ import com.touhid.composeform.model.AppResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 
-// The AppResult-returning twin of safeApiCall, for repositories in feature/core-slice data modules.
-// Same exception handling (it delegates to safeApiCall), then the one NetworkError -> AppError
-// mapping, so no data module ever sees NetworkResult/NetworkError. safeApiCall stays for :data's
-// AppRepository until its remaining endpoints move into slices.
+// The safe-call entry point for repositories in feature/core-slice data modules. Exception
+// handling lives in the internal safeApiCall; this adds the one NetworkError -> AppError mapping,
+// so no other module ever sees NetworkResult/NetworkError.
 suspend fun <T> safeAppCall(
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
     apiCall: suspend () -> T,
