@@ -7,6 +7,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":designsystem"))
+    implementation(project(":core:designsystem"))
     implementation(libs.androidx.compose.material.icons.extended)
 }

@@ -8,7 +8,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":designsystem"))
+    implementation(project(":core:designsystem"))
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)
 }
