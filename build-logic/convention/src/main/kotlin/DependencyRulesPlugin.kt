@@ -5,8 +5,8 @@ import org.gradle.api.artifacts.ProjectDependency
 
 /**
  * `composeform.dependency.rules`: fails the build as soon as a module declares a project
- * dependency the architecture forbids (see CLAUDE.md, "Dependency rules"). Applied by the
- * application, Android library and JVM library convention plugins, so every module gets it.
+ * dependency the architecture forbids (see build-logic/README.md, "Dependency rules"). Applied by
+ * the application, Android library and JVM library convention plugins, so every module gets it.
  */
 class DependencyRulesPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -16,7 +16,7 @@ class DependencyRulesPlugin : Plugin<Project> {
                 if (reason != null) {
                     throw GradleException(
                         "Forbidden dependency ${target.path} -> $path: $reason " +
-                            "See CLAUDE.md, \"Dependency rules\".",
+                            "See build-logic/README.md, \"Dependency rules\".",
                     )
                 }
             }
