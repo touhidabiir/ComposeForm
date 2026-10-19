@@ -1,10 +1,10 @@
 # `:core:designsystem`
 
-An Android library module (namespace `com.touhid.composeform.designsystem`) owning all Material3-based UI. `:app` depends on it via `implementation(project(":core:designsystem"))`.
+An Android library module (namespace `com.touhid.composeform.designsystem`) owning all Material3-based UI and the app theme. `:app`, `:formbuilder`, `:core:common` and every feature `ui` module depend on it.
 
 ## Material3 boundary (important, easy to violate accidentally)
 
-`:core:designsystem` depends on `androidx.compose.material3` and `androidx.compose.foundation` as `implementation` (not `api`). Neither `:app` nor `:formbuilder` declare either dependency themselves. This means Material3/Foundation classes are not on their compile classpaths at all — any `import androidx.compose.material3.*` added there will fail to compile. This is deliberate, compiler-enforced encapsulation: all UI must go through `:core:designsystem`'s wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.), never the raw Material3 APIs. (Foundation layout primitives — `Column`/`Row`/`Box`/`Modifier.padding` — are fine for any module to use directly; only Material3 is restricted. This includes `Image` — `androidx.compose.foundation.Image` (and Coil's `AsyncImage`, if/when added) is Foundation, not Material3, so `:app` can call it directly with no `AppImage` wrapper needed; `Icon` is the one that's Material3-gated and needs `AppIcon`.)
+`:core:designsystem` is the only module that depends on `androidx.compose.material3`, and as `implementation` (not `api`). The Compose convention plugins give every other Compose module `ui`/`foundation`/`ui-tooling-preview` but never Material3, so Material3 classes are not on their compile classpaths at all — any `import androidx.compose.material3.*` added there will fail to compile. This is deliberate, compiler-enforced encapsulation: all UI must go through `:core:designsystem`'s wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.), never the raw Material3 APIs. (Foundation primitives — `Column`/`Row`/`Box`/`Modifier.padding`, `Image`, and Coil's `AsyncImage` — are fine for any module to use directly; `Icon` is the one that's Material3-gated and needs `AppIcon`.)
 
 When a module needs a new Material3 primitive it doesn't have a wrapper for yet, add the wrapper to `:core:designsystem` rather than adding a direct dependency elsewhere.
 
@@ -13,7 +13,8 @@ When a module needs a new Material3 primitive it doesn't have a wrapper for yet,
 ```
 core/designsystem/src/main/java/com/touhid/composeform/designsystem/
 ├── theme/                  # Color.kt (incl. semantic Status*/Status*Container tones), Theme.kt (ComposeFormTheme),
-│                            # Type.kt, Spacing.kt (AppSpacing)
+│                            # AppTheme.kt (ComposeFormAppTheme - the app's light-only policy), Type.kt,
+│                            # Spacing.kt (AppSpacing)
 └── components/
     ├── text/               # AppText + AppTextStyle enum + AppTextOverride (size/weight/color override),
     │                        # AppIconLabelValue (icon + value, or label caption stacked above value;
@@ -61,4 +62,4 @@ Components are organized by category (not a flat package) — when adding a new 
 
 **Not yet built**: a generic Material3 `AlertDialog` wrapper (title/message/confirm-cancel buttons) — `AppProgressDialog` (spinner-only) and `AppBottomSheet` (modal bottom sheet) exist and cover their own specific cases, but nothing wraps a plain confirm/alert dialog yet. Follow the same wrapping conventions above when implementing it.
 
-For the broader module architecture and the other module boundaries, see [`CLAUDE.md`](../CLAUDE.md).
+For the broader module architecture and the other module boundaries, see [`CLAUDE.md`](../../CLAUDE.md).
