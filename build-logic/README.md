@@ -82,7 +82,7 @@ The plugin classes sit in the default package (no `package` line). That's delibe
 | `AndroidFeatureConventionPlugin` (`composeform.android.feature`) | Everything `composeform.android.library.compose` + `composeform.hilt` do, plus what every screen module uses: `:core:designsystem`, `:core:common`, `material-icons-extended`, lifecycle ViewModel/runtime Compose, `hilt-navigation-compose` | every feature `ui` module |
 | `JvmLibraryConventionPlugin` (`composeform.jvm.library`) | `org.jetbrains.kotlin.jvm` (a plain Kotlin module, no Android), Java and Kotlin JVM target, the dependency rules | `:core:model`, every `domain` module, `:core:lead:data` |
 | `HiltConventionPlugin` (`composeform.hilt`) | KSP, `hilt-android`, `hilt-compiler` (through KSP). Not the Hilt Gradle plugin - see "Things that will bite you" | `:app`, `:core:network`, every `data` module, every `ui` module (via the feature plugin) |
-| `DependencyRulesPlugin` (`composeform.dependency.rules`) | Fails the build when a module depends on a module the architecture forbids (e.g. a `ui` module on a `data` module). The rules are listed in `CLAUDE.md`, "Dependency rules". | Never applied directly: the application, Android library and JVM library plugins apply it, so every module gets it |
+| `DependencyRulesPlugin` (`composeform.dependency.rules`) | Fails the build when a module depends on a module the architecture forbids (e.g. a `ui` module on a `data` module). The rules are listed in "Dependency rules" below. | Never applied directly: the application, Android library and JVM library plugins apply it, so every module gets it |
 
 `ProjectExtensions.kt` isn't a plugin. It holds the helpers the plugins share:
 
@@ -109,6 +109,44 @@ composeform.jvm.library ────────── org.jetbrains.kotlin.jvm,
 ```
 
 Kotlin itself isn't in the tree for Android modules: AGP 9 compiles Kotlin on its own ("built-in Kotlin"), so there is no `org.jetbrains.kotlin.android` plugin to apply.
+
+## Dependency rules
+
+`DependencyRulesPlugin` checks every `implementation(project(...))`/`api(project(...))` a module declares, the moment Gradle reads the build file. A forbidden one fails the build with a message like:
+
+```
+Forbidden dependency :feature:lead:ui -> :feature:lead:data: a ui module never depends on a data module.
+```
+
+### How it knows what a module is
+
+The plugin reads only the module's **Gradle path**, so the rules work only if modules follow this naming:
+
+| Path | Meaning |
+| --- | --- |
+| `:feature:<name>:<layer>` | A layer of a feature, e.g. `:feature:lead:ui` |
+| `:core:<topic>:<layer>` | A layer of a core slice: data more than one feature shares, e.g. `:core:lead:domain` |
+| `:core:<name>` | Core infrastructure, e.g. `:core:network`, `:core:model` |
+| `:app` | The application module |
+
+`<layer>` is one of `domain`, `data`, `ui`, `navigation`. Anything else (e.g. `:formbuilder`) is treated as a plain library: only the general rules apply to it.
+
+### The rules
+
+1. **Nothing depends on `:app`.** `:app` assembles every other module, so a dependency on it would run backwards. A module's dependency on itself (some plugins add one) is ignored.
+2. **Only `:app` and feature modules may depend on a feature module.** A core or library module can't reach up into a feature.
+3. **A feature depends on another feature only through its `navigation` module.** `:feature:acquisition:ui -> :feature:lead:navigation` is fine (opening a lead screen); `-> :feature:lead:domain` or `-> :feature:lead:data` is not. If two features need the same data, move it into a core slice (`:core:<topic>:domain` + `:core:<topic>:data`) and have both depend on that.
+4. **Only `data` modules (and `:app`) depend on `:core:network`.** Screens never touch the HTTP client; they go through a repository.
+5. **A `domain` module depends only on `:core:model` and core-slice `domain` modules.** It stays pure Kotlin business logic.
+6. **A `navigation` module depends only on `:core:navigation`.** It holds destinations, nothing else, because other features depend on it.
+7. **A `ui` module never depends on a `data` module** (its own or a core slice's). It sees only its `domain` (models and repository interfaces); Hilt supplies the implementation.
+8. **A `data` module never depends on a `ui` or `navigation` module.**
+
+`:app` is exempt from rules 2–8: it may depend on anything, because it wires everything together (Hilt needs every `data` module, manifest merging needs every `ui` module).
+
+### Using it in another project
+
+Copy `DependencyRulesPlugin.kt` and register it like the others. If your module paths differ (for example `:features:...` or `:shared:...`), adjust the `Module` class at the top of the file: it's the only place that turns a path into "feature / layer". Each rule is one `if` in `dependencyRuleViolation`, so removing or adding one is a small, local change.
 
 ## Which plugin should my new module use?
 
@@ -138,7 +176,7 @@ Then add only that module's own dependencies.
 4. Make sure it applies `composeform.dependency.rules` directly or through one of the base plugins.
 5. Sync. If the new id isn't found, check the `register` block.
 
-**…see which rule a "Forbidden dependency" build failure is about?** The message names the two modules (`:feature:lead:ui -> :feature:lead:data`) and the rule. The rules, and how shared code should be structured instead, are in `CLAUDE.md`, "Dependency rules". Don't relax the plugin to make a build pass; restructure the dependency.
+**…see which rule a "Forbidden dependency" build failure is about?** The message names the two modules (`:feature:lead:ui -> :feature:lead:data`) and the rule. "Dependency rules" below lists every rule and how to restructure instead. Don't relax the plugin to make a build pass; restructure the dependency.
 
 ## Things that will bite you
 
@@ -151,6 +189,6 @@ Then add only that module's own dependencies.
 
 ## Related reading
 
-- `CLAUDE.md`: the module architecture, the convention plugin table, and "Dependency rules".
+- `CLAUDE.md` (in this repo): the full module architecture.
 - `docs/architecture.docx`: the shareable write-up, including a Build logic section.
 - Gradle's guide to convention plugins: https://docs.gradle.org/current/samples/sample_convention_plugins.html

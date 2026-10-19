@@ -163,7 +163,7 @@ Conventions established by existing components:
 
 ### Dependency rules (enforced by `composeform.dependency.rules`)
 
-`build-logic`'s `DependencyRulesPlugin` is applied by the application, Android library and JVM library convention plugins, so every module gets it. It fails the build at configuration time, naming the offending `from -> to` pair, when a project dependency breaks one of these rules:
+`build-logic`'s `DependencyRulesPlugin` is applied by the application, Android library and JVM library convention plugins, so every module gets it. It fails the build at configuration time, naming the offending `from -> to` pair, when a project dependency breaks one of these rules (`build-logic/README.md` has the same list, plus how the plugin classifies modules by path):
 
 - Nothing depends on `:app`.
 - Only `:app` and feature modules depend on a feature module, and a feature depends on another feature only through its `navigation` module.
