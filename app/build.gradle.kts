@@ -16,6 +16,11 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    buildFeatures {
+        // For BuildConfig.VERSION_CODE, sent as the X-Version header (di/AppNetworkModule.kt).
+        buildConfig = true
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
