@@ -803,6 +803,10 @@ private fun ColumnScope.ApprovalReasonSheetContent(
     var likertIndex by remember(type) { mutableStateOf(2) }
     var selectedReasonIds by remember(type) { mutableStateOf(setOf<Int>()) }
     var noteText by remember(type) { mutableStateOf("") }
+    // The note becomes mandatory once any selected reason is flagged is_note_required by the API
+    // (e.g. its "অন্যান্য"/Other entry) - which reasons need it is the backend's call, not the app's.
+    val noteRequired = reasons.any { it.isNoteRequired && it.id in selectedReasonIds }
+    val noteMissing = noteRequired && noteText.isBlank()
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
         AppText(text = stringResource(R.string.acquisition_verification_title), style = AppTextStyle.TitleMedium, override = AppTextOverride(fontWeight = FontWeight.Bold))
@@ -835,7 +839,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
                 reasons.forEach { reason ->
                     val isSelected = reason.id in selectedReasonIds
                     ReasonCheckboxCard(
-                        reason = reason,
+                        label = reason.reason,
                         selected = isSelected,
                         accentColor = copy.accentColor,
                         onToggle = {
@@ -856,6 +860,14 @@ private fun ColumnScope.ApprovalReasonSheetContent(
         flatWhenUnfocused = true,
         modifier = Modifier.fillMaxWidth().height(96.dp),
     )
+    if (noteMissing) {
+        Spacer(modifier = Modifier.height(AppSpacing.ExtraSmall))
+        AppText(
+            text = stringResource(R.string.acquisition_note_required),
+            style = AppTextStyle.BodyMedium,
+            override = AppTextOverride(color = StatusError),
+        )
+    }
     Spacer(modifier = Modifier.height(AppSpacing.Medium))
 
     if (submitError != null) {
@@ -867,7 +879,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
         text = copy.confirmLabel,
         onClick = { onConfirm(selectedReasonIds.toList(), noteText, likertIndex) },
         buttonType = copy.confirmButtonStyle,
-        enabled = selectedReasonIds.isNotEmpty() && !submitting,
+        enabled = selectedReasonIds.isNotEmpty() && !noteMissing && !submitting,
         modifier = Modifier.fillMaxWidth(),
     )
 }
@@ -880,7 +892,7 @@ private fun ColumnScope.ApprovalReasonSheetContent(
 // its own click handling too (tapping directly on it still works), but since it's the innermost
 // handler for its own bounds, only one of the two ever fires per tap.
 @Composable
-private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, accentColor: Color, onToggle: () -> Unit) {
+private fun ReasonCheckboxCard(label: String, selected: Boolean, accentColor: Color, onToggle: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -895,7 +907,7 @@ private fun ReasonCheckboxCard(reason: AcquisitionReason, selected: Boolean, acc
         AppCheckbox(
             checked = selected,
             onCheckedChange = { onToggle() },
-            label = reason.reason,
+            label = label,
             checkedColor = accentColor,
             position = AppCheckboxPosition.End,
         )
@@ -980,6 +992,7 @@ private val PreviewApproveReasons = listOf(
     AcquisitionReason(id = 5, reason = "দোকান সবসময় খোলা থাকে"),
     AcquisitionReason(id = 6, reason = "আগের ঋণ ঠিকমতো শোধ করেছে"),
     AcquisitionReason(id = 7, reason = "পেমেন্ট নিতে আগ্রহী"),
+    AcquisitionReason(id = 16, reason = "অন্যান্য", isNoteRequired = true),
 )
 
 private val PreviewRejectReasons = listOf(
@@ -988,6 +1001,7 @@ private val PreviewRejectReasons = listOf(
     AcquisitionReason(id = 10, reason = "প্রিমিয়ামনেস স্কোর প্রত্যাশিত মানের কম"),
     AcquisitionReason(id = 11, reason = "যোগাযোগের তথ্যে অসামঞ্জস্য"),
     AcquisitionReason(id = 12, reason = "একই ওয়ালেট নম্বর ইতিমধ্যে নিবন্ধিত"),
+    AcquisitionReason(id = 17, reason = "অন্যান্য", isNoteRequired = true),
 )
 
 // Rendered directly inside a plain Column (mimicking AppBottomSheet's own white background/

@@ -50,6 +50,7 @@
     <string name="acquisition_verification_title">যাচাইকরণ</string>
     <string name="acquisition_score_agreement_question">আপনি কি এই প্রিমিয়ামনেস স্কোরের সাথে একমত?</string>
     <string name="acquisition_note_placeholder">এখানে কারণ উল্লেখ করুন...</string>
+    <string name="acquisition_note_required">নির্বাচিত কারণের জন্য নোট লেখা বাধ্যতামূলক।</string>
     <string name="acquisition_yes_bn">হ্যাঁ</string>
     <string name="acquisition_no_bn">না</string>
     <string name="acquisition_previous_rejections_title">পূর্বে বাতিলের কারণ</string>
