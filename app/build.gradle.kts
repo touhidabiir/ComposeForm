@@ -33,7 +33,10 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":data"))
     implementation(project(":core:common"))
-    implementation(project(":feature:leaddashboard"))
+    // :feature:lead:data is needed only so Hilt sees its @Module (LeadRepository binding) when it
+    // builds the app's component; :app code never imports from it.
+    implementation(project(":feature:lead:data"))
+    implementation(project(":feature:lead:ui"))
     implementation(project(":feature:acquisition"))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)

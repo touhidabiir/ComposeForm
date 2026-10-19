@@ -7,8 +7,7 @@ android {
 }
 
 dependencies {
-    // Not :network directly - :data re-exports it via api() (see CLAUDE.md's Data layer notes).
-    // See :feature:leaddashboard's build.gradle.kts for the full reasoning.
+    // Not :core:network directly - :data re-exports it via api() (see CLAUDE.md's Data layer notes).
     implementation(project(":data"))
     implementation(libs.coil.compose)
 }

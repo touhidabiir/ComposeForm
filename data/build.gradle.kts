@@ -13,7 +13,7 @@ dependencies {
     // needs them resolvable on its own classpath to use those return values at all, the same
     // reason NIA exposes :core:model as api from :core:data. This must stay api even though :app
     // currently also depends on :network directly for unrelated reasons (@BaseUrl/TokenProvider
-    // config) - a future module depending on :data alone (e.g. a :feature:leaddashboard with no
+    // config) - a future module depending on :data alone (e.g. :feature:acquisition, with no
     // reason to configure the network client) would otherwise fail to resolve NetworkResult.
     api(project(":core:network"))
     testImplementation(libs.junit)
