@@ -13,8 +13,8 @@ class AndroidFeatureConventionPlugin : Plugin<Project> {
             pluginManager.apply("composeform.android.library.compose")
             pluginManager.apply("composeform.hilt")
 
-            dependencies.add("implementation", dependencies.project(":designsystem"))
-            dependencies.add("implementation", dependencies.project(":common"))
+            dependencies.add("implementation", dependencies.project(":core:designsystem"))
+            dependencies.add("implementation", dependencies.project(":core:common"))
             dependencies.add("implementation", library("androidx-compose-material-icons-extended"))
             dependencies.add("implementation", library("androidx-lifecycle-viewmodel-compose"))
             dependencies.add("implementation", library("androidx-lifecycle-runtime-compose"))
