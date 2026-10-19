@@ -1,17 +1,16 @@
-package com.touhid.composeform.specificform
+package com.touhid.composeform.feature.specificform.ui
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.JsonObject
 import com.touhid.composeform.formbuilder.parseSpecificFormSchema
 import com.touhid.composeform.formbuilder.schema.FormField
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.schema.FormSubmitAppearance
 import com.touhid.composeform.formbuilder.schema.FormValue
 import com.touhid.composeform.formbuilder.singleAnswerValue
-import com.touhid.composeform.network.NetworkResult
-import com.touhid.composeform.data.repository.AppRepository
+import com.touhid.composeform.feature.specificform.domain.SpecificFormRepository
+import com.touhid.composeform.model.AppResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +26,7 @@ sealed interface SpecificFormUiState {
 
 @HiltViewModel
 class SpecificFormViewModel @Inject constructor(
-    private val repository: AppRepository,
+    private val repository: SpecificFormRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow<SpecificFormUiState>(SpecificFormUiState.Loading)
@@ -61,10 +60,9 @@ class SpecificFormViewModel @Inject constructor(
         _state.update { SpecificFormUiState.Loading }
         viewModelScope.launch {
             when (val result = repository.getSpecificForm()) {
-                is NetworkResult.Success -> {
-                    val payload = result.data
-                    val questionsJson = JsonObject().apply { add("questions", payload.questions) }.toString()
-                    val parsed = parseSpecificFormSchema(questionsJson)
+                is AppResult.Success -> {
+                    val form = result.data
+                    val parsed = parseSpecificFormSchema(form.schemaJson)
                     val submitField = FormField.Submit(
                         key = "submit",
                         label = "Submit",
@@ -72,9 +70,9 @@ class SpecificFormViewModel @Inject constructor(
                         progressText = "$position/$totalCount",
                     )
                     val schema = parsed.copy(fields = parsed.fields + submitField)
-                    _state.update { SpecificFormUiState.Ready(schema, title = payload.title, key = payload.key) }
+                    _state.update { SpecificFormUiState.Ready(schema, title = form.title, key = form.key) }
                 }
-                is NetworkResult.Failure -> _state.update { SpecificFormUiState.Error(result.error.message) }
+                is AppResult.Failure -> _state.update { SpecificFormUiState.Error(result.error.message) }
             }
         }
     }
