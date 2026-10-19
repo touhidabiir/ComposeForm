@@ -34,6 +34,6 @@ The app is organised as feature slices on top of a thin shared `core`. Each busi
 | `:core:common` | Compose helpers and strings shared by more than one feature. | [`CLAUDE.md`](CLAUDE.md) |
 | `:formbuilder` | Parses a JSON form schema (`kotlinx.serialization`) and renders it using `:core:designsystem`'s components. | [`formbuilder/README.md`](formbuilder/README.md) |
 
-Shared build setup lives in convention plugins under `build-logic/`. A shareable write-up of the architecture, with diagrams, is in [`docs/architecture.docx`](docs/architecture.docx).
+Shared build setup lives in convention plugins under `build-logic/` (see [`build-logic/README.md`](build-logic/README.md)). A shareable write-up of the architecture, with diagrams, is in [`docs/architecture.docx`](docs/architecture.docx).
 
 See [`CLAUDE.md`](CLAUDE.md) for the full architecture, build/test commands, and the build-enforced module boundaries.
