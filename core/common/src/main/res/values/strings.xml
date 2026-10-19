@@ -1,7 +1,7 @@
 <resources>
     <!--
         Strings genuinely duplicated across 2+ feature modules (confirmed by literal comparison
-        of :feature:leaddashboard and :feature:acquisition, not guessed) - a feature-local string
+        of :feature:lead:ui and :feature:acquisition, not guessed) - a feature-local string
         with the exact same value in another feature belongs here instead, so translating it once
         covers every screen that uses it. A string with the same *meaning* but different wording
         per screen (e.g. two different search placeholders) stays feature-local - don't force a

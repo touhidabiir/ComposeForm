@@ -10,7 +10,6 @@ import com.touhid.composeform.network.model.AcquisitionListPage
 import com.touhid.composeform.network.model.AcquisitionReason
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
-import com.touhid.composeform.network.model.LeadDashboardPage
 import com.touhid.composeform.network.model.LoginRequest
 import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
@@ -42,15 +41,6 @@ class AppRepositoryImpl @Inject constructor(
 
     override suspend fun getSpecificForm(): NetworkResult<SpecificFormPayload> =
         safeApiCall { apiService.getSpecificForm().data }
-
-    override suspend fun getLeadDashboard(status: String?, search: String?, pageNo: Int): NetworkResult<LeadDashboardPage> =
-        safeApiCall { apiService.getLeadDashboard(status, search, pageNo).data }
-
-    override suspend fun submitEkyc(leadId: Long): NetworkResult<Unit> =
-        when (val result = safeApiCall { apiService.submitEkyc(leadId) }) {
-            is NetworkResult.Success -> NetworkResult.Success(Unit)
-            is NetworkResult.Failure -> result
-        }
 
     override suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage> =
         safeApiCall { apiService.getAcquisitionList(search, pageNo).data }

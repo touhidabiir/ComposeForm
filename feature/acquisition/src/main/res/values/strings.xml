@@ -1,5 +1,5 @@
 <resources>
-    <!-- Strings shared with :feature:leaddashboard (identical wording) live in :common's own
+    <!-- Strings shared with :feature:lead:ui (identical wording) live in :common's own
          strings.xml instead - see common_refresh/common_search/common_results_found_count/etc.
          there. Everything below is acquisition-specific wording, even where the concept overlaps
          (e.g. this screen's own search placeholder text differs from the dashboard's). -->

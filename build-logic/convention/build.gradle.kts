@@ -21,6 +21,7 @@ dependencies {
     // compileOnly: the root build.gradle.kts already puts AGP on the build classpath (apply false),
     // so the plugins below apply it by id at runtime instead of bundling a second copy.
     compileOnly(libs.android.gradlePlugin)
+    compileOnly(libs.kotlin.gradlePlugin)
 }
 
 gradlePlugin {
@@ -40,6 +41,10 @@ gradlePlugin {
         register("androidFeature") {
             id = "composeform.android.feature"
             implementationClass = "AndroidFeatureConventionPlugin"
+        }
+        register("jvmLibrary") {
+            id = "composeform.jvm.library"
+            implementationClass = "JvmLibraryConventionPlugin"
         }
         register("hilt") {
             id = "composeform.hilt"

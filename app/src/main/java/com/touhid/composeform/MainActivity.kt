@@ -40,7 +40,7 @@ import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.formbuilder.withOptions
 import com.touhid.composeform.home.DemoHomeScreen
-import com.touhid.composeform.feature.leaddashboard.LeadDashboardScreen
+import com.touhid.composeform.feature.lead.ui.LeadDashboardScreen
 
 // Mirrors FormFlowState but scoped to the picker destination, since picker schemas aren't
 // ViewModel-backed today. Only :app interprets a field's optionsUrl - FormRenderer never does.

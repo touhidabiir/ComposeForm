@@ -7,8 +7,6 @@ import com.touhid.composeform.network.model.AcquisitionListResponse
 import com.touhid.composeform.network.model.AcquisitionReasonsResponse
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
-import com.touhid.composeform.network.model.EkycSubmitResponse
-import com.touhid.composeform.network.model.LeadDashboardResponse
 import com.touhid.composeform.network.model.LoginRequest
 import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
@@ -35,16 +33,6 @@ interface AppApiService {
 
     @GET("v1/forms/specific")
     suspend fun getSpecificForm(): SpecificFormResponse
-
-    @GET("v1/leads")
-    suspend fun getLeadDashboard(
-        @Query("status") status: String?,
-        @Query("search") search: String?,
-        @Query("page_no") pageNo: Int,
-    ): LeadDashboardResponse
-
-    @POST("v1/leads/{leadId}/ekyc")
-    suspend fun submitEkyc(@Path("leadId") leadId: Long): EkycSubmitResponse
 
     @GET("v1/acquisitions")
     suspend fun getAcquisitionList(
