@@ -28,6 +28,8 @@ The main Gradle modules:
 | `:core:model` | Plain Kotlin module with `AppResult`/`AppError`, the result type feature repositories return. | [`CLAUDE.md`](CLAUDE.md) |
 | `:feature:lead:{domain,data,ui}` | The lead dashboard as a feature slice: domain models + `LeadRepository` interface, its own API/DTOs/repository impl, and the screens. Shared lead types live in `:core:lead`. | [`CLAUDE.md`](CLAUDE.md) |
 | `:feature:acquisition:{domain,data,ui}` | The acquisition approval list and detail/decision flow as a feature slice, same shape as lead. | [`CLAUDE.md`](CLAUDE.md) |
+| `:feature:specificform:{domain,data,ui}` | The server-driven "specific form" screen (a Fragment rendering a `:formbuilder` schema) as a feature slice. | [`CLAUDE.md`](CLAUDE.md) |
+| `:core:session:{domain,data}` | Sign-in: `SessionRepository.login` plus storing the tokens. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:lead:{domain,data}` | Lead types both features use: the value types (`domain`) and their wire DTOs + mappers (`data`). | [`CLAUDE.md`](CLAUDE.md) |
 | `:data` | Owns the repository layer (`AppRepository`/`PaymentRepository`/`AnalyticsRepository`/`PartnerRepository`) — the actual thing screens inject, wrapping `:core:network`'s raw API calls. | [`data/README.md`](data/README.md) |
 

@@ -2,19 +2,11 @@ package com.touhid.composeform.network.api
 
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
-import com.touhid.composeform.network.model.LoginRequest
-import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
-import com.touhid.composeform.network.model.SpecificFormResponse
-import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.POST
 import retrofit2.http.Path
 
 interface AppApiService {
-
-    @POST("v1/login")
-    suspend fun login(@Body request: LoginRequest): LoginResponse
 
     @GET("v1/manager/list")
     suspend fun getManagerList(): List<ManagerSummary>
@@ -24,7 +16,4 @@ interface AppApiService {
 
     @GET("v1/admin/details/{id}")
     suspend fun getAdminDetails(@Path("id") id: String): AdminDetails
-
-    @GET("v1/forms/specific")
-    suspend fun getSpecificForm(): SpecificFormResponse
 }
