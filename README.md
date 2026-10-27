@@ -28,7 +28,7 @@ The app is organised as feature slices on top of a thin shared `core`. Each busi
 | `:core:lead:{domain,data}` | Core slice: lead types both features show, and their wire DTOs + mappers. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:session:{domain,data}` | Core slice: sign-in (`SessionRepository.login`, storing the tokens). | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:model` | `AppResult`/`AppError`, the result type every repository returns. | [`CLAUDE.md`](CLAUDE.md) |
-| `:core:network` | The HTTP client: main `Retrofit`, auth and token refresh, interceptors, `safeAppCall`. The only module that builds a client; feature `data` modules declare their own endpoints on it. | [`core/network/README.md`](core/network/README.md) |
+| `:core:network` | The HTTP client: main `Retrofit`, auth and token refresh, interceptors, `safeApiCall`. The only module that builds a client; feature `data` modules declare their own endpoints on it. | [`core/network/README.md`](core/network/README.md) |
 | `:core:navigation` | `Destination`/`Navigator`/`DestinationHandler`: how one module opens another feature's screens without depending on its `ui`. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:designsystem` | All Material3-based UI, plus the app theme. The only module allowed to depend on Material3 — everything else goes through its wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.). | [`core/designsystem/README.md`](core/designsystem/README.md) |
 | `:core:common` | Compose helpers and strings shared by more than one feature. | [`CLAUDE.md`](CLAUDE.md) |

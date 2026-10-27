@@ -11,7 +11,7 @@ android {
 }
 
 dependencies {
-    // api: safeAppCall's return type (AppResult) is part of this module's public surface.
+    // api: safeApiCall's return type (AppResult) is part of this module's public surface.
     api(project(":core:model"))
     implementation(libs.squareup.okhttp)
     implementation(libs.squareup.okhttp.logging.interceptor)

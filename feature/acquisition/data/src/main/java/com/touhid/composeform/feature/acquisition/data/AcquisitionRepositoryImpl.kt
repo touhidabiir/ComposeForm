@@ -6,7 +6,7 @@ import com.touhid.composeform.feature.acquisition.domain.AcquisitionReason
 import com.touhid.composeform.feature.acquisition.domain.AcquisitionRepository
 import com.touhid.composeform.model.AppResult
 import com.touhid.composeform.model.map
-import com.touhid.composeform.network.safeAppCall
+import com.touhid.composeform.network.safeApiCall
 import javax.inject.Inject
 
 internal class AcquisitionRepositoryImpl @Inject constructor(
@@ -14,13 +14,13 @@ internal class AcquisitionRepositoryImpl @Inject constructor(
 ) : AcquisitionRepository {
 
     override suspend fun getAcquisitionList(search: String?, pageNo: Int): AppResult<AcquisitionListPage> =
-        safeAppCall { api.getAcquisitionList(search, pageNo).data }.map { it.toDomain() }
+        safeApiCall { api.getAcquisitionList(search, pageNo).data }.map { it.toDomain() }
 
     override suspend fun getAcquisitionDetail(leadId: String): AppResult<AcquisitionDetail> =
-        safeAppCall { api.getAcquisitionDetail(leadId).data }.map { it.toDomain() }
+        safeApiCall { api.getAcquisitionDetail(leadId).data }.map { it.toDomain() }
 
     override suspend fun getAcquisitionReasons(leadId: String, type: String): AppResult<List<AcquisitionReason>> =
-        safeAppCall { api.getAcquisitionReasons(leadId, type).data.reasons }.map { reasons -> reasons.map { it.toDomain() } }
+        safeApiCall { api.getAcquisitionReasons(leadId, type).data.reasons }.map { reasons -> reasons.map { it.toDomain() } }
 
     // The response body's is_error/message are ignored, as before this moved here: success is
     // decided by the HTTP status alone (see ErrorInterceptor in :core:network).
@@ -32,6 +32,6 @@ internal class AcquisitionRepositoryImpl @Inject constructor(
         scoreAgreement: String,
     ): AppResult<Unit> {
         val request = AcquisitionDecisionRequestDto(type = type, reasonIds = reasonIds, note = note, scoreAgreement = scoreAgreement)
-        return safeAppCall { api.submitAcquisitionDecision(leadId, request) }.map { }
+        return safeApiCall { api.submitAcquisitionDecision(leadId, request) }.map { }
     }
 }

@@ -9,7 +9,7 @@ android {
 
 dependencies {
     implementation(project(":feature:lead:domain"))
-    // safeAppCall and the shared Retrofit instance.
+    // safeApiCall and the shared Retrofit instance.
     implementation(project(":core:network"))
     // The LeadCloser/Reviewer/Rejection DTOs (and mappers) both features' responses embed.
     implementation(project(":core:lead:data"))

@@ -4,7 +4,7 @@ import com.touhid.composeform.feature.specificform.domain.SpecificForm
 import com.touhid.composeform.feature.specificform.domain.SpecificFormRepository
 import com.touhid.composeform.model.AppResult
 import com.touhid.composeform.model.map
-import com.touhid.composeform.network.safeAppCall
+import com.touhid.composeform.network.safeApiCall
 import javax.inject.Inject
 
 internal class SpecificFormRepositoryImpl @Inject constructor(
@@ -12,5 +12,5 @@ internal class SpecificFormRepositoryImpl @Inject constructor(
 ) : SpecificFormRepository {
 
     override suspend fun getSpecificForm(): AppResult<SpecificForm> =
-        safeAppCall { api.getSpecificForm().data }.map { it.toDomain() }
+        safeApiCall { api.getSpecificForm().data }.map { it.toDomain() }
 }

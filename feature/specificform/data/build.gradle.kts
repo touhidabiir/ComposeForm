@@ -9,7 +9,7 @@ android {
 
 dependencies {
     implementation(project(":feature:specificform:domain"))
-    // safeAppCall and the shared Retrofit instance.
+    // safeApiCall and the shared Retrofit instance.
     implementation(project(":core:network"))
     // This module declares its own Retrofit service and a Gson-typed DTO. Both stay
     // implementation-only here, so they never reach the ui module.
