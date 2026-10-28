@@ -1,6 +1,8 @@
 package com.touhid.composeform.di
 
 import android.content.SharedPreferences
+import com.touhid.composeform.BuildConfig
+import com.touhid.composeform.network.qualifier.AppVersionCode
 import com.touhid.composeform.network.qualifier.BaseUrl
 import dagger.Module
 import dagger.Provides
@@ -39,4 +41,10 @@ object AppNetworkModule {
     @Provides
     @BaseUrl
     fun provideBaseUrl(prefs: SharedPreferences): String = prefs.baseUrl(KEY_BASE_URL, DEFAULT_BASE_URL)
+
+    // Sent on every request as "X-Version: android/<versionCode>". Comes from this module's own
+    // BuildConfig because only the application module has a versionCode.
+    @Provides
+    @AppVersionCode
+    fun provideAppVersionCode(): Int = BuildConfig.VERSION_CODE
 }
