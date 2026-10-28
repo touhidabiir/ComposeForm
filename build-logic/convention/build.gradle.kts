@@ -50,6 +50,10 @@ gradlePlugin {
             id = "composeform.hilt"
             implementationClass = "HiltConventionPlugin"
         }
+        register("dependencyRules") {
+            id = "composeform.dependency.rules"
+            implementationClass = "DependencyRulesPlugin"
+        }
     }
 }
 

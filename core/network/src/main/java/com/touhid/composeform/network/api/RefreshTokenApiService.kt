@@ -6,9 +6,9 @@ import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-// Kept separate from AppApiService (and served by its own Retrofit, see NetworkModule) since it's
-// only ever called from TokenAuthenticator - which runs synchronously inside OkHttp's call chain,
-// hence a blocking Call<T> instead of a suspend function.
+// Lives here rather than in a data module (and is served by its own Retrofit, see NetworkModule)
+// since it's only ever called from TokenAuthenticator - which runs synchronously inside OkHttp's
+// call chain, hence a blocking Call<T> instead of a suspend function.
 internal interface RefreshTokenApiService {
 
     @POST("v1/auth/refresh")

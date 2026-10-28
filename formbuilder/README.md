@@ -365,4 +365,4 @@ Notable differences from `parseFormSchema`:
 | Change conditional-visibility semantics | `formbuilder/FormFieldVisibility.kt`. |
 | Add a brand new field `type` | Add a variant to the `FormField` sealed interface (`FormField.kt`), register its `"type"` discriminator string in `FormFieldSerializer`, add a rendering branch in `FormRenderer.kt`'s `RenderField`. |
 
-For the broader module architecture (why `:core:designsystem`/`:formbuilder`/`:app`/`:core:network`/`:data` are split the way they are, and the Material3-encapsulation boundary), see [`CLAUDE.md`](../CLAUDE.md).
+For the broader module architecture (why `:core:designsystem`/`:formbuilder`/`:app`/`:core:network` and the feature slices are split the way they are, and the Material3-encapsulation boundary), see [`CLAUDE.md`](../CLAUDE.md).
