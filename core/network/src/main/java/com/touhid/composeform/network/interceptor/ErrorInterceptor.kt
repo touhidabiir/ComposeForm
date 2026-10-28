@@ -51,7 +51,7 @@ internal class ErrorInterceptor @Inject constructor() : Interceptor {
 // Thrown by ErrorInterceptor, caught specifically by safeApiCall (SafeApiCall.kt) before its
 // generic IOException branch - an IOException subtype, not a plain RuntimeException, since OkHttp
 // interceptors are only meant to throw IOException (other interceptors and OkHttp's own retry
-// logic assume that contract). Maps onto the same NetworkError.Http case a plain HttpException
-// would (this represents the same category of failure, just with a better message) rather than
-// its own separate NetworkError case.
+// logic assume that contract). Maps onto the same AppError (Unauthorized for 401, otherwise
+// Server) a plain HttpException would - the same category of failure, just with a better message -
+// rather than an AppError case of its own.
 internal class ApiException(val code: Int, val status: String?, val rawBody: String?, val apiMessage: String) : IOException(apiMessage)

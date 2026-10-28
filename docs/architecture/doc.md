@@ -33,7 +33,7 @@ build-logic/
 | Module | Owns | Does not own |
 | --- | --- | --- |
 | `core:model` | `AppResult`, `AppError`, generic value types | Business models, shared or not |
-| `core:network` | The HTTP client, base-URL qualifier, auth and token refresh, `safeAppCall` | Feature endpoints, DTOs, repositories |
+| `core:network` | The HTTP client, base-URL qualifier, auth and token refresh, `safeApiCall` | Feature endpoints, DTOs, repositories |
 | `core:navigation` | `Destination`, `Navigator`, `DestinationHandler` | Any concrete destination |
 | `core:designsystem` | All Material3 access, the app theme | Feature-specific compositions |
 | `core:<topic>:domain` / `:data` | Data two or more features use, and app-wide data (session), split like a feature | UI; data only one feature uses |
@@ -84,7 +84,7 @@ Every repository returns `AppResult<T>` from `core:model`: either `Success` or `
 
 ## Data layer
 
-`core:network` holds infrastructure only: the main `Retrofit` behind the `@BaseUrl` qualifier, the interceptors (auth, token refresh, request ID, error body, debug mock) and `safeAppCall`, which maps every exception to an `AppError`. Its only endpoint is the token refresh, which the token authenticator itself calls. A second, unrelated backend gets its own base-URL qualifier and client here, never a reuse of `@BaseUrl`.
+`core:network` holds infrastructure only: the main `Retrofit` behind the `@BaseUrl` qualifier, the interceptors (auth, token refresh, request ID, error body, debug mock) and `safeApiCall`, which maps every exception to an `AppError`. Its only endpoint is the token refresh, which the token authenticator itself calls. A second, unrelated backend gets its own base-URL qualifier and client here, never a reuse of `@BaseUrl`.
 
 Each `data` module holds its feature's Retrofit API, DTOs, mappers and repository implementations, all `internal`. It creates its API from the main `Retrofit` in its own Hilt module, so every endpoint shares the same auth, token refresh, error mapping and debug mocks. DTOs are mapped to domain models here, so malformed backend data never reaches a screen. Room DAOs and entities will follow the same shape once a database is added, with a `core:database` module holding only the database setup.
 
@@ -194,7 +194,7 @@ internal fun LeadListItemDto.toDomain() = LeadListItem(...)
 
 internal class LeadRepositoryImpl @Inject constructor(private val api: LeadApi) : LeadRepository {
     override suspend fun getLeads(status: String?, search: String?, pageNo: Int) =
-        safeAppCall { api.getLeads(status, search, pageNo).data }.map { it.toDomain() }
+        safeApiCall { api.getLeads(status, search, pageNo).data }.map { it.toDomain() }
 }
 
 @Module @InstallIn(SingletonComponent::class)

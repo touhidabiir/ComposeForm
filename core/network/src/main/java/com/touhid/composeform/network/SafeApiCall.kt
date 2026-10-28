@@ -1,5 +1,7 @@
 package com.touhid.composeform.network
 
+import com.touhid.composeform.model.AppError
+import com.touhid.composeform.model.AppResult
 import com.touhid.composeform.network.interceptor.ApiException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
@@ -9,34 +11,38 @@ import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
 
-internal suspend fun <T> safeApiCall(
+// The safe-call entry point for repositories in feature/core-slice data modules. Runs the call on
+// [dispatcher] and turns every failure into an AppError, so retrofit2/okhttp3/java.io exception
+// types never leave :core:network.
+suspend fun <T> safeApiCall(
     dispatcher: CoroutineDispatcher = Dispatchers.IO,
     apiCall: suspend () -> T,
-): NetworkResult<T> = withContext(dispatcher) {
+): AppResult<T> = withContext(dispatcher) {
     try {
-        NetworkResult.Success(apiCall())
+        AppResult.Success(apiCall())
     } catch (e: CancellationException) {
         throw e
     } catch (e: ApiException) {
         // Caught ahead of the generic IOException branch below - ApiException is an IOException
-        // subtype (see ErrorInterceptor.kt), so without this specific branch first it would fall
-        // through to NoConnection, which is wrong: this is an HTTP failure, not a connectivity one.
-        // Maps onto the same NetworkError.Http case the plain HttpException branch below does -
-        // just with the backend's own message/status instead of the generic HTTP reason phrase.
-        NetworkResult.Failure(NetworkError.Http(code = e.code, errorBody = e.rawBody, status = e.status, message = e.apiMessage))
+        // subtype (see ErrorInterceptor.kt), so without this branch first it would fall through to
+        // NoConnection, which is wrong: this is an HTTP failure, not a connectivity one. Carries the
+        // backend's own message/status instead of the generic HTTP reason phrase.
+        AppResult.Failure(httpError(code = e.code, status = e.status, message = e.apiMessage))
     } catch (e: HttpException) {
-        NetworkResult.Failure(
-            NetworkError.Http(
-                code = e.code(),
-                errorBody = e.response()?.errorBody()?.string(),
-                message = e.message(),
-            )
-        )
+        AppResult.Failure(httpError(code = e.code(), status = null, message = e.message()))
     } catch (e: SocketTimeoutException) {
-        NetworkResult.Failure(NetworkError.Timeout())
+        AppResult.Failure(AppError.Timeout())
     } catch (e: IOException) {
-        NetworkResult.Failure(NetworkError.NoConnection())
+        AppResult.Failure(AppError.NoConnection())
     } catch (e: Exception) {
-        NetworkResult.Failure(NetworkError.Unexpected(e.message ?: "Unknown error", e))
+        AppResult.Failure(AppError.Unknown(e.message ?: "Unknown error", e))
     }
 }
+
+// A 401 that reaches here survived TokenAuthenticator's refresh attempt: the session is gone.
+private fun httpError(code: Int, status: String?, message: String): AppError =
+    if (code == 401) {
+        AppError.Unauthorized(message)
+    } else {
+        AppError.Server(code = code, status = status, message = message)
+    }

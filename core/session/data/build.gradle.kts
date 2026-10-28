@@ -9,7 +9,7 @@ android {
 
 dependencies {
     implementation(project(":core:session:domain"))
-    // safeAppCall, the shared Retrofit instance and the TokenProvider contract.
+    // safeApiCall, the shared Retrofit instance and the TokenProvider contract.
     implementation(project(":core:network"))
     implementation(libs.squareup.retrofit)
 }

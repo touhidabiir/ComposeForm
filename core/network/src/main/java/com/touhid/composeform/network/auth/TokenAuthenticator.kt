@@ -15,7 +15,7 @@ import javax.inject.Singleton
 // Invoked by OkHttp whenever a request on the main @BaseUrl client comes back 401: refreshes the
 // access token with the stored refresh token and retries the original request once with the new
 // one. Returning null gives up, and the original 401 then continues on up to ErrorInterceptor/
-// safeApiCall as a normal NetworkError.Http failure.
+// safeApiCall, which reports it as AppError.Unauthorized.
 //
 // refreshApi is served by its own Retrofit (NetworkModule's @RefreshRetrofit) with no
 // AuthInterceptor and no authenticator, so a 401 from the refresh call itself can't recurse back
