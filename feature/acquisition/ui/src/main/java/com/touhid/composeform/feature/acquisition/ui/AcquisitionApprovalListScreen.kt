@@ -79,11 +79,11 @@ private val CopyIconSize = 14.dp
 private val AccentIndigo = Color(0xFF675C92)
 
 @Composable
-fun AcquisitionApprovalListScreen(
+internal fun AcquisitionApprovalListScreen(
     onBack: () -> Unit,
     onReview: (String) -> Unit,
     modifier: Modifier = Modifier,
-    // Set by MainActivity's NavHost right after the detail screen's confirm button successfully
+    // Set by AcquisitionActivity's NavHost right after the detail screen's confirm button successfully
     // submits an approve/reject decision - null the rest of the time (a plain Back tap, or first
     // entry into this screen, sets nothing).
     decisionResult: String? = null,

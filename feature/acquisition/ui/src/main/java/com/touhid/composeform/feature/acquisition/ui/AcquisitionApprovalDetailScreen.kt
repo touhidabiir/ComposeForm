@@ -140,7 +140,7 @@ private fun Boolean.toBengaliYesNo(): String = stringResource(if (this) R.string
 private fun Boolean.toYesNo(): String = stringResource(if (this) R.string.acquisition_yes else R.string.acquisition_no)
 
 @Composable
-fun AcquisitionApprovalDetailScreen(
+internal fun AcquisitionApprovalDetailScreen(
     onBack: () -> Unit,
     onApprove: () -> Unit,
     onReject: () -> Unit,
@@ -209,7 +209,7 @@ private fun AcquisitionApprovalDetailContent(
             if (state.detail != null) {
                 AppBottomActionBar(cornerRadius = AppSpacing.Medium) {
                     // onApprove/onReject (navigation-worthy - pops the back stack, see
-                    // MainActivity) aren't called directly from these buttons. Tapping either
+                    // AcquisitionActivity) aren't called directly from these buttons. Tapping either
                     // opens its reason sheet first; onApprove/onReject only fire once the sheet's
                     // own confirm button successfully submits (see the submittedDecision
                     // LaunchedEffect above).
