@@ -5,7 +5,7 @@ import java.util.Locale
 
 // Formats a rejection's reviewed_at ("2026/07/01 11:00:00 AM" on the wire) for display as
 // "1 Jul 2026; 11:00 AM" - shared by :feature:lead:ui's rejection sheet and
-// :feature:acquisition's previous-rejections card, which both render the same Rejection.reviewedAt
+// :feature:acquisition:ui's previous-rejections card, which both render the same Rejection.reviewedAt
 // field. Falls back to the raw string if the backend ever sends a different format, rather than
 // crashing the screen over a timestamp.
 fun formatRejectionTimestamp(reviewedAt: String): String = runCatching {

@@ -1,4 +1,4 @@
-package com.touhid.composeform.feature.acquisition
+package com.touhid.composeform.feature.acquisition.ui
 
 private val BengaliDigits = arrayOf('০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯')
 

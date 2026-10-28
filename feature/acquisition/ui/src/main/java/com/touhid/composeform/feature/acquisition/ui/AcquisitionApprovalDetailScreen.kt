@@ -1,4 +1,4 @@
-package com.touhid.composeform.feature.acquisition
+package com.touhid.composeform.feature.acquisition.ui
 
 import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
@@ -97,22 +97,22 @@ import com.touhid.composeform.designsystem.theme.StatusError
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 import com.touhid.composeform.designsystem.theme.StatusNeutralContainer
 import com.touhid.composeform.designsystem.theme.StatusSuccess
-import com.touhid.composeform.network.model.AcquisitionAudit
-import com.touhid.composeform.network.model.AcquisitionDetail
-import com.touhid.composeform.network.model.AcquisitionImages
-import com.touhid.composeform.network.model.AcquisitionReason
-import com.touhid.composeform.network.model.ContactInfo
-import com.touhid.composeform.network.model.ContactPerson
-import com.touhid.composeform.network.model.DigitalPayment
-import com.touhid.composeform.network.model.Facility
-import com.touhid.composeform.network.model.LeadCloser
-import com.touhid.composeform.network.model.OutletInfo
-import com.touhid.composeform.network.model.PremiumnessScoreRange
-import com.touhid.composeform.network.model.Rejection
-import com.touhid.composeform.network.model.RejectionReason
-import com.touhid.composeform.network.model.Reviewer
-import com.touhid.composeform.network.model.SurveyResponse
-import com.touhid.composeform.network.model.WalletInfo
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionAudit
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionDetail
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionImages
+import com.touhid.composeform.feature.acquisition.domain.AcquisitionReason
+import com.touhid.composeform.feature.acquisition.domain.ContactInfo
+import com.touhid.composeform.feature.acquisition.domain.ContactPerson
+import com.touhid.composeform.feature.acquisition.domain.DigitalPayment
+import com.touhid.composeform.feature.acquisition.domain.Facility
+import com.touhid.composeform.lead.domain.LeadCloser
+import com.touhid.composeform.feature.acquisition.domain.OutletInfo
+import com.touhid.composeform.feature.acquisition.domain.PremiumnessScoreRange
+import com.touhid.composeform.lead.domain.Rejection
+import com.touhid.composeform.lead.domain.RejectionReason
+import com.touhid.composeform.lead.domain.Reviewer
+import com.touhid.composeform.feature.acquisition.domain.SurveyResponse
+import com.touhid.composeform.feature.acquisition.domain.WalletInfo
 import com.touhid.composeform.common.R as CommonR
 
 private val RowIconSize = 16.dp

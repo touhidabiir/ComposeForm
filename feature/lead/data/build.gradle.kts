@@ -9,9 +9,10 @@ android {
 
 dependencies {
     implementation(project(":feature:lead:domain"))
-    // safeAppCall, the shared Retrofit instance, and (until the acquisition slice moves) the
-    // LeadCloser/Reviewer/Rejection wire models both features' responses embed.
+    // safeAppCall and the shared Retrofit instance.
     implementation(project(":core:network"))
+    // The LeadCloser/Reviewer/Rejection DTOs (and mappers) both features' responses embed.
+    implementation(project(":core:lead:data"))
     // This module declares its own Retrofit service and Gson-annotated DTOs. Both stay
     // implementation-only here, so they never reach the ui module.
     implementation(libs.squareup.retrofit)
