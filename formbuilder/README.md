@@ -1,6 +1,6 @@
 # `:formbuilder` — JSON-driven dynamic forms
 
-An Android library module (namespace `com.touhid.composeform.formbuilder`) that parses a JSON form schema (`kotlinx.serialization`) and renders it using `:designsystem`'s components. Subject to the Material3-free boundary described in `CLAUDE.md` — it depends on `:designsystem` only, never Material3 directly.
+An Android library module (namespace `com.touhid.composeform.formbuilder`) that parses a JSON form schema (`kotlinx.serialization`) and renders it using `:core:designsystem`'s components. Subject to the Material3-free boundary described in `CLAUDE.md` — it depends on `:core:designsystem` only, never Material3 directly.
 
 ```
 formbuilder/src/main/java/com/touhid/composeform/formbuilder/
@@ -365,4 +365,4 @@ Notable differences from `parseFormSchema`:
 | Change conditional-visibility semantics | `formbuilder/FormFieldVisibility.kt`. |
 | Add a brand new field `type` | Add a variant to the `FormField` sealed interface (`FormField.kt`), register its `"type"` discriminator string in `FormFieldSerializer`, add a rendering branch in `FormRenderer.kt`'s `RenderField`. |
 
-For the broader module architecture (why `:designsystem`/`:formbuilder`/`:app`/`:network`/`:data` are split the way they are, and the Material3-encapsulation boundary), see [`CLAUDE.md`](../CLAUDE.md).
+For the broader module architecture (why `:core:designsystem`/`:formbuilder`/`:app`/`:core:network`/`:data` are split the way they are, and the Material3-encapsulation boundary), see [`CLAUDE.md`](../CLAUDE.md).

@@ -15,6 +15,6 @@ dependencies {
     // currently also depends on :network directly for unrelated reasons (@BaseUrl/TokenProvider
     // config) - a future module depending on :data alone (e.g. a :feature:leaddashboard with no
     // reason to configure the network client) would otherwise fail to resolve NetworkResult.
-    api(project(":network"))
+    api(project(":core:network"))
     testImplementation(libs.junit)
 }

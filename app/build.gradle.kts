@@ -28,11 +28,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":designsystem"))
+    implementation(project(":core:designsystem"))
     implementation(project(":formbuilder"))
-    implementation(project(":network"))
+    implementation(project(":core:network"))
     implementation(project(":data"))
-    implementation(project(":common"))
+    implementation(project(":core:common"))
     implementation(project(":feature:leaddashboard"))
     implementation(project(":feature:acquisition"))
     implementation(libs.androidx.activity.compose)

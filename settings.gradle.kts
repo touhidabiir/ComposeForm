@@ -25,10 +25,10 @@ dependencyResolutionManagement {
 
 rootProject.name = "ComposeForm"
 include(":app")
-include(":designsystem")
+include(":core:designsystem")
 include(":formbuilder")
-include(":network")
+include(":core:network")
 include(":data")
-include(":common")
+include(":core:common")
 include(":feature:leaddashboard")
 include(":feature:acquisition")
