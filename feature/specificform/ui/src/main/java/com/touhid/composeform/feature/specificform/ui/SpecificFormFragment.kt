@@ -1,4 +1,4 @@
-package com.touhid.composeform.specificform
+package com.touhid.composeform.feature.specificform.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,22 +19,26 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.touhid.composeform.ComposeFormAppTheme
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppText
+import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 import com.touhid.composeform.formbuilder.FormRenderer
 import dagger.hilt.android.AndroidEntryPoint
 
 // Not wired into any Activity/NavHost by this module - intended to be one of several fragments a
 // host Activity swaps through (a form wizard), created via newInstance() with this fragment's
-// position among its siblings. Fetches its form schema from AppRepository.getSpecificForm()
+// position among its siblings. Fetches its form schema from SpecificFormRepository.getSpecificForm()
 // (backed by the v1/forms/specific mock while no real backend exists) and renders it with
 // FormRenderer; the submit button logs the schema's single answer value rather than calling a
 // submit endpoint.
-@AndroidEntryPoint
-class SpecificFormFragment : Fragment() {
+//
+// The long @AndroidEntryPoint(Fragment::class) form, extending the generated
+// Hilt_SpecificFormFragment directly: only :app applies the Hilt Gradle plugin, and that plugin's
+// bytecode rewrite is what lets the short form (`: Fragment()`) work.
+@AndroidEntryPoint(Fragment::class)
+class SpecificFormFragment : Hilt_SpecificFormFragment() {
 
     private val viewModel: SpecificFormViewModel by viewModels()
 
@@ -43,7 +47,9 @@ class SpecificFormFragment : Fragment() {
         val totalCount = arguments?.getInt(ArgTotalCount, 1) ?: 1
         return ComposeView(requireContext()).apply {
             setContent {
-                ComposeFormAppTheme {
+                // :app's ComposeFormAppTheme can't be imported from a feature module, so its
+                // light-only policy is spelled out here directly.
+                ComposeFormTheme(darkTheme = false, dynamicColor = false) {
                     LaunchedEffect(Unit) { viewModel.onScreenStart(position, totalCount) }
 
                     val state by viewModel.state.collectAsStateWithLifecycle()
