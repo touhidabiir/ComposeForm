@@ -1,0 +1,52 @@
+%%{init: {"flowchart": {"wrappingWidth": 260, "nodeSpacing": 40, "rankSpacing": 55}} }%%
+flowchart TD
+    app[":app<br/>DI root, Navigator, deep links"]
+
+    subgraph acq["feature:acquisition"]
+        aui["<b>ui</b><br/>screens, ViewModels"]
+        adata["<b>data</b><br/>acquisition-only API"]
+        adom["<b>domain</b><br/>acquisition models"]
+    end
+
+    subgraph lead["feature:lead"]
+        lnav["<b>navigation</b><br/>public destinations"]
+        lui["<b>ui</b><br/>screens, ViewModels"]
+        ldata["<b>data</b><br/>lead-only API"]
+        ldom["<b>domain</b><br/>lead-only models"]
+    end
+
+    subgraph shared["core:lead (shared core slice)"]
+        sdata["<b>data</b><br/>shared lead DTOs, mappers"]
+        sdom["<b>domain</b><br/>LeadCloser, Reviewer, Rejection"]
+    end
+
+    app --> acq
+    app --> lead
+    aui --> adom
+    adata --> adom
+    aui ==>|opens| lnav
+    lui --> ldom
+    ldata --> ldom
+    adom -.-> sdom
+    ldom -.-> sdom
+    sdata --> sdom
+    ldata -.-> sdata
+    adata -.-> sdata
+
+    classDef app fill:#37474F,stroke:#263238,color:#fff
+    classDef ui fill:#BBDEFB,stroke:#1565C0,color:#0D2A4A
+    classDef nav fill:#E1BEE7,stroke:#6A1B9A,color:#2E0A3A
+    classDef data fill:#FFE0B2,stroke:#E65100,color:#4A1E00
+    classDef domain fill:#C8E6C9,stroke:#2E7D32,color:#0F3311
+
+    class app app
+    class lui,aui ui
+    class lnav nav
+    class ldata,adata,sdata data
+    class ldom,adom,sdom domain
+
+    style acq fill:#FAFAFA,stroke:#9E9E9E
+    style lead fill:#FAFAFA,stroke:#9E9E9E
+    style shared fill:#F1F8E9,stroke:#7CB342,stroke-dasharray:5 4
+
+    linkStyle 4 stroke:#D32F2F,stroke-width:3px,color:#D32F2F
