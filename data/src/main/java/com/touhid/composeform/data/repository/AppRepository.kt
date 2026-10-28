@@ -6,7 +6,6 @@ import com.touhid.composeform.network.model.AcquisitionListPage
 import com.touhid.composeform.network.model.AcquisitionReason
 import com.touhid.composeform.network.model.AdminDetails
 import com.touhid.composeform.network.model.AdminSummary
-import com.touhid.composeform.network.model.LeadDashboardPage
 import com.touhid.composeform.network.model.LoginResponse
 import com.touhid.composeform.network.model.ManagerSummary
 import com.touhid.composeform.network.model.SpecificFormPayload
@@ -25,10 +24,6 @@ interface AppRepository {
     suspend fun getAdminDetails(id: String): NetworkResult<AdminDetails>
 
     suspend fun getSpecificForm(): NetworkResult<SpecificFormPayload>
-
-    suspend fun getLeadDashboard(status: String?, search: String?, pageNo: Int): NetworkResult<LeadDashboardPage>
-
-    suspend fun submitEkyc(leadId: Long): NetworkResult<Unit>
 
     suspend fun getAcquisitionList(search: String?, pageNo: Int): NetworkResult<AcquisitionListPage>
 
