@@ -67,6 +67,7 @@ build-logic/
         ├── AndroidFeatureConventionPlugin.kt        composeform.android.feature
         ├── JvmLibraryConventionPlugin.kt            composeform.jvm.library
         ├── HiltConventionPlugin.kt                  composeform.hilt
+        ├── RoomConventionPlugin.kt                  composeform.android.room
         └── DependencyRulesPlugin.kt                 composeform.dependency.rules
 ```
 
@@ -77,11 +78,12 @@ The plugin classes sit in the default package (no `package` line). That's delibe
 | Class (plugin id) | What it sets up | Applied by |
 | --- | --- | --- |
 | `AndroidApplicationConventionPlugin` (`composeform.android.application`) | `com.android.application`, the Compose compiler, SDK levels, Java version, `buildFeatures.compose`, the Compose dependencies, the dependency rules | `:app` |
-| `AndroidLibraryConventionPlugin` (`composeform.android.library`) | `com.android.library`, `compileSdk`/`minSdk`, Java version, the dependency rules. No Compose. | `:core:network`, `:core:navigation`, `:core:session:data`, every `data` and `navigation` module |
+| `AndroidLibraryConventionPlugin` (`composeform.android.library`) | `com.android.library`, `compileSdk`/`minSdk`, Java version, the dependency rules. No Compose. | `:core:network`, `:core:navigation`, `:core:database`, `:core:session:data`, every `data` and `navigation` module |
 | `AndroidLibraryComposeConventionPlugin` (`composeform.android.library.compose`) | Everything `composeform.android.library` does, plus the Compose compiler, `buildFeatures.compose` and the Compose dependencies | `:core:designsystem`, `:core:common`, `:formbuilder` |
 | `AndroidFeatureConventionPlugin` (`composeform.android.feature`) | Everything `composeform.android.library.compose` + `composeform.hilt` do, plus what every screen module uses: `:core:designsystem`, `:core:common`, `material-icons-extended`, lifecycle ViewModel/runtime Compose, `hilt-navigation-compose` | every feature `ui` module |
 | `JvmLibraryConventionPlugin` (`composeform.jvm.library`) | `org.jetbrains.kotlin.jvm` (a plain Kotlin module, no Android), Java and Kotlin JVM target, the dependency rules | `:core:model`, every `domain` module, `:core:lead:data` |
 | `HiltConventionPlugin` (`composeform.hilt`) | KSP, `hilt-android`, `hilt-compiler` (through KSP). Not the Hilt Gradle plugin - see "Things that will bite you" | `:app`, `:core:network`, every `data` module, every `ui` module (via the feature plugin) |
+| `RoomConventionPlugin` (`composeform.android.room`) | KSP, `room-runtime`, `room-ktx`, `room-compiler` (through KSP), schema export to the module's own `schemas/` folder, and `:core:database` (`buildRoomDatabase`, `safeDbCall`) | a `data` module that keeps its own Room database, on top of `composeform.android.library` + `composeform.hilt` (none yet) |
 | `DependencyRulesPlugin` (`composeform.dependency.rules`) | Fails the build when a module depends on a module the architecture forbids (e.g. a `ui` module on a `data` module). The rules are listed in "Dependency rules" below. | Never applied directly: the application, Android library and JVM library plugins apply it, so every module gets it |
 
 `ProjectExtensions.kt` isn't a plugin. It holds the helpers the plugins share:
@@ -104,6 +106,7 @@ composeform.android.feature
 └── composeform.hilt
     └── com.google.devtools.ksp
 
+composeform.android.room ───────── com.google.devtools.ksp (+ Room, :core:database)
 composeform.android.application ── com.android.application, Compose compiler, composeform.dependency.rules
 composeform.jvm.library ────────── org.jetbrains.kotlin.jvm, composeform.dependency.rules
 ```
@@ -137,12 +140,13 @@ The plugin reads only the module's **Gradle path**, so the rules work only if mo
 2. **Only `:app` and feature modules may depend on a feature module.** A core or library module can't reach up into a feature.
 3. **A feature depends on another feature only through its `navigation` module.** `:feature:acquisition:ui -> :feature:lead:navigation` is fine (opening a lead screen); `-> :feature:lead:domain` or `-> :feature:lead:data` is not. If two features need the same data, move it into a core slice (`:core:<topic>:domain` + `:core:<topic>:data`) and have both depend on that.
 4. **Only `data` modules (and `:app`) depend on `:core:network`.** Screens never touch the HTTP client; they go through a repository.
-5. **A `domain` module depends only on `:core:model` and core-slice `domain` modules.** It stays pure Kotlin business logic.
-6. **A `navigation` module depends only on `:core:navigation`.** It holds destinations, nothing else, because other features depend on it.
-7. **A `ui` module never depends on a `data` module** (its own or a core slice's). It sees only its `domain` (models and repository interfaces); Hilt supplies the implementation.
-8. **A `data` module never depends on a `ui` or `navigation` module.**
+5. **Only `data` modules depend on `:core:database`, `:app` included.** Same reason as rule 4; `:app` has nothing to configure in a database, so unlike the network it gets no exception.
+6. **A `domain` module depends only on `:core:model` and core-slice `domain` modules.** It stays pure Kotlin business logic.
+7. **A `navigation` module depends only on `:core:navigation`.** It holds destinations, nothing else, because other features depend on it.
+8. **A `ui` module never depends on a `data` module** (its own or a core slice's). It sees only its `domain` (models and repository interfaces); Hilt supplies the implementation.
+9. **A `data` module never depends on a `ui` or `navigation` module.**
 
-`:app` is exempt from rules 2–8: it may depend on anything, because it wires everything together (Hilt needs every `data` module, manifest merging needs every `ui` module).
+`:app` is exempt from every rule except 1 and 5: it may depend on any other module, because it wires everything together (Hilt needs every `data` module, manifest merging needs every `ui` module).
 
 ### Using it in another project
 
@@ -155,6 +159,7 @@ Copy `DependencyRulesPlugin.kt` and register it like the others. If your module 
 | A feature's screens (`feature/<name>/ui`) | `composeform.android.feature` |
 | A feature's or core slice's `domain` | `composeform.jvm.library` |
 | A feature's or core slice's `data` | `composeform.android.library` + `composeform.hilt` |
+| …that also stores data in Room | additionally `composeform.android.room` |
 | A feature's `navigation` | `composeform.android.library` |
 | A shared Compose library (like `:core:common`) | `composeform.android.library.compose` |
 | A plain Kotlin library with no Android at all | `composeform.jvm.library` |
@@ -181,6 +186,7 @@ Then add only that module's own dependencies.
 ## Things that will bite you
 
 - **The `apply false` lines in the root `build.gradle.kts` are load-bearing.** `convention/build.gradle.kts` depends on AGP and the Kotlin Gradle plugin only as `compileOnly`: enough to compile our plugin classes, not to run them. At runtime the plugins apply AGP, KSP, the Compose compiler and Kotlin JVM *by id*, and those ids are found because the root build file lists them with `apply false`. Remove one of those lines and the matching convention plugin fails with "plugin not found", even though nothing else changed.
+- **`composeform.android.room` needs KSP's Gradle plugin as `compileOnly` too** (`libs.ksp.gradlePlugin` in `convention/build.gradle.kts`), because it configures `KspExtension` to pass `room.schemaLocation`. Keep its version on the catalog's `ksp`, the same one the root `apply false` uses.
 - **The version catalog alias must match exactly.** `library("google-dagger-hilt-android")` throws `NoSuchElementException: No value present` if `libs.versions.toml` has no `[libraries]` entry with that name. A `[plugins]` entry with the same name doesn't count.
 - **Only `:app` applies the Hilt Gradle plugin** (`com.google.dagger.hilt.android`), per Hilt's multi-module setup; `composeform.hilt` gives library modules only Hilt + its compiler. That's enough for `@Module`, `@Inject` and `@HiltViewModel`. An `@AndroidEntryPoint` Activity or Fragment in a library module has to use Hilt's long form, `@AndroidEntryPoint(ComponentActivity::class) class LeadActivity : Hilt_LeadActivity()`. The short form (`: ComponentActivity()`) relies on the plugin's bytecode rewrite, which library modules don't get.
 - **`build-logic`'s own `clean` does nothing, on purpose.** Android Studio's "Clean and Assemble Project with Tests" and "Rebuild" also clean this included build in the same run, after its plugin jar was already loaded to configure the main build. Gradle then stops with "Unable to make progress running work". Changes to these sources are still picked up automatically on the next build. If you ever need to force it, delete `build-logic/convention/build` by hand.
