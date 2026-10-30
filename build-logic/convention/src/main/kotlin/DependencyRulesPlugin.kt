@@ -47,6 +47,10 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
     val target = Module(to)
 
     if (to == ":app") return "nothing may depend on :app; it assembles the other modules."
+    // Checked before :app's exemption below: :app has nothing to configure in a database.
+    if (to == ":core:database" && source.layer != "data") {
+        return "only data modules may depend on :core:database; everything else goes through a repository."
+    }
     if (from == ":app") return null
 
     if (target.feature != null) {
