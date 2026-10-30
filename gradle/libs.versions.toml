@@ -20,7 +20,7 @@ gson = "2.11.0"
 coilCompose = "2.7.0"
 fragmentKtx = "1.8.9"
 securityCrypto = "1.1.0-alpha06"
-room = "2.8.4"
+room = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
