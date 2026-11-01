@@ -22,6 +22,8 @@ dependencies {
     // so the plugins below apply it by id at runtime instead of bundling a second copy.
     compileOnly(libs.android.gradlePlugin)
     compileOnly(libs.kotlin.gradlePlugin)
+    // For KspExtension in RoomConventionPlugin; KSP itself is on the build classpath via the root apply false.
+    compileOnly(libs.ksp.gradlePlugin)
 }
 
 gradlePlugin {
@@ -49,6 +51,10 @@ gradlePlugin {
         register("hilt") {
             id = "composeform.hilt"
             implementationClass = "HiltConventionPlugin"
+        }
+        register("androidRoom") {
+            id = "composeform.android.room"
+            implementationClass = "RoomConventionPlugin"
         }
         register("dependencyRules") {
             id = "composeform.dependency.rules"
