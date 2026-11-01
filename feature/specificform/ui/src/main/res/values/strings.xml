@@ -1,0 +1,5 @@
+<resources>
+    <string name="specificform_default_title">Specific Form</string>
+    <string name="specificform_uploaded">Form uploaded</string>
+    <string name="specificform_upload_failed">Couldn\'t upload: %1$s</string>
+</resources>

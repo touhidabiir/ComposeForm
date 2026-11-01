@@ -22,6 +22,7 @@ internal class MockDataInterceptor : Interceptor {
             path.endsWith("/v1/leads") -> MockJson.LEAD_DASHBOARD
             path.endsWith("/ekyc") -> MockJson.EKYC_SUBMIT_SUCCESS
             path.endsWith("/v1/forms/specific") -> MockJson.SPECIFIC_FORM
+            path.endsWith("/v1/forms/specific/submit") -> MockJson.SPECIFIC_FORM_SUBMIT_SUCCESS
             // Checked before the "/v1/acquisitions/" contains-branch below, since
             // ".../acquisitions/{leadId}/reasons" and ".../decision" would otherwise match that
             // broader branch first and incorrectly return the acquisition-detail JSON.
