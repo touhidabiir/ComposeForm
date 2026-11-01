@@ -1,6 +1,8 @@
 plugins {
     id("composeform.android.library")
     id("composeform.hilt")
+    // Room for the saved submissions, plus :core:database (buildRoomDatabase, safeDbCall).
+    id("composeform.android.room")
 }
 
 android {

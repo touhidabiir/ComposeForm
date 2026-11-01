@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
-    // api: AppResult appears in SpecificFormRepository's public signature.
+    // api: AppResult and Flow appear in SpecificFormRepository's public signature.
     api(project(":core:model"))
+    api(libs.kotlinx.coroutines.core)
 }
