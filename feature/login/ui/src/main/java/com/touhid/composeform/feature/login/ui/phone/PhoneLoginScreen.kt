@@ -140,7 +140,7 @@ private fun PhoneLoginContent(
             text = stringResource(R.string.login_sign_in),
             onClick = onSubmit,
             enabled = canSubmit,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Large))
         PrivacyPolicyNotice()

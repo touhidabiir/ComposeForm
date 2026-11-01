@@ -177,7 +177,7 @@ private fun OtpContent(
             text = stringResource(R.string.login_sign_in),
             onClick = onVerify,
             enabled = state.canVerify,
-            modifier = Modifier.fillMaxWidth().height(52.dp),
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
     }
