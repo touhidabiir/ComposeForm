@@ -23,7 +23,9 @@ import com.touhid.composeform.designsystem.theme.StatusSuccess
 //
 // dismissText is optional: leave it null for an acknowledge-only alert with a single "OK"-style
 // action. onDismissRequest fires on back press / outside tap (when dismissible) and is also what
-// the dismiss action calls, so callers only have one "closed without confirming" path to handle.
+// the dismiss action calls by default, so most callers only have one "closed without confirming"
+// path to handle. Pass onDismissClick when the dismiss button is a real second choice rather than
+// a cancel (e.g. "Save for later" next to "Upload now"), so backing out stays distinct from it.
 // Showing/hiding is the caller's state (`if (showDialog) AppAlertDialog(...)`), same as Material3.
 @Composable
 fun AppAlertDialog(
@@ -39,6 +41,7 @@ fun AppAlertDialog(
     dismissible: Boolean = true,
     titleOverride: AppTextOverride = AppTextOverride(),
     messageOverride: AppTextOverride = AppTextOverride(),
+    onDismissClick: (() -> Unit)? = null,
 ) {
     val confirmColor = when (confirmButtonType) {
         AppButtonStyle.Primary -> Color.Unspecified
@@ -47,7 +50,7 @@ fun AppAlertDialog(
     }
     val dismissButton: (@Composable () -> Unit)? = dismissText?.let { text ->
         {
-            TextButton(onClick = onDismissRequest) {
+            TextButton(onClick = onDismissClick ?: onDismissRequest) {
                 AppText(text = text, style = AppTextStyle.Label)
             }
         }
