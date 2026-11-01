@@ -268,8 +268,10 @@ private fun AcquisitionListCard(item: AcquisitionListItem, onReview: () -> Unit)
     val iconModifier = Modifier.size(RowIconSize)
 
     AppCard(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            AppText(text = item.shopName, style = AppTextStyle.TitleMedium)
+        // The shop name takes the remaining width (wrapping onto multiple lines if long) so the
+        // badge, measured first at its own intrinsic width, always stays pinned to the right edge.
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+            AppText(text = item.shopName, style = AppTextStyle.TitleMedium, modifier = Modifier.weight(1f))
             AppStatusBadge(text = stringResource(CommonR.string.common_status_pending), tone = AppStatusTone.Warning)
         }
 

@@ -338,8 +338,10 @@ private fun LeadListCard(lead: LeadListItem, onSubmitEkycTapped: () -> Unit) {
             { RejectionBanner(reason = rejection.reasonsText(), onClick = { showRejectionDetails = true }) }
         },
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            AppText(text = lead.shopName, style = AppTextStyle.TitleMedium)
+        // The shop name takes the remaining width (wrapping onto multiple lines if long) so the
+        // badge, measured first at its own intrinsic width, always stays pinned to the right edge.
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+            AppText(text = lead.shopName, style = AppTextStyle.TitleMedium, modifier = Modifier.weight(1f))
             AppStatusBadge(text = badgeLabel, tone = badgeTone)
         }
 
