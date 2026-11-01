@@ -484,6 +484,13 @@ internal object MockJson {
     }
     """.trimIndent()
 
+    val SPECIFIC_FORM_SUBMIT_SUCCESS = """
+    {
+      "is_error": false,
+      "message": "success"
+    }
+    """.trimIndent()
+
     // The "questions" array matches :formbuilder's SPECIFIC_JSON_FORM preview fixture (parsed via
     // parseSpecificFormSchema, not parseFormSchema) - kept as a verbatim copy here since :network
     // can't depend on :formbuilder to reuse that constant directly. Wrapped in the "data" envelope

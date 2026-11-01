@@ -1,0 +1,22 @@
+<resources>
+    <string name="specificform_default_title">Specific Form</string>
+    <string name="specificform_uploaded">Form uploaded</string>
+    <string name="specificform_upload_failed">Couldn\'t upload: %1$s</string>
+    <string name="specificform_submit_choice_title">Submit form</string>
+    <string name="specificform_submit_choice_message">Upload the answers now, or save them on this device and upload later?</string>
+    <string name="specificform_upload_now">Upload now</string>
+    <string name="specificform_save_for_later">Save for later</string>
+    <string name="specificform_saved_for_later">Saved. Upload it later from Saved forms.</string>
+    <string name="specificform_save_failed">Couldn\'t save: %1$s</string>
+    <string name="specificform_reopen_failed">Couldn\'t open the saved form</string>
+    <string name="specificform_saved_forms">Saved forms</string>
+    <string name="specificform_no_saved_forms">No saved forms</string>
+    <string name="specificform_saved_on">Saved %1$s</string>
+    <string name="specificform_upload">Upload</string>
+    <string name="specificform_uploading">Uploading…</string>
+    <string name="specificform_delete">Delete</string>
+    <string name="specificform_delete_title">Delete saved form?</string>
+    <string name="specificform_delete_message">The saved answers will be removed from this device.</string>
+    <string name="specificform_cancel">Cancel</string>
+    <string name="specificform_deleted">Saved form deleted</string>
+</resources>

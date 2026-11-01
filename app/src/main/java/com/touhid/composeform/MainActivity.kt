@@ -29,6 +29,7 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.ComposeFormAppTheme
 import com.touhid.composeform.feature.acquisition.navigation.AcquisitionApprovalListDestination
 import com.touhid.composeform.feature.lead.navigation.LeadDashboardDestination
+import com.touhid.composeform.feature.specificform.navigation.SpecificFormDestination
 import com.touhid.composeform.flow.DemoFormApi
 import com.touhid.composeform.flow.FormFlowState
 import com.touhid.composeform.flow.FormFlowViewModel
@@ -73,6 +74,7 @@ class MainActivity : ComponentActivity() {
                             onOpenFormDemo = { navController.navigate("form") },
                             onOpenLeadDashboard = { navigator.navigate(LeadDashboardDestination) },
                             onOpenAcquisitionApproval = { navigator.navigate(AcquisitionApprovalListDestination) },
+                            onOpenSpecificForm = { navigator.navigate(SpecificFormDestination) },
                         )
                     }
 
