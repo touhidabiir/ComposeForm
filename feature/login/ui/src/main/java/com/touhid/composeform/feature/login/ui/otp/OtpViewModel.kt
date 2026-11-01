@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.touhid.composeform.feature.login.ui.LoginConfig
 import com.touhid.composeform.feature.login.ui.SmsAppHash
 import com.touhid.composeform.model.AppResult
-import com.touhid.composeform.session.domain.SessionRepository
+import com.touhid.composeform.feature.login.domain.LoginRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -45,7 +45,7 @@ data class OtpState(
 @HiltViewModel
 class OtpViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val sessionRepository: SessionRepository,
+    private val loginRepository: LoginRepository,
     private val smsAppHash: SmsAppHash,
 ) : ViewModel() {
 
@@ -73,7 +73,7 @@ class OtpViewModel @Inject constructor(
         if (!current.canVerify) return
         _state.update { it.copy(isVerifying = true) }
         viewModelScope.launch {
-            when (val result = sessionRepository.verifyOtp(phoneNumber, current.otp)) {
+            when (val result = loginRepository.verifyOtp(phoneNumber, current.otp)) {
                 is AppResult.Success -> _state.update { it.copy(isVerifying = false, signedIn = true) }
                 is AppResult.Failure -> _state.update {
                     it.copy(isVerifying = false, message = OtpMessage.Error(result.error.message))
@@ -87,7 +87,7 @@ class OtpViewModel @Inject constructor(
         if (!current.canResend || current.isResending) return
         _state.update { it.copy(isResending = true) }
         viewModelScope.launch {
-            when (val result = sessionRepository.requestOtp(phoneNumber, smsAppHash.value)) {
+            when (val result = loginRepository.requestOtp(phoneNumber, smsAppHash.value)) {
                 is AppResult.Success -> {
                     _state.update {
                         it.copy(

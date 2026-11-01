@@ -51,7 +51,7 @@ import com.touhid.composeform.feature.login.ui.LoginTitle
 import com.touhid.composeform.feature.login.ui.MutedTextColor
 import com.touhid.composeform.feature.login.ui.R
 import com.touhid.composeform.feature.login.ui.VersionLabel
-import com.touhid.composeform.session.domain.BangladeshPhoneNumber
+import com.touhid.composeform.feature.login.domain.BangladeshPhoneNumber
 
 @Composable
 internal fun PhoneLoginScreen(

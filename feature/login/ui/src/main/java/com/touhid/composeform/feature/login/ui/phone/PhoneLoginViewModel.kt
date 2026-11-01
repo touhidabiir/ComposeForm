@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.touhid.composeform.feature.login.ui.SmsAppHash
 import com.touhid.composeform.model.AppResult
-import com.touhid.composeform.session.domain.BangladeshPhoneNumber
-import com.touhid.composeform.session.domain.SessionRepository
+import com.touhid.composeform.feature.login.domain.BangladeshPhoneNumber
+import com.touhid.composeform.feature.login.domain.LoginRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,7 +27,7 @@ data class PhoneLoginState(
 
 @HiltViewModel
 class PhoneLoginViewModel @Inject constructor(
-    private val sessionRepository: SessionRepository,
+    private val loginRepository: LoginRepository,
     private val smsAppHash: SmsAppHash,
 ) : ViewModel() {
 
@@ -46,7 +46,7 @@ class PhoneLoginViewModel @Inject constructor(
         _state.update { it.copy(isSubmitting = true) }
         viewModelScope.launch {
             val phoneNumber = current.phoneNumber
-            when (val result = sessionRepository.requestOtp(phoneNumber, smsAppHash.value)) {
+            when (val result = loginRepository.requestOtp(phoneNumber, smsAppHash.value)) {
                 is AppResult.Success -> _state.update { it.copy(isSubmitting = false, otpSentTo = phoneNumber) }
                 is AppResult.Failure -> _state.update { it.copy(isSubmitting = false, error = result.error.message) }
             }

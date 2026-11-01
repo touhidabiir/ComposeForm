@@ -62,7 +62,7 @@ import com.touhid.composeform.feature.login.ui.LoginTitle
 import com.touhid.composeform.feature.login.ui.MutedTextColor
 import com.touhid.composeform.feature.login.ui.R
 import com.touhid.composeform.feature.login.ui.VersionLabel
-import com.touhid.composeform.session.domain.BangladeshPhoneNumber
+import com.touhid.composeform.feature.login.domain.BangladeshPhoneNumber
 
 // Release builds fill the OTP from the SMS only; debug builds also let it be typed, since the
 // mocked backend sends no SMS.

@@ -13,9 +13,9 @@ android {
 }
 
 dependencies {
-    // Sign-in itself (SessionRepository, phone number rules) is the :core:session slice; this
-    // feature is only its screens. :core:session:data is bound in :app for Hilt.
-    implementation(project(":core:session:domain"))
+    // The ui layer sees only the login domain (LoginRepository interface, phone number rules).
+    // The implementation lives in :feature:login:data, which :app depends on so Hilt can bind it.
+    implementation(project(":feature:login:domain"))
     // Its own result contract, to bind the LoginIntentFactory it builds intents with.
     implementation(project(":feature:login:navigation"))
     // LoginActivity's NavHost (phone number -> OTP).
