@@ -41,6 +41,7 @@ dependencies {
     // Destinations the home screen opens.
     implementation(project(":feature:lead:navigation"))
     implementation(project(":feature:acquisition:navigation"))
+    implementation(project(":feature:specificform:navigation"))
     // The feature data and ui modules are needed only so Hilt sees their @Modules (repository
     // bindings, DestinationHandlers) and the APK merges their manifests; :app code never imports
     // from them.

@@ -45,9 +45,9 @@ import com.touhid.composeform.formbuilder.schema.FormValue
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-// Not wired into any Activity/NavHost by this module - intended to be one of several fragments a
-// host Activity swaps through (a form wizard), created via newInstance() with this fragment's
-// position among its siblings. Fetches its form schema from SpecificFormRepository.getSpecificForm()
+// Intended to be one of several fragments a host Activity swaps through (a form wizard), created
+// via newInstance() with this fragment's position among its siblings; for now SpecificFormActivity
+// hosts it alone, as step 1 of 1. Fetches its form schema from SpecificFormRepository.getSpecificForm()
 // (backed by the v1/forms/specific mock while no real backend exists) and renders it with
 // FormRenderer. Submit asks whether to upload now (v1/forms/specific/submit, also mocked) or save
 // on the device; the toolbar's saved-forms action opens SavedSubmissionsActivity, which hands back

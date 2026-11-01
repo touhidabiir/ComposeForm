@@ -24,7 +24,7 @@ The app is organised as feature slices on top of a thin shared `core`. Each busi
 | `:app` | The application shell: launcher, the `@HiltAndroidApp` entry point, the `Navigator` implementation, the demo server-driven form flow (`DemoFormApi`), and the Hilt config `:core:network` needs (base URL, token storage). | [`CLAUDE.md`](CLAUDE.md) |
 | `:feature:lead:{domain,data,ui,navigation}` | The lead dashboard. | [`CLAUDE.md`](CLAUDE.md) |
 | `:feature:acquisition:{domain,data,ui,navigation}` | The acquisition approval list and detail/decision flow. | [`CLAUDE.md`](CLAUDE.md) |
-| `:feature:specificform:{domain,data,ui}` | The server-driven "specific form" Fragment, rendering a `:formbuilder` schema. | [`CLAUDE.md`](CLAUDE.md) |
+| `:feature:specificform:{domain,data,ui,navigation}` | The server-driven "specific form": renders a `:formbuilder` schema, uploads the answers or saves them on the device, and lists saved forms to upload or reopen. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:lead:{domain,data}` | Core slice: lead types both features show, and their wire DTOs + mappers. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:session:{domain,data}` | Core slice: sign-in (`SessionRepository.login`, storing the tokens). | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:model` | `AppResult`/`AppError`, the result type every repository returns. | [`CLAUDE.md`](CLAUDE.md) |

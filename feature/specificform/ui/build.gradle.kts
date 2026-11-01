@@ -11,6 +11,7 @@ dependencies {
     // The implementation lives in :feature:specificform:data, which :app depends on so Hilt can
     // bind it.
     implementation(project(":feature:specificform:domain"))
+    implementation(project(":feature:specificform:navigation"))
     implementation(project(":formbuilder"))
     // FormSchema/FormField from :formbuilder are @Serializable; their generated members reference
     // kotlinx.serialization types, so the compiler needs them resolvable here too.

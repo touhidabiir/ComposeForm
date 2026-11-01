@@ -17,6 +17,7 @@ fun DemoHomeScreen(
     onOpenFormDemo: () -> Unit,
     onOpenLeadDashboard: () -> Unit,
     onOpenAcquisitionApproval: () -> Unit,
+    onOpenSpecificForm: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AppScaffold(
@@ -32,6 +33,7 @@ fun DemoHomeScreen(
             AppButton(text = "Form Builder Demo", onClick = onOpenFormDemo, modifier = Modifier.fillMaxWidth())
             AppButton(text = "Lead Dashboard", onClick = onOpenLeadDashboard, modifier = Modifier.fillMaxWidth())
             AppButton(text = "Acquisition Approval", onClick = onOpenAcquisitionApproval, modifier = Modifier.fillMaxWidth())
+            AppButton(text = "Specific Form", onClick = onOpenSpecificForm, modifier = Modifier.fillMaxWidth())
         }
     }
 }
