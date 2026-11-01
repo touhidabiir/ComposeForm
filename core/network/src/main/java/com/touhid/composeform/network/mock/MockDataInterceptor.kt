@@ -19,6 +19,9 @@ internal class MockDataInterceptor : Interceptor {
         val request = chain.request()
         val path = request.url.encodedPath
         val json = when {
+            // Sign-in: any phone number gets an OTP, and any OTP is accepted.
+            path.endsWith("/v1/auth/otp/request") -> MockJson.OTP_REQUEST_SUCCESS
+            path.endsWith("/v1/auth/otp/verify") -> MockJson.OTP_VERIFY_SUCCESS
             path.endsWith("/v1/leads") -> MockJson.LEAD_DASHBOARD
             path.endsWith("/ekyc") -> MockJson.EKYC_SUBMIT_SUCCESS
             path.endsWith("/v1/forms/specific") -> MockJson.SPECIFIC_FORM

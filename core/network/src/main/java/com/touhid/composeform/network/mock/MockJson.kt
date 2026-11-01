@@ -484,6 +484,23 @@ internal object MockJson {
     }
     """.trimIndent()
 
+    val OTP_REQUEST_SUCCESS = """
+    {
+      "is_error": false,
+      "message": "OTP sent"
+    }
+    """.trimIndent()
+
+    val OTP_VERIFY_SUCCESS = """
+    {
+      "token": "mock-access-token",
+      "refreshToken": "mock-refresh-token",
+      "userId": "mock-user-1",
+      "name": "Demo User",
+      "role": "agent"
+    }
+    """.trimIndent()
+
     val SPECIFIC_FORM_SUBMIT_SUCCESS = """
     {
       "is_error": false,

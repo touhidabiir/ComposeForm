@@ -12,4 +12,6 @@ dependencies {
     // safeApiCall, the shared Retrofit instance and the TokenProvider contract.
     implementation(project(":core:network"))
     implementation(libs.squareup.retrofit)
+    // withContext(Dispatchers.IO) for the token read in isSignedIn.
+    implementation(libs.kotlinx.coroutines.core)
 }

@@ -3,6 +3,7 @@ package com.touhid.composeform
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,6 +32,8 @@ import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.ComposeFormAppTheme
 import com.touhid.composeform.feature.acquisition.navigation.AcquisitionApprovalListDestination
 import com.touhid.composeform.feature.lead.navigation.LeadDashboardDestination
+import com.touhid.composeform.feature.login.navigation.LoginIntentFactory
+import com.touhid.composeform.feature.login.navigation.OpenLogin
 import com.touhid.composeform.feature.specificform.navigation.SpecificFormDestination
 import com.touhid.composeform.flow.DemoFormApi
 import com.touhid.composeform.flow.FormFlowState
@@ -41,6 +46,9 @@ import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.formbuilder.withOptions
 import com.touhid.composeform.home.DemoHomeScreen
 import com.touhid.composeform.navigation.Navigator
+import com.touhid.composeform.splash.SplashScreen
+import com.touhid.composeform.splash.SplashTarget
+import com.touhid.composeform.splash.SplashViewModel
 import javax.inject.Inject
 
 // Mirrors FormFlowState but scoped to the picker destination, since picker schemas aren't
@@ -58,6 +66,10 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var navigator: Navigator
 
+    // Builds the sign-in Activity's Intent for OpenLogin; bound by :feature:login:ui.
+    @Inject
+    lateinit var loginIntentFactory: LoginIntentFactory
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -68,7 +80,38 @@ class MainActivity : ComponentActivity() {
                 var activePickerSchema by remember { mutableStateOf<FormSchema?>(null) }
                 var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
 
-                NavHost(navController = navController, startDestination = "home") {
+                NavHost(navController = navController, startDestination = "splash") {
+                    // Launch screen: after the splash, home if a session is stored, otherwise
+                    // sign-in. Sign-in runs as its own Activity on top of this one; signing in
+                    // shows home, backing out of it closes the app.
+                    composable("splash") {
+                        val viewModel: SplashViewModel = hiltViewModel()
+                        val target by viewModel.target.collectAsStateWithLifecycle()
+                        // Saved, so a recreated Activity waiting on sign-in's result doesn't
+                        // open sign-in a second time.
+                        var loginOpened by rememberSaveable { mutableStateOf(false) }
+                        val showHome = {
+                            navController.navigate("home") { popUpTo("splash") { inclusive = true } }
+                        }
+                        val loginLauncher = rememberLauncherForActivityResult(
+                            contract = remember { OpenLogin(loginIntentFactory) },
+                        ) { signedIn ->
+                            if (signedIn) showHome() else finish()
+                        }
+
+                        LaunchedEffect(target) {
+                            when (target) {
+                                SplashTarget.Home -> showHome()
+                                SplashTarget.Login -> if (!loginOpened) {
+                                    loginOpened = true
+                                    loginLauncher.launch(Unit)
+                                }
+                                null -> Unit
+                            }
+                        }
+                        SplashScreen()
+                    }
+
                     composable("home") {
                         DemoHomeScreen(
                             onOpenFormDemo = { navController.navigate("form") },

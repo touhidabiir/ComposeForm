@@ -3,10 +3,14 @@ package com.touhid.composeform.session.data
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-// The sign-in endpoint on the main backend (@BaseUrl). The token refresh call is not here: it
+// The sign-in endpoints on the main backend (@BaseUrl). The token refresh call is not here: it
 // lives in :core:network (RefreshTokenApiService), since TokenAuthenticator runs it.
 internal interface SessionApi {
 
-    @POST("v1/login")
-    suspend fun login(@Body request: LoginRequestDto): LoginResponseDto
+    // Sends the one-time password by SMS. Only the HTTP status matters; the body is ignored.
+    @POST("v1/auth/otp/request")
+    suspend fun requestOtp(@Body request: OtpRequestDto)
+
+    @POST("v1/auth/otp/verify")
+    suspend fun verifyOtp(@Body request: OtpVerifyRequestDto): LoginResponseDto
 }
