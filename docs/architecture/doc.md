@@ -20,7 +20,7 @@ The repo has three kinds of module: shared `core` modules, one folder per busine
 ```
 core/
   model/  network/  designsystem/  common/  navigation/     infrastructure
-  lead/                                                    core slices (domain/ + data/)
+  lead/  session/                                          core slices (domain/ + data/)
 feature/
   lead/           domain/  data/  ui/  navigation/
   acquisition/    domain/  data/  ui/  navigation/
