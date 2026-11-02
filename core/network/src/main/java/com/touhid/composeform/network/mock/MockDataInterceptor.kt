@@ -3,8 +3,10 @@ package com.touhid.composeform.network.mock
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol
+import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
+import okio.Buffer
 
 // :network's base URL is still a dummy placeholder (see CLAUDE.md's Network boundary notes) - no
 // real backend exists yet for the lead/acquisition endpoints. Until one does, short-circuit those
@@ -15,13 +17,28 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 // TODO: delete this whole file (and its wiring in RetrofitFactory.create) once a real backend is
 // live - see MockJson.kt too, it only exists to back this class.
 internal class MockDataInterceptor : Interceptor {
+
+    private companion object {
+        val PhoneNumberField = Regex("\"phoneNumber\"\\s*:\\s*\"(\\d+)\"")
+    }
+
+    private fun Request.bodyText(): String {
+        val buffer = Buffer()
+        body?.writeTo(buffer)
+        return buffer.readUtf8()
+    }
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val path = request.url.encodedPath
         val json = when {
-            // Sign-in: any phone number gets an OTP, and any OTP is accepted.
+            // Sign-in: any phone number gets an OTP, and any OTP is accepted. The user type
+            // follows the number's last digit: odd signs in an approver, even an agent.
             path.endsWith("/v1/auth/otp/request") -> MockJson.OTP_REQUEST_SUCCESS
-            path.endsWith("/v1/auth/otp/verify") -> MockJson.OTP_VERIFY_SUCCESS
+            path.endsWith("/v1/auth/otp/verify") -> {
+                val lastDigit = request.bodyText().let(PhoneNumberField::find)?.groupValues?.get(1)?.lastOrNull()
+                MockJson.otpVerifySuccess(role = if (lastDigit != null && lastDigit.digitToInt() % 2 == 1) "approver" else "agent")
+            }
             path.endsWith("/v1/leads") -> MockJson.LEAD_DASHBOARD
             path.endsWith("/ekyc") -> MockJson.EKYC_SUBMIT_SUCCESS
             path.endsWith("/v1/forms/specific") -> MockJson.SPECIFIC_FORM

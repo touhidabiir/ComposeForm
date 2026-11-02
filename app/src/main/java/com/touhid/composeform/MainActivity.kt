@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +28,7 @@ import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import com.touhid.composeform.designsystem.components.button.AppButton
 import com.touhid.composeform.designsystem.components.layout.AppScaffold
+import com.touhid.composeform.designsystem.components.surface.AppAlertDialog
 import com.touhid.composeform.designsystem.components.surface.AppTopBar
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.ComposeFormAppTheme
@@ -44,8 +46,12 @@ import com.touhid.composeform.formbuilder.fieldsWithOptionsUrl
 import com.touhid.composeform.formbuilder.schema.FormSchema
 import com.touhid.composeform.formbuilder.singleAnswerValue
 import com.touhid.composeform.formbuilder.withOptions
-import com.touhid.composeform.home.DemoHomeScreen
+import com.touhid.composeform.home.AgentHomeScreen
+import com.touhid.composeform.home.ApproverHomeScreen
 import com.touhid.composeform.navigation.Navigator
+import com.touhid.composeform.session.SessionEndReason
+import com.touhid.composeform.session.SessionGuard
+import com.touhid.composeform.session.domain.UserType
 import com.touhid.composeform.splash.SplashScreen
 import com.touhid.composeform.splash.SplashTarget
 import com.touhid.composeform.splash.SplashViewModel
@@ -59,6 +65,12 @@ private sealed interface PickerLoadState {
     data class Ready(val schema: FormSchema) : PickerLoadState
 }
 
+// One home per user type. Exhaustive on purpose: a new UserType doesn't compile until it has a home.
+private fun homeRoute(userType: UserType): String = when (userType) {
+    UserType.Approver -> "home/approver"
+    UserType.Agent -> "home/agent"
+}
+
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -69,6 +81,15 @@ class MainActivity : ComponentActivity() {
     // Builds the sign-in Activity's Intent for OpenLogin; bound by :feature:login:ui.
     @Inject
     lateinit var loginIntentFactory: LoginIntentFactory
+
+    // Ends the session (Log out) and restarts the app here.
+    @Inject
+    lateinit var sessionGuard: SessionGuard
+
+    // Set when SessionGuard restarted the app because a session ended.
+    private fun sessionEndReason(): SessionEndReason? =
+        intent.getStringExtra(SessionGuard.EXTRA_SESSION_END)
+            ?.let { extra -> SessionEndReason.entries.firstOrNull { it.name == extra } }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,43 +102,67 @@ class MainActivity : ComponentActivity() {
                 var pendingResult by remember { mutableStateOf<FormFieldResult?>(null) }
 
                 NavHost(navController = navController, startDestination = "splash") {
-                    // Launch screen: after the splash, home if a session is stored, otherwise
-                    // sign-in. Sign-in runs as its own Activity on top of this one; signing in
-                    // shows home, backing out of it closes the app.
+                    // Launch screen, and where every ended session comes back to (SessionGuard
+                    // restarts the app here). After the splash: the home for the signed-in user's
+                    // type, or sign-in. Sign-in runs as its own Activity on top of this one;
+                    // signing in shows the home, backing out of it closes the app.
                     composable("splash") {
                         val viewModel: SplashViewModel = hiltViewModel()
                         val target by viewModel.target.collectAsStateWithLifecycle()
                         // Saved, so a recreated Activity waiting on sign-in's result doesn't
                         // open sign-in a second time.
                         var loginOpened by rememberSaveable { mutableStateOf(false) }
-                        val showHome = {
-                            navController.navigate("home") { popUpTo("splash") { inclusive = true } }
-                        }
+                        var expiryAcknowledged by rememberSaveable { mutableStateOf(false) }
                         val loginLauncher = rememberLauncherForActivityResult(
                             contract = remember { OpenLogin(loginIntentFactory) },
                         ) { signedIn ->
-                            if (signedIn) showHome() else finish()
+                            if (signedIn) viewModel.onSignedIn() else finish()
                         }
 
-                        LaunchedEffect(target) {
-                            when (target) {
-                                SplashTarget.Home -> showHome()
-                                SplashTarget.Login -> if (!loginOpened) {
-                                    loginOpened = true
-                                    loginLauncher.launch(Unit)
+                        LaunchedEffect(Unit) { viewModel.start(sessionEndReason()) }
+                        LaunchedEffect(target, expiryAcknowledged) {
+                            when (val current = target) {
+                                is SplashTarget.Home -> navController.navigate(homeRoute(current.userType)) {
+                                    popUpTo("splash") { inclusive = true }
+                                }
+                                is SplashTarget.Login -> {
+                                    val waitingOnNotice = current.sessionExpired && !expiryAcknowledged
+                                    if (!loginOpened && !waitingOnNotice) {
+                                        loginOpened = true
+                                        loginLauncher.launch(Unit)
+                                    }
                                 }
                                 null -> Unit
                             }
                         }
                         SplashScreen()
+
+                        val current = target
+                        if (current is SplashTarget.Login && current.sessionExpired && !expiryAcknowledged) {
+                            AppAlertDialog(
+                                title = stringResource(R.string.session_expired_title),
+                                message = stringResource(R.string.session_expired_message),
+                                confirmText = stringResource(R.string.session_expired_ok),
+                                onConfirm = { expiryAcknowledged = true },
+                                onDismissRequest = {},
+                                dismissible = false,
+                            )
+                        }
                     }
 
-                    composable("home") {
-                        DemoHomeScreen(
+                    composable(homeRoute(UserType.Approver)) {
+                        ApproverHomeScreen(
+                            onOpenAcquisitionApproval = { navigator.navigate(AcquisitionApprovalListDestination) },
+                            onLogout = sessionGuard::signOut,
+                        )
+                    }
+
+                    composable(homeRoute(UserType.Agent)) {
+                        AgentHomeScreen(
                             onOpenFormDemo = { navController.navigate("form") },
                             onOpenLeadDashboard = { navigator.navigate(LeadDashboardDestination) },
-                            onOpenAcquisitionApproval = { navigator.navigate(AcquisitionApprovalListDestination) },
                             onOpenSpecificForm = { navigator.navigate(SpecificFormDestination) },
+                            onLogout = sessionGuard::signOut,
                         )
                     }
 

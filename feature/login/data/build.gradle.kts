@@ -9,7 +9,9 @@ android {
 
 dependencies {
     implementation(project(":feature:login:domain"))
-    // safeApiCall, the shared Retrofit instance and the TokenProvider contract.
+    // verifyOtp starts the session there.
+    implementation(project(":core:session:domain"))
+    // safeApiCall and the shared Retrofit instance.
     implementation(project(":core:network"))
     implementation(libs.squareup.retrofit)
 }

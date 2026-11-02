@@ -18,5 +18,6 @@ internal data class LoginResponseDto(
     val refreshToken: String,
     val userId: String,
     val name: String,
+    // "approver" or "agent" (LoginMappers.kt).
     val role: String,
 )

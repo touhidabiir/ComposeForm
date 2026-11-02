@@ -491,13 +491,13 @@ internal object MockJson {
     }
     """.trimIndent()
 
-    val OTP_VERIFY_SUCCESS = """
+    fun otpVerifySuccess(role: String) = """
     {
       "token": "mock-access-token",
       "refreshToken": "mock-refresh-token",
-      "userId": "mock-user-1",
-      "name": "Demo User",
-      "role": "agent"
+      "userId": "mock-$role-1",
+      "name": "Demo ${role.replaceFirstChar(Char::uppercase)}",
+      "role": "$role"
     }
     """.trimIndent()
 
