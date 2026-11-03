@@ -16,7 +16,7 @@ import javax.inject.Inject
 // Bound in ActivityComponent so handlers start Activities from a real Activity context, not the
 // Application one.
 class AppNavigator @Inject constructor(
-    @ActivityContext private val context: Context,
+    @param:ActivityContext private val context: Context,
     private val handlers: Set<@JvmSuppressWildcards DestinationHandler<*>>,
 ) : Navigator {
 

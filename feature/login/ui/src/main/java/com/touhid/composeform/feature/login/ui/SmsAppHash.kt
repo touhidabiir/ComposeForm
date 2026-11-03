@@ -17,7 +17,7 @@ import javax.inject.Singleton
 // the backend can be configured with it.
 // https://developers.google.com/identity/sms-retriever/verify#computing_your_apps_hash_string
 @Singleton
-class SmsAppHash @Inject constructor(@ApplicationContext private val context: Context) {
+class SmsAppHash @Inject constructor(@param:ApplicationContext private val context: Context) {
 
     val value: String? by lazy {
         runCatching { compute() }.getOrNull().also { hash ->

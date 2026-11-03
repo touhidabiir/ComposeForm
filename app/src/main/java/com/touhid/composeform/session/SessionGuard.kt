@@ -36,7 +36,7 @@ enum class SessionEndReason { SignedOut, Expired }
 // the sign-in screens.
 @Singleton
 class SessionGuard @Inject constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     private val sessionRepository: SessionRepository,
     private val authSessionEvents: AuthSessionEvents,
 ) {
