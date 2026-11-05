@@ -16,7 +16,10 @@ import com.touhid.composeform.designsystem.theme.ComposeFormAppTheme
 import com.touhid.composeform.feature.login.ui.otp.OtpScreen
 import com.touhid.composeform.feature.login.ui.otp.OtpViewModel
 import com.touhid.composeform.feature.login.ui.phone.PhoneLoginScreen
+import com.touhid.composeform.feature.webview.navigation.WebPageDestination
+import com.touhid.composeform.navigation.Navigator
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 private const val PhoneRoute = "phone"
 private const val OtpRoute = "otp/{${OtpViewModel.ArgPhoneNumber}}"
@@ -29,6 +32,10 @@ private const val OtpRoute = "otp/{${OtpViewModel.ArgPhoneNumber}}"
 @AndroidEntryPoint(ComponentActivity::class)
 class LoginActivity : Hilt_LoginActivity() {
 
+    // Opens other features' screens; here, the in-app web page for the privacy policy.
+    @Inject
+    lateinit var navigator: Navigator
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -39,6 +46,14 @@ class LoginActivity : Hilt_LoginActivity() {
                     composable(PhoneRoute) {
                         PhoneLoginScreen(
                             onOtpSent = { phoneNumber -> navController.navigate("otp/$phoneNumber") },
+                            onOpenPrivacyPolicy = {
+                                navigator.navigate(
+                                    WebPageDestination(
+                                        url = LoginConfig.PRIVACY_POLICY_URL,
+                                        title = getString(R.string.login_privacy_policy),
+                                    ),
+                                )
+                            },
                         )
                     }
                     composable(

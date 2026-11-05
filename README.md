@@ -26,6 +26,7 @@ The app is organised as feature slices on top of a thin shared `core`. Each busi
 | `:feature:acquisition:{domain,data,ui,navigation}` | The acquisition approval list and detail/decision flow. | [`CLAUDE.md`](CLAUDE.md) |
 | `:feature:specificform:{domain,data,ui,navigation}` | The server-driven "specific form": renders a `:formbuilder` schema, uploads the answers or saves them on the device, and lists saved forms to upload or reopen. | [`CLAUDE.md`](CLAUDE.md) |
 | `:feature:login:{domain,data,ui,navigation}` | Sign-in: phone number, then OTP (read from the SMS); starts the session. | [`CLAUDE.md`](CLAUDE.md) |
+| `:feature:webview:{ui,navigation}` | In-app web pages (`WebPageDestination(url, title)`), e.g. the privacy policy, instead of an external browser. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:lead:{domain,data}` | Core slice: lead types both features show, and their wire DTOs + mappers. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:session:{domain,data}` | Core slice: the signed-in session (tokens, user, user type, the day it started), written by sign-in and read by `:app`. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:model` | `AppResult`/`AppError`, the result type every repository returns. | [`CLAUDE.md`](CLAUDE.md) |

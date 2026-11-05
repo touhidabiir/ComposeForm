@@ -46,7 +46,6 @@ import com.touhid.composeform.designsystem.components.text.AppTextStyle
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.BrandPrimary
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
-import com.touhid.composeform.feature.login.ui.LoginConfig
 import com.touhid.composeform.feature.login.ui.LoginTitle
 import com.touhid.composeform.feature.login.ui.MutedTextColor
 import com.touhid.composeform.feature.login.ui.R
@@ -56,6 +55,8 @@ import com.touhid.composeform.feature.login.domain.BangladeshPhoneNumber
 @Composable
 internal fun PhoneLoginScreen(
     onOtpSent: (phoneNumber: String) -> Unit,
+    // The Privacy Policy link: LoginActivity opens it in the app's own web page screen.
+    onOpenPrivacyPolicy: () -> Unit,
     viewModel: PhoneLoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -85,6 +86,7 @@ internal fun PhoneLoginScreen(
             canSubmit = state.canSubmit,
             onPhoneNumberChange = viewModel::onPhoneNumberChange,
             onSubmit = viewModel::onSubmit,
+            onOpenPrivacyPolicy = onOpenPrivacyPolicy,
         )
         if (state.isSubmitting) AppProgressDialog()
     }
@@ -96,6 +98,7 @@ private fun PhoneLoginContent(
     canSubmit: Boolean,
     onPhoneNumberChange: (String) -> Unit,
     onSubmit: () -> Unit,
+    onOpenPrivacyPolicy: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -143,22 +146,24 @@ private fun PhoneLoginContent(
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(AppSpacing.Large))
-        PrivacyPolicyNotice()
+        PrivacyPolicyNotice(onOpenPrivacyPolicy = onOpenPrivacyPolicy)
         Spacer(modifier = Modifier.height(AppSpacing.Medium))
     }
 }
 
 @Composable
-private fun PrivacyPolicyNotice() {
+private fun PrivacyPolicyNotice(onOpenPrivacyPolicy: () -> Unit) {
     val prefix = stringResource(R.string.login_privacy_prefix)
     val policy = stringResource(R.string.login_privacy_policy)
     val text = buildAnnotatedString {
         append(prefix)
         append("  ")
+        // Clickable, not Url: a Url link would open the external browser.
         withLink(
-            LinkAnnotation.Url(
-                url = LoginConfig.PRIVACY_POLICY_URL,
+            LinkAnnotation.Clickable(
+                tag = "privacy_policy",
                 styles = TextLinkStyles(style = SpanStyle(color = BrandPrimary, fontWeight = FontWeight.Medium)),
+                linkInteractionListener = { onOpenPrivacyPolicy() },
             ),
         ) {
             append(policy)
@@ -172,6 +177,12 @@ private fun PrivacyPolicyNotice() {
 @Composable
 private fun PhoneLoginContentPreview() {
     ComposeFormTheme {
-        PhoneLoginContent(phoneNumber = "01937049061", canSubmit = true, onPhoneNumberChange = {}, onSubmit = {})
+        PhoneLoginContent(
+            phoneNumber = "01937049061",
+            canSubmit = true,
+            onPhoneNumberChange = {},
+            onSubmit = {},
+            onOpenPrivacyPolicy = {},
+        )
     }
 }

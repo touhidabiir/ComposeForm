@@ -57,6 +57,7 @@ dependencies {
     implementation(project(":feature:specificform:ui"))
     implementation(project(":feature:login:data"))
     implementation(project(":feature:login:ui"))
+    implementation(project(":feature:webview:ui"))
     // Same reason as the feature data modules: only the SessionRepository binding, for Hilt.
     implementation(project(":core:session:data"))
     implementation(libs.androidx.activity.compose)

@@ -18,6 +18,8 @@ dependencies {
     implementation(project(":feature:login:domain"))
     // Its own result contract, to bind the LoginIntentFactory it builds intents with.
     implementation(project(":feature:login:navigation"))
+    // The privacy policy opens in the in-app web page screen.
+    implementation(project(":feature:webview:navigation"))
     // LoginActivity's NavHost (phone number -> OTP).
     implementation(libs.androidx.navigation.compose)
     // SMS Retriever: reads the OTP from the SMS without the SMS permission.
