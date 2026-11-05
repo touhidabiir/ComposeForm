@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- No android:theme here: it inherits the <application> theme from :app's manifest.
+         configChanges: a rotation or theme/size change would otherwise recreate the Activity and
+         reload the page from the start (losing scroll position and anything typed into it). -->
+    <application>
+        <activity
+            android:name=".WebPageActivity"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"
+            android:exported="false" />
+    </application>
+
+</manifest>

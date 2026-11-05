@@ -67,6 +67,7 @@ build-logic/
         ├── AndroidFeatureConventionPlugin.kt        composeform.android.feature
         ├── JvmLibraryConventionPlugin.kt            composeform.jvm.library
         ├── HiltConventionPlugin.kt                  composeform.hilt
+        ├── RetrofitConventionPlugin.kt              composeform.android.retrofit
         ├── RoomConventionPlugin.kt                  composeform.android.room
         └── DependencyRulesPlugin.kt                 composeform.dependency.rules
 ```
@@ -83,6 +84,7 @@ The plugin classes sit in the default package (no `package` line). That's delibe
 | `AndroidFeatureConventionPlugin` (`composeform.android.feature`) | Everything `composeform.android.library.compose` + `composeform.hilt` do, plus what every screen module uses: `:core:designsystem`, `:core:common`, `material-icons-extended`, lifecycle ViewModel/runtime Compose, `hilt-navigation-compose` | every feature `ui` module |
 | `JvmLibraryConventionPlugin` (`composeform.jvm.library`) | `org.jetbrains.kotlin.jvm` (a plain Kotlin module, no Android), Java and Kotlin JVM target, the dependency rules | `:core:model`, every `domain` module, `:core:lead:data` |
 | `HiltConventionPlugin` (`composeform.hilt`) | KSP, `hilt-android`, `hilt-compiler` (through KSP). Not the Hilt Gradle plugin - see "Things that will bite you" | `:app`, `:core:network`, every `data` module, every `ui` module (via the feature plugin) |
+| `RetrofitConventionPlugin` (`composeform.android.retrofit`) | `:core:network` (`safeApiCall`, the shared `Retrofit`), `retrofit` and `gson`, all as `implementation`: they stay inside the `data` module and never reach a `ui` module or `:app`, and `:core:network` never has to re-export Retrofit with `api` | a `data` module that calls the backend, on top of `composeform.android.library` + `composeform.hilt`: `:feature:lead:data`, `:feature:acquisition:data`, `:feature:specificform:data`, `:feature:login:data` |
 | `RoomConventionPlugin` (`composeform.android.room`) | KSP, `room-runtime`, `room-ktx`, `room-compiler` (through KSP), schema export to the module's own `schemas/` folder, and `:core:database` (`buildRoomDatabase`, `safeDbCall`) | a `data` module that keeps its own Room database, on top of `composeform.android.library` + `composeform.hilt`: `:feature:specificform:data` |
 | `DependencyRulesPlugin` (`composeform.dependency.rules`) | Fails the build when a module depends on a module the architecture forbids (e.g. a `ui` module on a `data` module). The rules are listed in "Dependency rules" below. | Never applied directly: the application, Android library and JVM library plugins apply it, so every module gets it |
 
@@ -106,6 +108,7 @@ composeform.android.feature
 └── composeform.hilt
     └── com.google.devtools.ksp
 
+composeform.android.retrofit ───── :core:network, Retrofit, Gson (all implementation)
 composeform.android.room ───────── com.google.devtools.ksp (+ Room, :core:database)
 composeform.android.application ── com.android.application, Compose compiler, composeform.dependency.rules
 composeform.jvm.library ────────── org.jetbrains.kotlin.jvm, composeform.dependency.rules
@@ -159,6 +162,7 @@ Copy `DependencyRulesPlugin.kt` and register it like the others. If your module 
 | A feature's screens (`feature/<name>/ui`) | `composeform.android.feature` |
 | A feature's or core slice's `domain` | `composeform.jvm.library` |
 | A feature's or core slice's `data` | `composeform.android.library` + `composeform.hilt` |
+| …that calls the backend (has a Retrofit service) | additionally `composeform.android.retrofit` |
 | …that also stores data in Room | additionally `composeform.android.room` |
 | A feature's `navigation` | `composeform.android.library` |
 | A shared Compose library (like `:core:common`) | `composeform.android.library.compose` |

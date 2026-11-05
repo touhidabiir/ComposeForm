@@ -23,4 +23,7 @@
     <string name="common_status_rejected">বাতিল</string>
     <string name="common_status_unknown">অজানা</string>
     <string name="common_reviewer_label">অনুমোদনকারী: %1$s</string>
+    <!-- Placeholder brand name and product tag, shown by BrandLogo on the splash and sign-in screens. -->
+    <string name="common_brand_name" translatable="false">ComposeForm</string>
+    <string name="common_brand_tag" translatable="false">Agent</string>
 </resources>

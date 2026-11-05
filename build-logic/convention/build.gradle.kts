@@ -52,6 +52,10 @@ gradlePlugin {
             id = "composeform.hilt"
             implementationClass = "HiltConventionPlugin"
         }
+        register("androidRetrofit") {
+            id = "composeform.android.retrofit"
+            implementationClass = "RetrofitConventionPlugin"
+        }
         register("androidRoom") {
             id = "composeform.android.room"
             implementationClass = "RoomConventionPlugin"

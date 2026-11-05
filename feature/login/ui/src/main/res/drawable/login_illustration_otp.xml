@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder: a phone with a shield and a masked code, above the OTP boxes. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="180dp"
+    android:viewportWidth="200"
+    android:viewportHeight="180">
+    <path android:fillColor="#FFF2F2F2" android:pathData="M40,170a60,6 0,1 0,120 0a60,6 0,1 0,-120 0Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:strokeColor="#FFFD97C8"
+        android:strokeWidth="5"
+        android:pathData="M78,10H142A12,12 0,0 1,154 22V146A12,12 0,0 1,142 158H78A12,12 0,0 1,66 146V22A12,12 0,0 1,78 10Z" />
+    <path android:fillColor="#FFE2136E" android:pathData="M100,30L136,42V74C136,96 120,112 100,120C80,112 64,96 64,74V42Z" />
+    <path android:fillColor="#FFFFFFFF" android:pathData="M88,74L96,82L114,62L120,68L96,94L82,80Z" />
+    <path android:fillColor="#FFFDEAF3" android:pathData="M52,126H148A6,6 0,0 1,154 132V144A6,6 0,0 1,148 150H52A6,6 0,0 1,46 144V132A6,6 0,0 1,52 126Z" />
+    <path android:fillColor="#FFFD97C8" android:pathData="M64,138m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path android:fillColor="#FFFD97C8" android:pathData="M82,138m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path android:fillColor="#FFFD97C8" android:pathData="M100,138m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path android:fillColor="#FFFD97C8" android:pathData="M118,138m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+    <path android:fillColor="#FFFD97C8" android:pathData="M136,138m-4,0a4,4 0,1 1,8 0a4,4 0,1 1,-8 0" />
+</vector>

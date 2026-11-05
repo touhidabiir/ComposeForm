@@ -19,7 +19,7 @@ import com.touhid.composeform.designsystem.components.icon.AppIconButton
 import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.theme.StatusNeutral
 
-enum class AppTextFieldType { Text, Number, Email, Password }
+enum class AppTextFieldType { Text, Number, Phone, Email, Password }
 
 // One-off tones for flatWhenUnfocused's muted look - close to but distinct from
 // StatusNeutralContainer, specific to this field state rather than a general-purpose theme token.
@@ -63,6 +63,7 @@ fun AppTextField(
     val keyboardType = when (type) {
         AppTextFieldType.Text -> KeyboardType.Text
         AppTextFieldType.Number -> KeyboardType.Number
+        AppTextFieldType.Phone -> KeyboardType.Phone
         AppTextFieldType.Email -> KeyboardType.Email
         AppTextFieldType.Password -> KeyboardType.Password
     }

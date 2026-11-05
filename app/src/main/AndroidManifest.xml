@@ -26,6 +26,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- The two homes, one per user type. MainActivity starts the signed-in user's one. -->
+        <activity
+            android:name=".home.ApproverHomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".home.AgentHomeActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>
