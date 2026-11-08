@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder: a faint skyline under the logo on the phone number screen. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="260dp"
+    android:height="110dp"
+    android:viewportWidth="260"
+    android:viewportHeight="110">
+    <path android:fillColor="#FFFDF0F6" android:pathData="M0,110V60H24V40H46V110Z" />
+    <path android:fillColor="#FFFBE3EE" android:pathData="M40,110V20H70V110Z" />
+    <path android:fillColor="#FFFDF0F6" android:pathData="M74,110V50H96V30H112V110Z" />
+    <path android:fillColor="#FFFBE3EE" android:pathData="M112,110V10L140,0V110Z" />
+    <path android:fillColor="#FFFDF0F6" android:pathData="M140,110V44H170V110Z" />
+    <path android:fillColor="#FFFBE3EE" android:pathData="M168,110V24H196V110Z" />
+    <path android:fillColor="#FFFDF0F6" android:pathData="M196,110V56H226V38H260V110Z" />
+    <path android:fillColor="#FFF8C9DE" android:pathData="M58,110C58,90 66,76 80,70C78,86 72,100 70,110Z" />
+    <path android:fillColor="#FFF8C9DE" android:pathData="M202,110C202,90 194,76 180,70C182,86 188,100 190,110Z" />
+</vector>

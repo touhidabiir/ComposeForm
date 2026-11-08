@@ -21,6 +21,16 @@ suspend fun <T> safeApiCall(
     try {
         AppResult.Success(apiCall())
     } catch (e: CancellationException) {
+        // Deliberately rethrown, not turned into a Failure, and it does NOT crash the app.
+        // A CancellationException is how a coroutine stops (e.g. viewModelScope is cancelled when
+        // the user leaves the screen), not an error: the coroutine library expects it to travel up
+        // to the cancelled coroutine, which then ends quietly - it never reaches a
+        // CoroutineExceptionHandler or Android's crash handler, and nothing is shown to the user.
+        // Returning Failure instead would keep the cancelled coroutine running (updating a screen
+        // that's gone, making more calls) and break structured concurrency. Must stay ahead of
+        // `catch (e: Exception)` below, which would otherwise swallow it.
+        // One thing to remember: withTimeout signals a timeout with TimeoutCancellationException (a
+        // subclass), so it also ends the coroutine silently here; use withTimeoutOrNull to show it.
         throw e
     } catch (e: ApiException) {
         // Caught ahead of the generic IOException branch below - ApiException is an IOException

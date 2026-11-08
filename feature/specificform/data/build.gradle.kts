@@ -1,6 +1,8 @@
 plugins {
     id("composeform.android.library")
     id("composeform.hilt")
+    // :core:network, Retrofit and Gson, all implementation-only.
+    id("composeform.android.retrofit")
     // Room for the saved submissions, plus :core:database (buildRoomDatabase, safeDbCall).
     id("composeform.android.room")
 }
@@ -11,10 +13,4 @@ android {
 
 dependencies {
     implementation(project(":feature:specificform:domain"))
-    // safeApiCall and the shared Retrofit instance.
-    implementation(project(":core:network"))
-    // This module declares its own Retrofit service and a Gson-typed DTO. Both stay
-    // implementation-only here, so they never reach the ui module.
-    implementation(libs.squareup.retrofit)
-    implementation(libs.google.gson)
 }

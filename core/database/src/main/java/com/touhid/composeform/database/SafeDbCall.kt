@@ -18,6 +18,9 @@ suspend fun <T> safeDbCall(
 ): AppResult<T> = try {
     AppResult.Success(withContext(dispatcher) { block() })
 } catch (e: CancellationException) {
+    // Deliberately rethrown, and it does NOT crash the app: it's the coroutine being cancelled
+    // (e.g. the user left the screen), which ends that coroutine quietly. Same reasoning as
+    // safeApiCall in :core:network - see the comment there. Must stay ahead of `catch (e: Exception)`.
     throw e
 } catch (e: Exception) {
     AppResult.Failure(AppError.Unknown(message = "Couldn't access saved data", cause = e))

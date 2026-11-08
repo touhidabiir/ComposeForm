@@ -1,0 +1,17 @@
+<resources>
+    <!-- The sign-in screens are in Bangla by design; only the version line and the privacy
+         notice are English. -->
+    <string name="login_version">version: %1$s</string>
+    <string name="login_sign_in">প্রবেশ করুন</string>
+    <string name="login_phone_label">আপনার মোবাইল নাম্বার</string>
+    <string name="login_privacy_prefix">By proceeding you agree to our</string>
+    <string name="login_privacy_policy">Privacy Policy</string>
+
+    <string name="login_otp_title">ওটিপি দিন</string>
+    <string name="login_otp_waiting">আপনার OTP যাচাই করা হচ্ছে, অনুগ্রহ করে অপেক্ষা করুন।</string>
+    <string name="login_otp_not_received">ওটিপি পাননি?</string>
+    <string name="login_otp_resend">আবার পাঠান</string>
+    <string name="login_otp_resent">নতুন ওটিপি পাঠানো হয়েছে</string>
+    <string name="login_otp_input">OTP</string>
+    <string name="login_call_support">Call support</string>
+</resources>

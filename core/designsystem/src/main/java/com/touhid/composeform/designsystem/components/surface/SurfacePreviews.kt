@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.components.button.AppButtonStyle
 import com.touhid.composeform.designsystem.components.text.AppText
 import com.touhid.composeform.designsystem.theme.AppSpacing
@@ -84,5 +86,17 @@ private fun AlertDialogPreview() {
             dismissText = "Cancel",
             confirmButtonType = AppButtonStyle.Danger,
         )
+    }
+}
+
+@Preview(name = "Light", showBackground = true)
+@Preview(name = "Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun LinearProgressPreview() {
+    ComposeFormTheme {
+        Column(modifier = Modifier.padding(AppSpacing.Medium), verticalArrangement = Arrangement.spacedBy(AppSpacing.Small)) {
+            AppLinearProgressIndicator(progress = { 0.02f }, modifier = Modifier.width(120.dp))
+            AppLinearProgressIndicator(progress = { 0.6f }, modifier = Modifier.width(120.dp))
+        }
     }
 }

@@ -42,6 +42,10 @@ dependencies {
     implementation(project(":feature:lead:navigation"))
     implementation(project(":feature:acquisition:navigation"))
     implementation(project(":feature:specificform:navigation"))
+    // The splash opens sign-in through its result contract.
+    implementation(project(":feature:login:navigation"))
+    // The splash and SessionGuard read and end the session.
+    implementation(project(":core:session:domain"))
     // The feature data and ui modules are needed only so Hilt sees their @Modules (repository
     // bindings, DestinationHandlers) and the APK merges their manifests; :app code never imports
     // from them.
@@ -51,6 +55,9 @@ dependencies {
     implementation(project(":feature:acquisition:ui"))
     implementation(project(":feature:specificform:data"))
     implementation(project(":feature:specificform:ui"))
+    implementation(project(":feature:login:data"))
+    implementation(project(":feature:login:ui"))
+    implementation(project(":feature:webview:ui"))
     // Same reason as the feature data modules: only the SessionRepository binding, for Hilt.
     implementation(project(":core:session:data"))
     implementation(libs.androidx.activity.compose)
@@ -61,6 +68,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    // ProcessLifecycleOwner: SessionGuard checks the session each time the app comes to the foreground.
+    implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit)

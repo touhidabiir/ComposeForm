@@ -25,6 +25,7 @@ feature/
   lead/           domain/  data/  ui/  navigation/
   acquisition/    domain/  data/  ui/  navigation/
   specificform/   domain/  data/  ui/
+  login/          domain/  data/  ui/  navigation/
 formbuilder/
 app/
 build-logic/
@@ -36,7 +37,7 @@ build-logic/
 | `core:network` | The HTTP client, base-URL qualifier, auth and token refresh, `safeApiCall` | Feature endpoints, DTOs, repositories |
 | `core:navigation` | `Destination`, `Navigator`, `DestinationHandler` | Any concrete destination |
 | `core:designsystem` | All Material3 access, the app theme | Feature-specific compositions |
-| `core:<topic>:domain` / `:data` | Data two or more features use, and app-wide data (session), split like a feature | UI; data only one feature uses |
+| `core:<topic>:domain` / `:data` | Data two or more features use, split like a feature | UI; data only one feature uses |
 | `feature:x:domain` | The feature's models and repository interfaces (pure Kotlin) | Android, Retrofit, DTOs |
 | `feature:x:data` | The feature's Retrofit API, DTOs, mappers, repository implementations | Anything a screen touches directly |
 | `feature:x:ui` | Screens, ViewModels, strings, its host Activity, handlers for its own destinations | Other features' screens |
@@ -98,13 +99,12 @@ Features never depend on each other's `domain` or `data`: anything two features 
 | --- | --- | --- |
 | Data only one feature uses | That feature's own `domain` and `data` | Acquisition endpoints in `feature:acquisition:data` |
 | Data two or more features use | Moved, `domain` and `data` together, into `core:<topic>` | The lead closer, reviewer and rejection types (and their DTOs) both features show, in `core:lead` |
-| App-wide data | A core slice per topic | Sign-in in `core:session` |
 | Generic value types with no business meaning | `core:model` | `AppResult`, `AppError` |
 | Logic combining data from several slices | A use case in the feature that needs the combination | Acquisition detail that also shows the lead's history |
 
 - **Data moves to core on second use.** While only one feature uses it, `domain` and `data` stay in that feature. When a second feature needs it, both move into `core:<topic>` and no copy stays behind; the original feature keeps its `ui` and uses the core slice like any other feature.
 - **The only cross-feature dependency is `navigation`**, for opening another feature's screens. A feature never depends on another feature's `domain`, `data` or `ui`.
-- **One topic per core slice**, named after it (`core:lead`, `core:session`, never `core:shared`), with no `ui` module. A single catch-all `core:domain` + `core:data` is not allowed: it would grow without limit and recompile the whole app on every change.
+- **One topic per core slice**, named after it (`core:lead`, never `core:shared`), with no `ui` module. A single catch-all `core:domain` + `core:data` is not allowed: it would grow without limit and recompile the whole app on every change.
 - **A core slice holds only what is actually shared.** Endpoints and models that one feature uses stay in that feature, even when the rest of that topic lives in core. A core slice's `data` may hold only shared wire types and their mappers, when the shared part is a type both features' responses embed rather than an endpoint.
 
 ## Navigation

@@ -1,3 +1,18 @@
 <resources>
     <string name="app_name">ComposeForm</string>
+
+    <string name="home_title">ComposeForm</string>
+    <string name="home_form_demo">Form Builder Demo</string>
+    <string name="home_lead_dashboard">Lead Dashboard</string>
+    <string name="home_acquisition_approval">Acquisition Approval</string>
+    <string name="home_specific_form">Specific Form</string>
+
+    <string name="home_logout">Log out</string>
+    <string name="home_logout_confirm_title">Log out?</string>
+    <string name="home_logout_confirm_message">You\'ll need to sign in with your phone number again.</string>
+    <string name="home_logout_confirm_cancel">Cancel</string>
+
+    <string name="session_expired_title">Session expired</string>
+    <string name="session_expired_message">For your security, please sign in again.</string>
+    <string name="session_expired_ok">OK</string>
 </resources>

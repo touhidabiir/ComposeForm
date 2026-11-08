@@ -484,6 +484,23 @@ internal object MockJson {
     }
     """.trimIndent()
 
+    val OTP_REQUEST_SUCCESS = """
+    {
+      "is_error": false,
+      "message": "OTP sent"
+    }
+    """.trimIndent()
+
+    fun otpVerifySuccess(role: String) = """
+    {
+      "token": "mock-access-token",
+      "refreshToken": "mock-refresh-token",
+      "userId": "mock-$role-1",
+      "name": "Demo ${role.replaceFirstChar(Char::uppercase)}",
+      "role": "$role"
+    }
+    """.trimIndent()
+
     val SPECIFIC_FORM_SUBMIT_SUCCESS = """
     {
       "is_error": false,
