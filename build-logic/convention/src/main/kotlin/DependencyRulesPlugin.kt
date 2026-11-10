@@ -52,6 +52,9 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
         return "only data modules may depend on :core:database; everything else goes through a repository."
     }
     if (from == ":app") return null
+    if (to == ":core:network-mock") {
+        return "only :app may depend on :core:network-mock, and only for the flavors that serve mocks."
+    }
 
     if (target.feature != null) {
         if (source.feature == null) {
@@ -61,7 +64,8 @@ internal fun dependencyRuleViolation(from: String, to: String): String? {
             return "a feature may depend on another feature only through its navigation module."
         }
     }
-    if (to == ":core:network" && source.layer != "data") {
+    // :core:network-mock needs :core:network only for the @MockInterceptor qualifier it provides.
+    if (to == ":core:network" && source.layer != "data" && from != ":core:network-mock") {
         return "only data modules (and :app, to configure it) may depend on :core:network."
     }
 

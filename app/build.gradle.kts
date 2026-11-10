@@ -17,8 +17,8 @@ android {
     }
 
     buildFeatures {
-        // For BuildConfig.VERSION_CODE (the X-Version header) and the flavor's BuildConfig.BASE_URL,
-        // both read in di/AppNetworkModule.kt.
+        // For BuildConfig.VERSION_CODE (the X-Version header) and the flavor's BASE_URL and
+        // IS_MOCK_ENABLED, all read in di/AppNetworkModule.kt.
         buildConfig = true
     }
 
@@ -34,6 +34,7 @@ android {
             versionNameSuffix = "-sit"
             resValue("string", "app_name", "ComposeForm SIT")
             buildConfigField("String", "BASE_URL", "\"https://api-sit.composeform.dummy/\"")
+            buildConfigField("boolean", "IS_MOCK_ENABLED", "true")
         }
         create("uat") {
             dimension = "environment"
@@ -41,11 +42,15 @@ android {
             versionNameSuffix = "-uat"
             resValue("string", "app_name", "ComposeForm UAT")
             buildConfigField("String", "BASE_URL", "\"https://api-uat.composeform.dummy/\"")
+            buildConfigField("boolean", "IS_MOCK_ENABLED", "true")
         }
         create("prod") {
             dimension = "environment"
             resValue("string", "app_name", "ComposeForm")
             buildConfigField("String", "BASE_URL", "\"https://api.composeform.dummy/\"")
+            // Must stay false: prod doesn't include :core:network-mock (see dependencies below),
+            // so true would fail at startup rather than serve mocks.
+            buildConfigField("boolean", "IS_MOCK_ENABLED", "false")
         }
     }
 
@@ -64,6 +69,11 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":formbuilder"))
     implementation(project(":core:network"))
+    // Mocked backend responses, only for the flavors that may serve them, so the prod APK has no
+    // mock code at all. Whether they're used is each flavor's IS_MOCK_ENABLED above; a flavor
+    // listed here may still set it to false and call its real backend.
+    "sitImplementation"(project(":core:network-mock"))
+    "uatImplementation"(project(":core:network-mock"))
     implementation(project(":core:common"))
     implementation(project(":core:navigation"))
     // Destinations the home screen opens.

@@ -6,10 +6,13 @@ import com.touhid.composeform.network.auth.TokenAuthenticator
 import com.touhid.composeform.network.interceptor.ErrorInterceptor
 import com.touhid.composeform.network.qualifier.BaseUrl
 import com.touhid.composeform.network.qualifier.RefreshRetrofit
+import com.touhid.composeform.network.qualifier.MockInterceptor
+import dagger.BindsOptionalOf
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import okhttp3.Interceptor
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import javax.inject.Singleton
@@ -59,4 +62,15 @@ internal object NetworkModule {
     @Singleton
     fun provideRefreshTokenApiService(@RefreshRetrofit retrofit: Retrofit): RefreshTokenApiService =
         retrofit.create(RefreshTokenApiService::class.java)
+}
+
+// @BindsOptionalOf needs an abstract module, so it can't sit in the object above. Declares the
+// mock interceptor as optional: :core:network-mock provides it in the flavors that include that
+// module, and everywhere else (prod) RetrofitFactory gets an empty Optional.
+@Module
+@InstallIn(SingletonComponent::class)
+internal abstract class MockInterceptorModule {
+    @BindsOptionalOf
+    @MockInterceptor
+    abstract fun optionalMockInterceptor(): Interceptor
 }

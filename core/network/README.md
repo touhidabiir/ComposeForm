@@ -1,6 +1,6 @@
 # `:core:network`
 
-An Android library module (namespace `com.touhid.composeform.network`) owning OkHttp/Retrofit and the client around it: the main `Retrofit`, auth and token refresh, interceptors, debug mocks, and `safeApiCall`. It holds no feature endpoints. Each feature's (or core slice's) `data` module declares its own Retrofit interface and DTOs and creates its service from this module's main `Retrofit`.
+An Android library module (namespace `com.touhid.composeform.network`) owning OkHttp/Retrofit and the client around it: the main `Retrofit`, auth and token refresh, interceptors, and `safeApiCall`. The mocked responses are in a separate module, `:core:network-mock`, which only the `sit`/`uat` flavors include. It holds no feature endpoints. Each feature's (or core slice's) `data` module declares its own Retrofit interface and DTOs and creates its service from this module's main `Retrofit`.
 
 ## Network boundary (same pattern as the design system boundary)
 
@@ -14,9 +14,8 @@ core/network/src/main/java/com/touhid/composeform/network/
 ├── model/                   # its request/response classes (RefreshTokenModels.kt)
 ├── auth/                    # TokenProvider (contract) / AuthInterceptor / TokenAuthenticator / AuthSessionEvents
 ├── interceptor/             # RequestIdInterceptor / AppVersionInterceptor / ErrorInterceptor
-├── mock/                    # MockDataInterceptor / MockJson - temporary scaffolding, deleted
-│                            # together once a real backend exists
-├── qualifier/               # @BaseUrl, @AppVersionCode (public), @RefreshRetrofit (internal)
+├── qualifier/               # @BaseUrl, @AppVersionCode, @MockInterceptor, @MockEnabled (public),
+│                            # @RefreshRetrofit (internal)
 ├── RetrofitFactory.kt       # internal - builds one OkHttpClient/Retrofit pair
 ├── NetworkModule.kt         # internal - logging interceptor, the main Retrofit, the refresh client
 ├── SafeApiCall.kt           # safeApiCall - the public safe-call entry point, returns AppResult
@@ -37,7 +36,7 @@ core/network/src/main/java/com/touhid/composeform/network/
   - `ErrorInterceptor` would turn a rejected refresh into an `IOException`, so the session would never end;
   - a 401 on the refresh call would re-enter the authenticator recursively.
 - **Session expiry**: if there's no refresh token, or the refresh endpoint returns 401/403, `TokenAuthenticator` calls `TokenProvider.clear()` and emits on `AuthSessionEvents.sessionExpired` (a public `@Singleton` `SharedFlow<Unit>`). Reacting to it is the consuming module's job: `:app`'s `SessionGuard` collects it and restarts the app at sign-in. A connectivity failure or 5xx from the refresh endpoint keeps the session, and the caller just sees the original 401.
-- `RetrofitFactory` (`internal`): `create(baseUrl, authInterceptor: Interceptor?, interceptors: List<Interceptor> = emptyList(), authenticator: Authenticator? = null)`. Each client gets its own `OkHttpClient` and connection pool. `RequestIdInterceptor` (`X-Request-Id`) and `AppVersionInterceptor` (`X-Version: android/<versionCode>`) are added to every client. The version code comes from `@AppVersionCode`, which `:app` binds from its own `BuildConfig.VERSION_CODE`, since library modules have no version code. The debug-only `MockDataInterceptor` is added **last**, after logging, because it answers mocked paths without calling `chain.proceed()`.
+- `RetrofitFactory` (`internal`): `create(baseUrl, authInterceptor: Interceptor?, interceptors: List<Interceptor> = emptyList(), authenticator: Authenticator? = null)`. Each client gets its own `OkHttpClient` and connection pool. `RequestIdInterceptor` (`X-Request-Id`) and `AppVersionInterceptor` (`X-Version: android/<versionCode>`) are added to every client. The version code comes from `@AppVersionCode`, which `:app` binds from its own `BuildConfig.VERSION_CODE`, since library modules have no version code. The `@MockInterceptor` (`:core:network-mock`'s `MockDataInterceptor`, an optional binding declared with `@BindsOptionalOf`) is added only when `@MockEnabled` is true, which `:app` binds from its flavor's `BuildConfig.IS_MOCK_ENABLED`. It's added **last**, after logging, because it answers mocked paths without calling `chain.proceed()`. If `@MockEnabled` is true but the flavor doesn't include `:core:network-mock`, building the first client fails.
 
 `:core:network` depends on `hilt-android`/`ksp(hilt-compiler)`/`kotlinx-coroutines-core` for its own `@Module`s and the safe-call layer, but does **not** apply the Hilt Gradle plugin. Only `:app`, which has `ComposeFormApplication` (the `@HiltAndroidApp` entry point), does.
 

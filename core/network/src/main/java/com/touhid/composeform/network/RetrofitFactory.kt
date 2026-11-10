@@ -2,7 +2,8 @@ package com.touhid.composeform.network
 
 import com.touhid.composeform.network.interceptor.AppVersionInterceptor
 import com.touhid.composeform.network.interceptor.RequestIdInterceptor
-import com.touhid.composeform.network.mock.MockDataInterceptor
+import com.touhid.composeform.network.qualifier.MockEnabled
+import com.touhid.composeform.network.qualifier.MockInterceptor
 import okhttp3.Authenticator
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -10,6 +11,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.util.Optional
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -26,7 +28,20 @@ internal class RetrofitFactory @Inject constructor(
     private val requestIdInterceptor: RequestIdInterceptor,
     private val appVersionInterceptor: AppVersionInterceptor,
     private val loggingInterceptor: HttpLoggingInterceptor,
+    @MockEnabled private val mockEnabled: Boolean,
+    @MockInterceptor private val mockInterceptor: Optional<Interceptor>,
 ) {
+
+    // Resolved once, not per create(): fails at the first client built rather than silently
+    // calling a real backend when a flavor turns mocks on without including :core:network-mock.
+    private val activeMockInterceptor: Interceptor? =
+        if (mockEnabled) {
+            checkNotNull(mockInterceptor.orElse(null)) {
+                "IS_MOCK_ENABLED is true, but this flavor doesn't include :core:network-mock (see app/build.gradle.kts)."
+            }
+        } else {
+            null
+        }
 
     fun create(
         baseUrl: String,
@@ -43,18 +58,16 @@ internal class RetrofitFactory @Inject constructor(
             .apply { authInterceptor?.let(::addInterceptor) }
             .apply { interceptors.forEach(::addInterceptor) }
             .addInterceptor(loggingInterceptor)
-            // TODO: remove once the real backend is live - also delete the whole network/mock/
-            // package (MockDataInterceptor.kt, MockJson.kt) at the same time, it exists solely to
-            // back this call.
-            // Debug-gated so a release build can never end up silently serving fake data instead
-            // of failing to reach a real backend. Harmless for paths it doesn't mock - it falls
+            // TODO: remove once the real backend is live, together with :core:network-mock.
+            // Only when the flavor's IS_MOCK_ENABLED is true (@MockEnabled); the prod flavor
+            // doesn't even include the mock module. Harmless for paths it doesn't mock - it falls
             // through to the real request.
             // Must stay the LAST application interceptor: for a mocked path it returns a canned
             // response without calling chain.proceed(), so any interceptor added after it never
             // runs. Placed here it stands in for only the network transport - the request-id/version/auth
             // headers are still added, the error mapping still runs, and loggingInterceptor
             // still logs both the request and the mocked response to logcat.
-            .apply { if (BuildConfig.DEBUG) addInterceptor(MockDataInterceptor()) }
+            .apply { activeMockInterceptor?.let(::addInterceptor) }
             .apply { authenticator?.let { this.authenticator(it) } }
             .build()
 

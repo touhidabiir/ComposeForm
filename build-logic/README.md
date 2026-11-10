@@ -142,12 +142,13 @@ The plugin reads only the module's **Gradle path**, so the rules work only if mo
 1. **Nothing depends on `:app`.** `:app` assembles every other module, so a dependency on it would run backwards. A module's dependency on itself (some plugins add one) is ignored.
 2. **Only `:app` and feature modules may depend on a feature module.** A core or library module can't reach up into a feature.
 3. **A feature depends on another feature only through its `navigation` module.** `:feature:acquisition:ui -> :feature:lead:navigation` is fine (opening a lead screen); `-> :feature:lead:domain` or `-> :feature:lead:data` is not. If two features need the same data, move it into a core slice (`:core:<topic>:domain` + `:core:<topic>:data`) and have both depend on that.
-4. **Only `data` modules (and `:app`) depend on `:core:network`.** Screens never touch the HTTP client; they go through a repository.
+4. **Only `data` modules (and `:app`) depend on `:core:network`.** Screens never touch the HTTP client; they go through a repository. `:core:network-mock` is the one other exception: it needs the `@MockInterceptor` qualifier it provides.
 5. **Only `data` modules depend on `:core:database`, `:app` included.** Same reason as rule 4; `:app` has nothing to configure in a database, so unlike the network it gets no exception.
 6. **A `domain` module depends only on `:core:model` and core-slice `domain` modules.** It stays pure Kotlin business logic.
 7. **A `navigation` module depends only on `:core:navigation`.** It holds destinations, nothing else, because other features depend on it.
 8. **A `ui` module never depends on a `data` module** (its own or a core slice's). It sees only its `domain` (models and repository interfaces); Hilt supplies the implementation.
 9. **A `data` module never depends on a `ui` or `navigation` module.**
+10. **Only `:app` depends on `:core:network-mock`**, and only for the flavors that may serve mocks, so mock code never reaches the prod APK through another module.
 
 `:app` is exempt from every rule except 1 and 5: it may depend on any other module, because it wires everything together (Hilt needs every `data` module, manifest merging needs every `ui` module).
 
