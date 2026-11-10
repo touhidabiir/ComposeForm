@@ -17,8 +17,36 @@ android {
     }
 
     buildFeatures {
-        // For BuildConfig.VERSION_CODE, sent as the X-Version header (di/AppNetworkModule.kt).
+        // For BuildConfig.VERSION_CODE (the X-Version header) and the flavor's BuildConfig.BASE_URL,
+        // both read in di/AppNetworkModule.kt.
         buildConfig = true
+    }
+
+    // One flavor per backend environment. Only :app has flavors: library modules have none, so
+    // Gradle resolves them the same way for every flavor, and :core:network never knows which
+    // environment it talks to - it gets the base URL through @BaseUrl.
+    // sit and uat get their own application ID and launcher name, so all three install side by side.
+    flavorDimensions += "environment"
+    productFlavors {
+        create("sit") {
+            dimension = "environment"
+            applicationIdSuffix = ".sit"
+            versionNameSuffix = "-sit"
+            resValue("string", "app_name", "ComposeForm SIT")
+            buildConfigField("String", "BASE_URL", "\"https://api-sit.composeform.dummy/\"")
+        }
+        create("uat") {
+            dimension = "environment"
+            applicationIdSuffix = ".uat"
+            versionNameSuffix = "-uat"
+            resValue("string", "app_name", "ComposeForm UAT")
+            buildConfigField("String", "BASE_URL", "\"https://api-uat.composeform.dummy/\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "ComposeForm")
+            buildConfigField("String", "BASE_URL", "\"https://api.composeform.dummy/\"")
+        }
     }
 
     buildTypes {
