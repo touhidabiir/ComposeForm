@@ -8,14 +8,14 @@ import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 
-// :network's base URL is still a dummy placeholder (see CLAUDE.md's Network boundary notes) - no
+// The base URLs are still dummy placeholders (see CLAUDE.md's Network boundary notes) - no
 // real backend exists yet for the lead/acquisition endpoints. Until one does, short-circuit those
 // requests here with the same canned JSON every time, ignoring query params (status/search/
 // page_no) and path args (leadId) entirely - except the reasons endpoint below, which is the one
 // case that needs its "type" query param inspected to pick the right canned list - so the full
 // Retrofit/OkHttp/safeApiCall pipeline still runs for real, only the transport is faked.
-// TODO: delete this whole file (and its wiring in RetrofitFactory.create) once a real backend is
-// live - see MockJson.kt too, it only exists to back this class.
+// TODO: delete this whole module (and the @MockInterceptor/@MockEnabled wiring in :core:network
+// and :app) once a real backend is live.
 internal class MockDataInterceptor : Interceptor {
 
     private companion object {

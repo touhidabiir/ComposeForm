@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">ComposeForm</string>
 
     <string name="home_title">ComposeForm</string>
     <string name="home_form_demo">Form Builder Demo</string>

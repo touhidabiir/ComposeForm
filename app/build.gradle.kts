@@ -17,8 +17,41 @@ android {
     }
 
     buildFeatures {
-        // For BuildConfig.VERSION_CODE, sent as the X-Version header (di/AppNetworkModule.kt).
+        // For BuildConfig.VERSION_CODE (the X-Version header) and the flavor's BASE_URL and
+        // IS_MOCK_ENABLED, all read in di/AppNetworkModule.kt.
         buildConfig = true
+    }
+
+    // One flavor per backend environment. Only :app has flavors: library modules have none, so
+    // Gradle resolves them the same way for every flavor, and :core:network never knows which
+    // environment it talks to - it gets the base URL through @BaseUrl.
+    // sit and uat get their own application ID and launcher name, so all three install side by side.
+    flavorDimensions += "environment"
+    productFlavors {
+        create("sit") {
+            dimension = "environment"
+            applicationIdSuffix = ".sit"
+            versionNameSuffix = "-sit"
+            resValue("string", "app_name", "ComposeForm SIT")
+            buildConfigField("String", "BASE_URL", "\"https://api-sit.composeform.dummy/\"")
+            buildConfigField("boolean", "IS_MOCK_ENABLED", "true")
+        }
+        create("uat") {
+            dimension = "environment"
+            applicationIdSuffix = ".uat"
+            versionNameSuffix = "-uat"
+            resValue("string", "app_name", "ComposeForm UAT")
+            buildConfigField("String", "BASE_URL", "\"https://api-uat.composeform.dummy/\"")
+            buildConfigField("boolean", "IS_MOCK_ENABLED", "true")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "ComposeForm")
+            buildConfigField("String", "BASE_URL", "\"https://api.composeform.dummy/\"")
+            // Must stay false: prod doesn't include :core:network-mock (see dependencies below),
+            // so true would fail at startup rather than serve mocks.
+            buildConfigField("boolean", "IS_MOCK_ENABLED", "false")
+        }
     }
 
     buildTypes {
@@ -36,6 +69,11 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":formbuilder"))
     implementation(project(":core:network"))
+    // Mocked backend responses, only for the flavors that may serve them, so the prod APK has no
+    // mock code at all. Whether they're used is each flavor's IS_MOCK_ENABLED above; a flavor
+    // listed here may still set it to false and call its real backend.
+    "sitImplementation"(project(":core:network-mock"))
+    "uatImplementation"(project(":core:network-mock"))
     implementation(project(":core:common"))
     implementation(project(":core:navigation"))
     // Destinations the home screen opens.

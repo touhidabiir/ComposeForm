@@ -11,9 +11,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-// The app's one shared preferences store - originally just the auth token
-// (EncryptedTokenProvider), now also the four base URLs (AppNetworkModule), and expected to hold
-// more general app-local state over time. Encrypted (not plain SharedPreferences) even though not
+// The app's one shared preferences store - the auth tokens (EncryptedTokenProvider) and the
+// signed-in session (SessionRepositoryImpl), and expected to hold more general app-local state
+// over time. Encrypted (not plain SharedPreferences) even though not
 // every value stored in it is a secret - EncryptedSharedPreferences encrypts every entry in a
 // given file uniformly, there's no way to mix plain and encrypted entries within one file, so
 // consolidating into a single store means the non-secret values pay the same MasterKey/crypto
