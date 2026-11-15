@@ -13,6 +13,7 @@ interface LoginRepository {
     suspend fun requestOtp(phoneNumber: String, appHash: String?): AppResult<Unit>
 
     // On success the session has started: tokens and user stored, so every later authenticated
-    // call just works.
-    suspend fun verifyOtp(phoneNumber: String, otp: String): AppResult<Unit>
+    // call just works. latitude/longitude: where the user is signing in from; the login request
+    // carries them.
+    suspend fun verifyOtp(phoneNumber: String, otp: String, latitude: Double, longitude: Double): AppResult<Unit>
 }

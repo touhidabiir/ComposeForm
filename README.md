@@ -28,6 +28,7 @@ The app is organised as feature slices on top of a thin shared `core`. Each busi
 | `:feature:login:{domain,data,ui,navigation}` | Sign-in: phone number, then OTP (read from the SMS); starts the session. | [`CLAUDE.md`](CLAUDE.md) |
 | `:feature:webview:{ui,navigation}` | In-app web pages (`WebPageDestination(url, title)`), e.g. the privacy policy, instead of an external browser. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:lead:{domain,data}` | Core slice: lead types both features show, and their wire DTOs + mappers. | [`CLAUDE.md`](CLAUDE.md) |
+| `:core:location` | The device's location: `LocationTracker` (one fix or updates) and `rememberLocationRequester` (asks for permission and to turn location on, then gets the fix). | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:session:{domain,data}` | Core slice: the signed-in session (tokens, user, user type, the day it started), written by sign-in and read by `:app`. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:model` | `AppResult`/`AppError`, the result type every repository returns. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:network` | The HTTP client: main `Retrofit`, auth and token refresh, interceptors, `safeApiCall`. The only module that builds a client; feature `data` modules declare their own endpoints on it. | [`core/network/README.md`](core/network/README.md) |

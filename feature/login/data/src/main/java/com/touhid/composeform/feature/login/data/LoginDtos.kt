@@ -11,6 +11,9 @@ internal data class OtpRequestDto(
 internal data class OtpVerifyRequestDto(
     val phoneNumber: String,
     val otp: String,
+    // Where the user is signing in from.
+    val latitude: Double,
+    val longitude: Double,
 )
 
 internal data class LoginResponseDto(

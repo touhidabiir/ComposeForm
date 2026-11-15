@@ -16,6 +16,8 @@ dependencies {
     // The ui layer sees only the login domain (LoginRepository interface, phone number rules).
     // The implementation lives in :feature:login:data, which :app depends on so Hilt can bind it.
     implementation(project(":feature:login:domain"))
+    // The login request carries the user's location (rememberLocationRequester, GeoPoint).
+    implementation(project(":core:location"))
     // Its own result contract, to bind the LoginIntentFactory it builds intents with.
     implementation(project(":feature:login:navigation"))
     // The privacy policy opens in the in-app web page screen.

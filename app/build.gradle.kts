@@ -58,6 +58,8 @@ dependencies {
     implementation(project(":feature:login:data"))
     implementation(project(":feature:login:ui"))
     implementation(project(":feature:webview:ui"))
+    // So Hilt sees LocationModule and the APK gets its location permissions.
+    implementation(project(":core:location"))
     // Same reason as the feature data modules: only the SessionRepository binding, for Hilt.
     implementation(project(":core:session:data"))
     implementation(libs.androidx.activity.compose)

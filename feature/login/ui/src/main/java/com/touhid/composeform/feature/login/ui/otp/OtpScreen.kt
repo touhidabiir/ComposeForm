@@ -62,6 +62,8 @@ import com.touhid.composeform.feature.login.ui.LoginTitle
 import com.touhid.composeform.feature.login.ui.MutedTextColor
 import com.touhid.composeform.feature.login.ui.R
 import com.touhid.composeform.feature.login.ui.VersionLabel
+import com.touhid.composeform.location.LocationOutcome
+import com.touhid.composeform.location.rememberLocationRequester
 import com.touhid.composeform.feature.login.domain.BangladeshPhoneNumber
 
 // Release builds fill the OTP from the SMS only; debug builds also let it be typed, since the
@@ -78,6 +80,19 @@ internal fun OtpScreen(
     val focusManager = LocalFocusManager.current
     val snackbar = rememberAppSnackbarHostState()
     val resentMessage = stringResource(R.string.login_otp_resent)
+    val noPermissionMessage = stringResource(R.string.login_location_no_permission)
+    val locationOffMessage = stringResource(R.string.login_location_disabled)
+    val noFixMessage = stringResource(R.string.login_location_unavailable)
+
+    // The login request carries the user's location. The ViewModel says when it's needed
+    // (needsLocation); this asks for permission / to turn location on as needed, and reports back.
+    val location = rememberLocationRequester(onResult = viewModel::onLocationResult)
+    LaunchedEffect(state.needsLocation) {
+        if (state.needsLocation) {
+            viewModel.onLocationRequestStarted()
+            location.request()
+        }
+    }
 
     SmsOtpRetriever(
         session = state.smsSession,
@@ -101,6 +116,11 @@ internal fun OtpScreen(
             when (message) {
                 is OtpMessage.Error -> message.text
                 OtpMessage.Resent -> resentMessage
+                is OtpMessage.NoLocation -> when (message.outcome) {
+                    LocationOutcome.NoPermission -> noPermissionMessage
+                    LocationOutcome.Disabled -> locationOffMessage
+                    else -> noFixMessage
+                }
             },
         )
         viewModel.onMessageShown()

@@ -14,4 +14,9 @@
     <string name="login_otp_resent">নতুন ওটিপি পাঠানো হয়েছে</string>
     <string name="login_otp_input">OTP</string>
     <string name="login_call_support">Call support</string>
+
+    <!-- Sign-in sends the user's location; shown when it can't be had. -->
+    <string name="login_location_no_permission">প্রবেশ করতে লোকেশনের অনুমতি দিন</string>
+    <string name="login_location_disabled">প্রবেশ করতে লোকেশন চালু করুন</string>
+    <string name="login_location_unavailable">আপনার লোকেশন পাওয়া যায়নি, আবার চেষ্টা করুন</string>
 </resources>
