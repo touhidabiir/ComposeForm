@@ -1,0 +1,11 @@
+<resources>
+    <!-- Shown by rememberLocationRequester before asking again, after the user said no once. -->
+    <string name="location_rationale_title">Location needed</string>
+    <string name="location_rationale_message">This step needs your current location. Allow location access to continue.</string>
+    <!-- Shown once the user chose "Don't allow" for good: only the app settings can turn it back on. -->
+    <string name="location_blocked_title">Location access is off</string>
+    <string name="location_blocked_message">Location access was turned off for this app. Turn it on in the app\'s settings to continue.</string>
+    <string name="location_continue">Continue</string>
+    <string name="location_not_now">Not now</string>
+    <string name="location_open_settings">Open settings</string>
+</resources>

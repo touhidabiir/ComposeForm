@@ -15,8 +15,9 @@ internal class LoginRepositoryImpl @Inject constructor(
     override suspend fun requestOtp(phoneNumber: String, appHash: String?): AppResult<Unit> =
         safeApiCall { api.requestOtp(OtpRequestDto(phoneNumber = phoneNumber, appHash = appHash)) }
 
-    override suspend fun verifyOtp(phoneNumber: String, otp: String): AppResult<Unit> {
-        val response = when (val result = safeApiCall { api.verifyOtp(OtpVerifyRequestDto(phoneNumber, otp)) }) {
+    override suspend fun verifyOtp(phoneNumber: String, otp: String, latitude: Double, longitude: Double): AppResult<Unit> {
+        val request = OtpVerifyRequestDto(phoneNumber = phoneNumber, otp = otp, latitude = latitude, longitude = longitude)
+        val response = when (val result = safeApiCall { api.verifyOtp(request) }) {
             is AppResult.Failure -> return result
             is AppResult.Success -> result.data
         }
