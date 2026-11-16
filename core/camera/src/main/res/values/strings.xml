@@ -1,0 +1,9 @@
+<resources>
+    <string name="camera_take_photo">Take photo</string>
+    <string name="camera_permission_title">Camera access needed</string>
+    <string name="camera_permission_message">Allow camera access to take a photo.</string>
+    <string name="camera_permission_message_settings">Camera access is turned off. Enable it in Settings to take a photo.</string>
+    <string name="camera_permission_allow">Allow camera</string>
+    <string name="camera_permission_open_settings">Open Settings</string>
+    <string name="camera_capture_failed">Couldn\'t take the photo. Please try again.</string>
+</resources>

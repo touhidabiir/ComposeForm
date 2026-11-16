@@ -35,6 +35,7 @@ The app is organised as feature slices on top of a thin shared `core`. Each busi
 | `:core:navigation` | `Destination`/`Navigator`/`DestinationHandler`: how one module opens another feature's screens without depending on its `ui`. | [`CLAUDE.md`](CLAUDE.md) |
 | `:core:designsystem` | All Material3-based UI, plus the app theme. The only module allowed to depend on Material3 — everything else goes through its wrapped components (`AppText`, `AppButton`, `AppScaffold`, etc.). | [`core/designsystem/README.md`](core/designsystem/README.md) |
 | `:core:common` | Compose helpers and strings shared by more than one feature. | [`CLAUDE.md`](CLAUDE.md) |
+| `:core:camera` | Photo capture with CameraX: `PhotoCapture` to embed in a Compose screen, `OpenPhotoCapture` to open it from any Activity/Fragment (XML screens included). | [`CLAUDE.md`](CLAUDE.md) |
 | `:formbuilder` | Parses a JSON form schema (`kotlinx.serialization`) and renders it using `:core:designsystem`'s components. | [`formbuilder/README.md`](formbuilder/README.md) |
 
 Shared build setup lives in convention plugins under `build-logic/` (see [`build-logic/README.md`](build-logic/README.md)). A shareable write-up of the architecture, with diagrams, is in [`docs/architecture.docx`](docs/architecture.docx).
