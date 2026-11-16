@@ -18,7 +18,8 @@ import com.touhid.composeform.designsystem.components.text.AppTextOverride
 import com.touhid.composeform.designsystem.theme.AppSpacing
 import com.touhid.composeform.designsystem.theme.ComposeFormTheme
 
-// The camera screens are always black, so there are no Light/Dark pairs: they'd look identical.
+// The camera screens use fixed colors whatever the theme, so there are no Light/Dark pairs:
+// they'd look identical.
 
 /** Stands in for [CameraFeed]: a preview has no camera. */
 @Composable
@@ -36,46 +37,72 @@ private fun CameraFeedPlaceholder() {
     }
 }
 
-@Preview(name = "Ready - flash off", device = Devices.PIXEL_7)
+@Preview(name = "Back camera - flash off", device = Devices.PIXEL_7)
 @Composable
-private fun PhotoCaptureFlashOffPreview() {
+private fun BackCameraFlashOffPreview() {
     ComposeFormTheme {
         PhotoCaptureLayout(
+            lens = CameraLens.Back,
             capturing = false,
             flash = FlashToggle(on = false, onToggle = {}),
             onCaptureClick = {},
+            onBackClick = {},
         ) { CameraFeedPlaceholder() }
     }
 }
 
-@Preview(name = "Ready - flash on", device = Devices.PIXEL_7)
+@Preview(name = "Back camera - flash on", device = Devices.PIXEL_7)
 @Composable
-private fun PhotoCaptureFlashOnPreview() {
+private fun BackCameraFlashOnPreview() {
     ComposeFormTheme {
         PhotoCaptureLayout(
+            lens = CameraLens.Back,
             capturing = false,
             flash = FlashToggle(on = true, onToggle = {}),
             onCaptureClick = {},
+            onBackClick = {},
         ) { CameraFeedPlaceholder() }
     }
 }
 
-@Preview(name = "No flash (most front cameras)", device = Devices.PIXEL_7)
+@Preview(name = "Back camera - capturing", device = Devices.PIXEL_7)
 @Composable
-private fun PhotoCaptureNoFlashPreview() {
-    ComposeFormTheme {
-        PhotoCaptureLayout(capturing = false, flash = null, onCaptureClick = {}) { CameraFeedPlaceholder() }
-    }
-}
-
-@Preview(name = "Capturing", device = Devices.PIXEL_7)
-@Composable
-private fun PhotoCaptureCapturingPreview() {
+private fun BackCameraCapturingPreview() {
     ComposeFormTheme {
         PhotoCaptureLayout(
+            lens = CameraLens.Back,
             capturing = true,
             flash = FlashToggle(on = false, onToggle = {}),
             onCaptureClick = {},
+            onBackClick = {},
+        ) { CameraFeedPlaceholder() }
+    }
+}
+
+@Preview(name = "Front camera (selfie) - no flash", device = Devices.PIXEL_7)
+@Composable
+private fun FrontCameraPreview() {
+    ComposeFormTheme {
+        PhotoCaptureLayout(
+            lens = CameraLens.Front,
+            capturing = false,
+            flash = null,
+            onCaptureClick = {},
+            onBackClick = {},
+        ) { CameraFeedPlaceholder() }
+    }
+}
+
+@Preview(name = "Front camera (selfie) - with flash", device = Devices.PIXEL_7)
+@Composable
+private fun FrontCameraWithFlashPreview() {
+    ComposeFormTheme {
+        PhotoCaptureLayout(
+            lens = CameraLens.Front,
+            capturing = false,
+            flash = FlashToggle(on = false, onToggle = {}),
+            onCaptureClick = {},
+            onBackClick = {},
         ) { CameraFeedPlaceholder() }
     }
 }

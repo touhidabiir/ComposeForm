@@ -30,6 +30,7 @@ internal class PhotoCaptureActivity : ComponentActivity() {
                 PhotoCapture(
                     newFile = { file },
                     lens = lens,
+                    onBackClick = { finish() }, // RESULT_CANCELED: the caller gets null
                     onCaptured = { saved ->
                         setResult(RESULT_OK, Intent().putExtra(EXTRA_FILE_PATH, saved.absolutePath))
                         finish()

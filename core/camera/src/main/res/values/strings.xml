@@ -9,4 +9,8 @@
     <string name="camera_flash_turn_on">Turn flash on</string>
     <string name="camera_flash_turn_off">Turn flash off</string>
     <string name="camera_unavailable">This device has no camera.</string>
+    <string name="camera_back">Back</string>
+    <!-- Shown under the front camera's image (selfie) -->
+    <string name="camera_selfie_guide_title">বক্সের মধ্যে থাকার চেষ্টা করুন</string>
+    <string name="camera_selfie_guide_message">আপনার বুক থেকে মাথা পর্যন্ত মাঝখানের বক্সটির মধ্যে রাখার চেষ্টা করুন</string>
 </resources>
