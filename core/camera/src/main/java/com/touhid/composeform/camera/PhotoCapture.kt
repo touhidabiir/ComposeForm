@@ -1,6 +1,5 @@
 package com.touhid.composeform.camera
 
-import androidx.camera.core.ImageCapture
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.background
@@ -41,8 +40,8 @@ import java.io.File
 
 /**
  * A full camera to embed in any Compose screen: asks for the permission, shows the live camera, a
- * flash on/off button (when the camera has a flash) and a capture button, and writes each photo to
- * the file [newFile] returns.
+ * flash button cycling off / auto / on (when the camera has a flash) and a capture button, and
+ * writes each photo to the file [newFile] returns.
  *
  * [lens] picks the camera, and the layout with it; the user can't switch. The back camera's image
  * fills the screen with the buttons over it. The front camera's image sits in a box on a light
@@ -115,17 +114,16 @@ private fun PhotoCaptureWithCamera(
     val scope = rememberCoroutineScope()
     var capturing by remember { mutableStateOf(false) }
     // Saveable: survives rotation and process death, like the rest of the user's choices on screen.
-    var flashOn by rememberSaveable { mutableStateOf(false) }
+    var flashMode by rememberSaveable { mutableStateOf(FlashMode.Off) }
 
-    LaunchedEffect(controller, flashOn) {
-        controller.imageCaptureFlashMode =
-            if (flashOn) ImageCapture.FLASH_MODE_ON else ImageCapture.FLASH_MODE_OFF
+    LaunchedEffect(controller, flashMode) {
+        controller.imageCaptureFlashMode = flashMode.imageCaptureMode
     }
 
     PhotoCaptureLayout(
         lens = camera.lens,
         capturing = capturing,
-        flash = if (camera.hasFlash) FlashToggle(on = flashOn, onToggle = { flashOn = !flashOn }) else null,
+        flash = if (camera.hasFlash) FlashControl(mode = flashMode, onClick = { flashMode = flashMode.next() }) else null,
         onBackClick = onBackClick,
         modifier = modifier,
         onCaptureClick = {
@@ -140,9 +138,6 @@ private fun PhotoCaptureWithCamera(
         cameraFeed = { CameraFeed(controller, Modifier.fillMaxSize()) },
     )
 }
-
-/** The flash button's state. Null in [PhotoCaptureLayout] when the camera has no flash. */
-internal data class FlashToggle(val on: Boolean, val onToggle: () -> Unit)
 
 /** Text and controls on the front camera's light screen. */
 private val OnLightColor = Color(0xFF362B73)
@@ -161,7 +156,7 @@ private val OnLightColor = Color(0xFF362B73)
 internal fun PhotoCaptureLayout(
     lens: CameraLens,
     capturing: Boolean,
-    flash: FlashToggle?,
+    flash: FlashControl?, // null when the camera has no flash
     onCaptureClick: () -> Unit,
     modifier: Modifier = Modifier,
     onBackClick: (() -> Unit)? = null,
@@ -258,7 +253,7 @@ private fun SelfieGuide() {
 @Composable
 private fun CaptureControls(
     capturing: Boolean,
-    flash: FlashToggle?,
+    flash: FlashControl?, // null when the camera has no flash
     color: Color,
     onCaptureClick: () -> Unit,
     modifier: Modifier = Modifier,

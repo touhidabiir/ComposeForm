@@ -44,7 +44,21 @@ private fun BackCameraFlashOffPreview() {
         PhotoCaptureLayout(
             lens = CameraLens.Back,
             capturing = false,
-            flash = FlashToggle(on = false, onToggle = {}),
+            flash = FlashControl(mode = FlashMode.Off, onClick = {}),
+            onCaptureClick = {},
+            onBackClick = {},
+        ) { CameraFeedPlaceholder() }
+    }
+}
+
+@Preview(name = "Back camera - flash auto", device = Devices.PIXEL_7)
+@Composable
+private fun BackCameraFlashAutoPreview() {
+    ComposeFormTheme {
+        PhotoCaptureLayout(
+            lens = CameraLens.Back,
+            capturing = false,
+            flash = FlashControl(mode = FlashMode.Auto, onClick = {}),
             onCaptureClick = {},
             onBackClick = {},
         ) { CameraFeedPlaceholder() }
@@ -58,7 +72,7 @@ private fun BackCameraFlashOnPreview() {
         PhotoCaptureLayout(
             lens = CameraLens.Back,
             capturing = false,
-            flash = FlashToggle(on = true, onToggle = {}),
+            flash = FlashControl(mode = FlashMode.On, onClick = {}),
             onCaptureClick = {},
             onBackClick = {},
         ) { CameraFeedPlaceholder() }
@@ -72,7 +86,7 @@ private fun BackCameraCapturingPreview() {
         PhotoCaptureLayout(
             lens = CameraLens.Back,
             capturing = true,
-            flash = FlashToggle(on = false, onToggle = {}),
+            flash = FlashControl(mode = FlashMode.Off, onClick = {}),
             onCaptureClick = {},
             onBackClick = {},
         ) { CameraFeedPlaceholder() }
@@ -100,7 +114,7 @@ private fun FrontCameraWithFlashPreview() {
         PhotoCaptureLayout(
             lens = CameraLens.Front,
             capturing = false,
-            flash = FlashToggle(on = false, onToggle = {}),
+            flash = FlashControl(mode = FlashMode.Off, onClick = {}),
             onCaptureClick = {},
             onBackClick = {},
         ) { CameraFeedPlaceholder() }
@@ -135,15 +149,17 @@ private fun CameraPermissionRequestDeniedPreview() {
 @Composable
 private fun CaptureButtonPreview() {
     ComposeFormTheme {
-        // Flash + capture side by side, enabled and then disabled (while capturing).
+        // The three flash modes, then flash + capture disabled (as while capturing).
         Row(
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.Large),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(AppSpacing.Large),
         ) {
-            FlashButton(flash = FlashToggle(on = true, onToggle = {}), enabled = true, color = Color.White)
+            FlashMode.entries.forEach { mode ->
+                FlashButton(flash = FlashControl(mode = mode, onClick = {}), enabled = true, color = Color.White)
+            }
             CaptureButton(enabled = true, onClick = {})
-            FlashButton(flash = FlashToggle(on = false, onToggle = {}), enabled = false, color = Color.White)
+            FlashButton(flash = FlashControl(mode = FlashMode.Off, onClick = {}), enabled = false, color = Color.White)
             CaptureButton(enabled = false, onClick = {})
         }
     }
