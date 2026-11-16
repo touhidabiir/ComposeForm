@@ -1,0 +1,18 @@
+<resources>
+    <string name="camera_take_photo">Take photo</string>
+    <string name="camera_permission_title">Camera access needed</string>
+    <string name="camera_permission_message">Allow camera access to take a photo.</string>
+    <string name="camera_permission_message_settings">Camera access is turned off. Enable it in Settings to take a photo.</string>
+    <string name="camera_permission_allow">Allow camera</string>
+    <string name="camera_permission_open_settings">Open Settings</string>
+    <string name="camera_capture_failed">Couldn\'t take the photo. Please try again.</string>
+    <string name="camera_flash_off">Flash off</string>
+    <string name="camera_flash_auto">Flash auto</string>
+    <string name="camera_flash_on">Flash on</string>
+    <string name="camera_flash_change">Change flash mode</string>
+    <string name="camera_unavailable">This device has no camera.</string>
+    <string name="camera_back">Back</string>
+    <!-- Shown under the front camera's image (selfie) -->
+    <string name="camera_selfie_guide_title">বক্সের মধ্যে থাকার চেষ্টা করুন</string>
+    <string name="camera_selfie_guide_message">আপনার বুক থেকে মাথা পর্যন্ত মাঝখানের বক্সটির মধ্যে রাখার চেষ্টা করুন</string>
+</resources>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <!-- required="false": devices without a camera can still install the app from Play. -->
+    <uses-feature
+        android:name="android.hardware.camera.any"
+        android:required="false" />
+
+    <application>
+        <!-- Only reached through the OpenPhotoCapture contract; no other app may start it. -->
+        <activity
+            android:name=".PhotoCaptureActivity"
+            android:exported="false" />
+    </application>
+</manifest>
