@@ -16,6 +16,9 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.touhid.composeform.designsystem.theme.AppSpacing
 
+/** 64dp, as in the XML camera screen; [FlashButton]'s 40dp icon is sized to sit beside it. */
+private val CaptureButtonSize = 64.dp
+
 /**
  * The round shutter button: a ring around a disc, both in [color] (white over the camera image,
  * dark on the front camera's light screen), drawn entirely with modifiers (so it uses `Box`'s
@@ -31,7 +34,7 @@ internal fun CaptureButton(
 ) {
     Box(
         modifier = modifier
-            .size(76.dp)
+            .size(CaptureButtonSize)
             .border(4.dp, color, CircleShape)
             .padding(AppSpacing.Small)
             .clip(CircleShape)

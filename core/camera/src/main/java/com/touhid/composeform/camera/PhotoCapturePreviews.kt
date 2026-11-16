@@ -131,15 +131,19 @@ private fun CameraPermissionRequestDeniedPreview() {
     }
 }
 
-@Preview(name = "Capture button", showBackground = true, backgroundColor = 0xFF000000)
+@Preview(name = "Flash + capture buttons", showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 private fun CaptureButtonPreview() {
     ComposeFormTheme {
+        // Flash + capture side by side, enabled and then disabled (while capturing).
         Row(
             horizontalArrangement = Arrangement.spacedBy(AppSpacing.Large),
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(AppSpacing.Large),
         ) {
+            FlashButton(flash = FlashToggle(on = true, onToggle = {}), enabled = true, color = Color.White)
             CaptureButton(enabled = true, onClick = {})
+            FlashButton(flash = FlashToggle(on = false, onToggle = {}), enabled = false, color = Color.White)
             CaptureButton(enabled = false, onClick = {})
         }
     }

@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.FlashOff
-import androidx.compose.material.icons.filled.FlashOn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -273,15 +271,7 @@ private fun CaptureControls(
     ) {
         Box(contentAlignment = Alignment.Center, modifier = Modifier.weight(1f)) {
             if (flash != null) {
-                AppIconButton(
-                    icon = if (flash.on) Icons.Filled.FlashOn else Icons.Filled.FlashOff,
-                    contentDescription = stringResource(
-                        if (flash.on) R.string.camera_flash_turn_off else R.string.camera_flash_turn_on,
-                    ),
-                    onClick = flash.onToggle,
-                    enabled = !capturing,
-                    tint = color,
-                )
+                FlashButton(flash = flash, enabled = !capturing, color = color)
             }
         }
         CaptureButton(enabled = !capturing, onClick = onCaptureClick, color = color)
