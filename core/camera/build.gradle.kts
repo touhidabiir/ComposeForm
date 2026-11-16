@@ -8,6 +8,7 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(libs.androidx.compose.material.icons.extended) // FlashOn / FlashOff
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.camera.core)

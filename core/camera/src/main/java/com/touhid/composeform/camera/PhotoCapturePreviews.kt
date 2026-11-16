@@ -36,11 +36,35 @@ private fun CameraFeedPlaceholder() {
     }
 }
 
-@Preview(name = "Ready", device = Devices.PIXEL_7)
+@Preview(name = "Ready - flash off", device = Devices.PIXEL_7)
 @Composable
-private fun PhotoCaptureReadyPreview() {
+private fun PhotoCaptureFlashOffPreview() {
     ComposeFormTheme {
-        PhotoCaptureLayout(capturing = false, onCaptureClick = {}) { CameraFeedPlaceholder() }
+        PhotoCaptureLayout(
+            capturing = false,
+            flash = FlashToggle(on = false, onToggle = {}),
+            onCaptureClick = {},
+        ) { CameraFeedPlaceholder() }
+    }
+}
+
+@Preview(name = "Ready - flash on", device = Devices.PIXEL_7)
+@Composable
+private fun PhotoCaptureFlashOnPreview() {
+    ComposeFormTheme {
+        PhotoCaptureLayout(
+            capturing = false,
+            flash = FlashToggle(on = true, onToggle = {}),
+            onCaptureClick = {},
+        ) { CameraFeedPlaceholder() }
+    }
+}
+
+@Preview(name = "No flash (most front cameras)", device = Devices.PIXEL_7)
+@Composable
+private fun PhotoCaptureNoFlashPreview() {
+    ComposeFormTheme {
+        PhotoCaptureLayout(capturing = false, flash = null, onCaptureClick = {}) { CameraFeedPlaceholder() }
     }
 }
 
@@ -48,7 +72,19 @@ private fun PhotoCaptureReadyPreview() {
 @Composable
 private fun PhotoCaptureCapturingPreview() {
     ComposeFormTheme {
-        PhotoCaptureLayout(capturing = true, onCaptureClick = {}) { CameraFeedPlaceholder() }
+        PhotoCaptureLayout(
+            capturing = true,
+            flash = FlashToggle(on = false, onToggle = {}),
+            onCaptureClick = {},
+        ) { CameraFeedPlaceholder() }
+    }
+}
+
+@Preview(name = "No camera on device", device = Devices.PIXEL_7)
+@Composable
+private fun NoCameraMessagePreview() {
+    ComposeFormTheme {
+        NoCameraMessage()
     }
 }
 
